@@ -695,15 +695,19 @@ public class MuleChainVectorsOperations {
 
     Embedding questionEmbedding = embeddingModel.embed(question).content();
 
-    List<EmbeddingMatch<TextSegment>> relevantEmbeddings = store.findRelevant(questionEmbedding, maximumResults, minScore);
+    EmbeddingSearchRequest searchRequest = EmbeddingSearchRequest.builder()
+            .queryEmbedding(questionEmbedding)
+            .maxResults(maximumResults)
+            .minScore(minScore)
+            .build();
 
+    EmbeddingSearchResult<TextSegment> searchResult = store.search(searchRequest);
+    List<EmbeddingMatch<TextSegment>> embeddingMatches = searchResult.matches();
 
-    String information = relevantEmbeddings.stream()
+    String information = embeddingMatches.stream()
         .map(match -> match.embedded().text())
         .collect(joining("\n\n"));
 
-
-    
     JSONObject jsonObject = new JSONObject();
     jsonObject.put("response", information);
     jsonObject.put("storeName", storeName);
@@ -716,7 +720,7 @@ public class MuleChainVectorsOperations {
 
     JSONObject contentObject;
     String fullPath;
-    for (EmbeddingMatch<TextSegment> match : relevantEmbeddings) {
+    for (EmbeddingMatch<TextSegment> match : embeddingMatches) {
       Metadata matchMetadata = match.embedded().metadata();
 
       fileName = matchMetadata.getString("file_name");
@@ -734,7 +738,7 @@ public class MuleChainVectorsOperations {
       
       contentObject.put("textSegment", match.embedded().text());
       sources.put(contentObject);
-    }    
+    }
 
     jsonObject.put("sources", sources);
 
@@ -789,7 +793,6 @@ public class MuleChainVectorsOperations {
             .map(match -> match.embedded().text())
             .collect(joining("\n\n"));
 
-
     JSONObject jsonObject = new JSONObject();
     jsonObject.put("response", information);
     jsonObject.put("storeName", storeName);
@@ -810,10 +813,19 @@ public class MuleChainVectorsOperations {
     for (EmbeddingMatch<TextSegment> match : embeddingMatches) {
       Metadata matchMetadata = match.embedded().metadata();
 
+      fileName = matchMetadata.getString("file_name");
+      url = matchMetadata.getString("url");
+      fullPath = matchMetadata.getString("full_path");
+      absoluteDirectoryPath = matchMetadata.getString("absolute_directory_path");
       textSegment = matchMetadata.getString("textSegment");
 
       contentObject = new JSONObject();
+      contentObject.put("absoluteDirectoryPath", absoluteDirectoryPath);
+      contentObject.put("full_path", fullPath);
+      contentObject.put("file_name", fileName);
+      contentObject.put("url", url);
       contentObject.put("individualScore", match.score());
+
       contentObject.put("textSegment", match.embedded().text());
       sources.put(contentObject);
     }
