@@ -1,14 +1,14 @@
 {
   "name": "MAC Vectors",
   "description": "This is the main class of an extension, is the entry point from which configurations, connection providers, operations and sources are going to be declared.",
-  "version": "0.1.39-SNAPSHOT",
+  "version": "0.1.41-SNAPSHOT",
   "vendor": "Mulesoft",
   "category": "COMMUNITY",
   "xmlDsl": {
     "prefix": "vectors",
     "namespace": "http://www.mulesoft.org/schema/mule/vectors",
     "schemaLocation": "http://www.mulesoft.org/schema/mule/vectors/current/mule-vectors.xsd",
-    "schemaVersion": "0.1.39-SNAPSHOT",
+    "schemaVersion": "0.1.41-SNAPSHOT",
     "xsdFileName": "mule-vectors.xsd"
   },
   "resources": [],
@@ -3071,32 +3071,6 @@
                 {
                   "type": {
                     "format": "java",
-                    "type": "String"
-                  },
-                  "hasDynamicType": false,
-                  "required": true,
-                  "isConfigOverride": false,
-                  "expressionSupport": "SUPPORTED",
-                  "role": "BEHAVIOUR",
-                  "dslConfiguration": {
-                    "allowsInlineDefinition": true,
-                    "allowsReferences": true,
-                    "allowTopLevelDefinition": false
-                  },
-                  "layoutModel": {
-                    "password": false,
-                    "text": false,
-                    "query": false,
-                    "order": 3
-                  },
-                  "allowedStereotypeModels": [],
-                  "name": "fileOrUrlFilter",
-                  "description": "",
-                  "modelProperties": {}
-                },
-                {
-                  "type": {
-                    "format": "java",
                     "type": "Number",
                     "annotations": {
                       "classInformation": {
@@ -3129,7 +3103,7 @@
                     "password": false,
                     "text": false,
                     "query": false,
-                    "order": 4
+                    "order": 3
                   },
                   "allowedStereotypeModels": [],
                   "name": "maxResults",
@@ -3173,7 +3147,7 @@
                     "password": false,
                     "text": false,
                     "query": false,
-                    "order": 5
+                    "order": 4
                   },
                   "allowedStereotypeModels": [],
                   "name": "minScore",
@@ -3199,7 +3173,7 @@
                     "password": false,
                     "text": false,
                     "query": false,
-                    "order": 6,
+                    "order": 5,
                     "tabName": "Advanced"
                   },
                   "allowedStereotypeModels": [],
@@ -3226,7 +3200,7 @@
                     "password": false,
                     "text": false,
                     "query": false,
-                    "order": 7,
+                    "order": 6,
                     "tabName": "Advanced"
                   },
                   "allowedStereotypeModels": [],
@@ -3402,7 +3376,7 @@
                     "password": false,
                     "text": false,
                     "query": false,
-                    "order": 8,
+                    "order": 7,
                     "tabName": "Advanced"
                   },
                   "allowedStereotypeModels": [],
@@ -3442,6 +3416,81 @@
                     "type": "String"
                   },
                   "hasDynamicType": false,
+                  "required": false,
+                  "isConfigOverride": false,
+                  "valueProviderModel": {
+                    "actingParameters": [],
+                    "partOrder": 1,
+                    "providerName": "metadataKey",
+                    "requiresConfiguration": false,
+                    "requiresConnection": false,
+                    "isOpen": true
+                  },
+                  "expressionSupport": "SUPPORTED",
+                  "role": "BEHAVIOUR",
+                  "dslConfiguration": {
+                    "allowsInlineDefinition": true,
+                    "allowsReferences": true,
+                    "allowTopLevelDefinition": false
+                  },
+                  "layoutModel": {
+                    "password": false,
+                    "text": false,
+                    "query": false,
+                    "order": 8
+                  },
+                  "allowedStereotypeModels": [],
+                  "name": "metadataKey",
+                  "description": "",
+                  "modelProperties": {}
+                },
+                {
+                  "type": {
+                    "format": "java",
+                    "type": "String"
+                  },
+                  "hasDynamicType": false,
+                  "required": false,
+                  "isConfigOverride": false,
+                  "expressionSupport": "SUPPORTED",
+                  "role": "BEHAVIOUR",
+                  "dslConfiguration": {
+                    "allowsInlineDefinition": true,
+                    "allowsReferences": true,
+                    "allowTopLevelDefinition": false
+                  },
+                  "layoutModel": {
+                    "password": false,
+                    "text": false,
+                    "query": false,
+                    "order": 9
+                  },
+                  "allowedStereotypeModels": [],
+                  "name": "metadataValue",
+                  "description": "",
+                  "modelProperties": {}
+                }
+              ],
+              "exclusiveParametersModels": [],
+              "layoutModel": {
+                "password": false,
+                "text": false,
+                "query": false,
+                "order": 2
+              },
+              "showInDsl": false,
+              "name": "Filter",
+              "description": "",
+              "modelProperties": {}
+            },
+            {
+              "parameters": [
+                {
+                  "type": {
+                    "format": "java",
+                    "type": "String"
+                  },
+                  "hasDynamicType": false,
                   "required": true,
                   "isConfigOverride": false,
                   "valueProviderModel": {
@@ -3463,7 +3512,7 @@
                     "password": false,
                     "text": false,
                     "query": false,
-                    "order": 9
+                    "order": 10
                   },
                   "allowedStereotypeModels": [],
                   "name": "modelName",
@@ -3476,7 +3525,7 @@
                 "password": false,
                 "text": false,
                 "query": false,
-                "order": 2
+                "order": 3
               },
               "showInDsl": false,
               "name": "Additional Properties",
@@ -3504,7 +3553,7 @@
                     "password": false,
                     "text": false,
                     "query": false,
-                    "order": 10,
+                    "order": 11,
                     "tabName": "Advanced"
                   },
                   "allowedStereotypeModels": [],
@@ -3535,7 +3584,7 @@
                     "password": false,
                     "text": false,
                     "query": false,
-                    "order": 11,
+                    "order": 12,
                     "tabName": "Advanced"
                   },
                   "allowedStereotypeModels": [],
@@ -3552,7 +3601,7 @@
                 "password": false,
                 "text": false,
                 "query": false,
-                "order": 3
+                "order": 4
               },
               "showInDsl": false,
               "name": "Output",

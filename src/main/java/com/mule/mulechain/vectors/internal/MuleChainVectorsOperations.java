@@ -758,8 +758,9 @@ public class MuleChainVectorsOperations {
    */
   @MediaType(value = APPLICATION_JSON, strict = false)
   @Alias("EMBEDDING-query-from-store-with-filter")
-  public InputStream queryByFilterFromEmbedding(String storeName, String question, String fileOrUrlFilter, Number maxResults, Double minScore,
+  public InputStream queryByFilterFromEmbedding(String storeName, String question, Number maxResults, Double minScore,
                                         @Config MuleChainVectorsConfiguration configuration,
+                                        @ParameterGroup(name = "Filter") MuleChainVectorsFilterParameters filterParams,
                                         @ParameterGroup(name = "Additional Properties") MuleChainVectorsModelParameters modelParams) {
     int maximumResults = (int) maxResults;
     if (minScore == null) { //|| minScore == 0) {
@@ -772,19 +773,20 @@ public class MuleChainVectorsOperations {
 
     Embedding questionEmbedding = embeddingModel.embed(question).content();
 
-    Filter filter;
-    if (isURL(fileOrUrlFilter)) {
-      filter = metadataKey("url").isEqualTo(fileOrUrlFilter);
-    } else {
-      filter = metadataKey("file_name").isEqualTo(fileOrUrlFilter);
-    }
-
-    EmbeddingSearchRequest searchRequest = EmbeddingSearchRequest.builder()
+    EmbeddingSearchRequest.EmbeddingSearchRequestBuilder searchRequestBuilder = EmbeddingSearchRequest.builder()
             .queryEmbedding(questionEmbedding)
             .maxResults(maximumResults)
-            .minScore(minScore)
-            .filter(filter)
-            .build();
+            .minScore(minScore);
+
+    Filter filter = null;
+    if(filterParams.metadataKey() != null && !filterParams.metadataKey().isEmpty() &&
+            filterParams.metadataValue() != null && !filterParams.metadataValue().isEmpty()) {
+
+      filter = metadataKey(filterParams.metadataKey()).isEqualTo(filterParams.metadataValue());
+      searchRequestBuilder.filter(filter);
+    }
+
+    EmbeddingSearchRequest searchRequest = searchRequestBuilder.build();
 
     EmbeddingSearchResult<TextSegment> searchResult = store.search(searchRequest);
     List<EmbeddingMatch<TextSegment>> embeddingMatches = searchResult.matches();
@@ -797,10 +799,9 @@ public class MuleChainVectorsOperations {
     jsonObject.put("response", information);
     jsonObject.put("storeName", storeName);
     jsonObject.put("question", question);
-    if (isURL(fileOrUrlFilter)) {
-      jsonObject.put("filterOnUrl", fileOrUrlFilter);
-    } else {
-      jsonObject.put("filterOnFile", fileOrUrlFilter);
+    if(filter != null) {
+      jsonObject.put("filteredByMetadataKey", filterParams.metadataKey());
+      jsonObject.put("filteredByMetadataValue", filterParams.metadataValue());
     }
     JSONArray sources = new JSONArray();
     String absoluteDirectoryPath;
