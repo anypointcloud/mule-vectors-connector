@@ -1,5 +1,6 @@
 package com.mule.mulechain.vectors.internal;
 
+import static dev.langchain4j.store.embedding.filter.MetadataFilterBuilder.metadataKey;
 import static org.mule.runtime.extension.api.annotation.param.MediaType.ANY;
 import static org.apache.commons.io.IOUtils.toInputStream;
 import static org.mule.runtime.extension.api.annotation.param.MediaType.APPLICATION_JSON;
@@ -20,6 +21,8 @@ import java.io.File;
 import java.nio.charset.StandardCharsets;
 
 import dev.langchain4j.model.huggingface.HuggingFaceEmbeddingModel;
+import dev.langchain4j.store.embedding.*;
+import dev.langchain4j.store.embedding.filter.Filter;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.mule.runtime.extension.api.annotation.Alias;
@@ -46,9 +49,6 @@ import dev.langchain4j.model.mistralai.MistralAiEmbeddingModel;
 import dev.langchain4j.model.nomic.NomicEmbeddingModel;
 import dev.langchain4j.model.openai.OpenAiChatModel;
 import dev.langchain4j.model.openai.OpenAiEmbeddingModel;
-import dev.langchain4j.store.embedding.EmbeddingMatch;
-import dev.langchain4j.store.embedding.EmbeddingStore;
-import dev.langchain4j.store.embedding.EmbeddingStoreIngestor;
 import dev.langchain4j.store.embedding.chroma.ChromaEmbeddingStore;
 import dev.langchain4j.store.embedding.elasticsearch.ElasticsearchEmbeddingStore;
 import dev.langchain4j.store.embedding.milvus.MilvusEmbeddingStore;
@@ -685,7 +685,7 @@ public class MuleChainVectorsOperations {
                                   @Config MuleChainVectorsConfiguration configuration,
                                   @ParameterGroup(name = "Additional Properties") MuleChainVectorsModelParameters modelParams) {
     int maximumResults = (int) maxResults;
-    if (minScore == null || minScore == 0) {
+    if (minScore == null) { //|| minScore == 0) {
       minScore = 0.7;
     }
 
@@ -747,10 +747,192 @@ public class MuleChainVectorsOperations {
     return toInputStream(jsonObject.toString(), StandardCharsets.UTF_8);
   }
 
+
+
+  /**
+   * Query information based on a file or url filter from embedding store , provide the storeName (Index, Collections, etc.)
+   */
+  @MediaType(value = APPLICATION_JSON, strict = false)
+  @Alias("EMBEDDING-query-from-store-with-filter")
+  public InputStream queryByFilterFromEmbedding(String storeName, String question, String fileOrUrlFilter, Number maxResults, Double minScore,
+                                        @Config MuleChainVectorsConfiguration configuration,
+                                        @ParameterGroup(name = "Additional Properties") MuleChainVectorsModelParameters modelParams) {
+    int maximumResults = (int) maxResults;
+    if (minScore == null) { //|| minScore == 0) {
+      minScore = 0.7;
+    }
+
+    EmbeddingModel embeddingModel = createModel(configuration, modelParams);
+
+    EmbeddingStore<TextSegment> store = createStore(configuration, storeName, embeddingModel.dimension());
+
+    Embedding questionEmbedding = embeddingModel.embed(question).content();
+
+    Filter filter;
+    if (isURL(fileOrUrlFilter)) {
+      filter = metadataKey("url").isEqualTo(fileOrUrlFilter);
+    } else {
+      filter = metadataKey("file_name").isEqualTo(fileOrUrlFilter);
+    }
+
+    EmbeddingSearchRequest searchRequest = EmbeddingSearchRequest.builder()
+            .queryEmbedding(questionEmbedding)
+            .maxResults(maximumResults)
+            .minScore(minScore)
+            .filter(filter)
+            .build();
+
+    EmbeddingSearchResult<TextSegment> searchResult = store.search(searchRequest);
+    List<EmbeddingMatch<TextSegment>> embeddingMatches = searchResult.matches();
+
+    String information = embeddingMatches.stream()
+            .map(match -> match.embedded().text())
+            .collect(joining("\n\n"));
+
+
+    JSONObject jsonObject = new JSONObject();
+    jsonObject.put("response", information);
+    jsonObject.put("storeName", storeName);
+    jsonObject.put("question", question);
+    if (isURL(fileOrUrlFilter)) {
+      jsonObject.put("filterOnUrl", fileOrUrlFilter);
+    } else {
+      jsonObject.put("filterOnFile", fileOrUrlFilter);
+    }
+    JSONArray sources = new JSONArray();
+    String absoluteDirectoryPath;
+    String fileName;
+    String url;
+    String textSegment;
+
+    JSONObject contentObject;
+    String fullPath;
+    for (EmbeddingMatch<TextSegment> match : embeddingMatches) {
+      Metadata matchMetadata = match.embedded().metadata();
+
+      textSegment = matchMetadata.getString("textSegment");
+
+      contentObject = new JSONObject();
+      contentObject.put("individualScore", match.score());
+      contentObject.put("textSegment", match.embedded().text());
+      sources.put(contentObject);
+    }
+
+    jsonObject.put("sources", sources);
+
+    jsonObject.put("maxResults", maxResults);
+    jsonObject.put("minimumScore", minScore);
+    jsonObject.put("question", question);
+    jsonObject.put("storeName", storeName);
+
+
+    return toInputStream(jsonObject.toString(), StandardCharsets.UTF_8);
+  }
+
+
   interface AssistantSources {
 
     Result<String> chat(String userMessage);
   }
 
-  
-}
+  /**
+   * List all documents from a store
+   */
+  @MediaType(value = APPLICATION_JSON, strict = false)
+  @Alias("EMBEDDING-list-documents")
+  public InputStream listDocumentsFromStore(String storeName,
+                                        @Config MuleChainVectorsConfiguration configuration,
+                                        @ParameterGroup(name = "Additional Properties") MuleChainVectorsModelParameters modelParams) {
+
+    EmbeddingModel embeddingModel = createModel(configuration, modelParams);
+    EmbeddingStore<TextSegment> store = createStore(configuration, storeName, embeddingModel.dimension());
+
+    Embedding queryEmbedding = embeddingModel.embed(".").content();
+    EmbeddingSearchRequest searchRequest = EmbeddingSearchRequest.builder()
+            .queryEmbedding(queryEmbedding)
+            .maxResults(Integer.MAX_VALUE)
+            .minScore(0.0)
+            .build();
+
+    EmbeddingSearchResult<TextSegment> searchResult = store.search(searchRequest);
+    List<EmbeddingMatch<TextSegment>> embeddingMatches = searchResult.matches();
+    String information = embeddingMatches.stream()
+            .map(match -> match.embedded().text())
+            .collect(joining("\n\n"));
+
+    JSONObject jsonObject = new JSONObject();
+    jsonObject.put("storeName", storeName);
+    JSONArray sources = new JSONArray();
+    String absoluteDirectoryPath;
+    String fileName;
+    String url;
+
+    JSONObject contentObject;
+    String fullPath;
+    for (EmbeddingMatch<TextSegment> match : embeddingMatches) {
+      Metadata matchMetadata = match.embedded().metadata();
+      fileName = matchMetadata.getString("file_name");
+      url = matchMetadata.getString("url");
+      fullPath = matchMetadata.getString("full_path");
+      absoluteDirectoryPath = matchMetadata.getString("absolute_directory_path");
+
+      contentObject = new JSONObject();
+      contentObject.put("absoluteDirectoryPath", absoluteDirectoryPath);
+      contentObject.put("full_path", fullPath);
+      contentObject.put("file_name", fileName);
+      contentObject.put("url", url);
+
+      // Add contentObject to sources only if it has at least one key-value pair
+      if (!contentObject.isEmpty()) {
+        sources.put(contentObject);
+      }
+    }
+
+    jsonObject.put("documents", sources);
+
+    return toInputStream(jsonObject.toString(), StandardCharsets.UTF_8);
+  }
+
+
+  /**
+   * Remove all documents based on a filter from a store
+   */
+  @MediaType(value = APPLICATION_JSON, strict = false)
+  @Alias("EMBEDDING-remove-documents-by-filter")
+  public InputStream removeDocumentsByFilter(String storeName, String fileOrUrlFilter,
+                                            @Config MuleChainVectorsConfiguration configuration,
+                                            @ParameterGroup(name = "Additional Properties") MuleChainVectorsModelParameters modelParams) {
+
+    EmbeddingModel embeddingModel = createModel(configuration, modelParams);
+    EmbeddingStore<TextSegment> store = createStore(configuration, storeName, embeddingModel.dimension());
+
+    Filter filter;
+    if (isURL(fileOrUrlFilter)) {
+      filter = metadataKey("url").isEqualTo(fileOrUrlFilter);
+    } else {
+      filter = metadataKey("file_name").isEqualTo(fileOrUrlFilter);
+    }
+
+    store.removeAll(filter);
+    JSONObject jsonObject = new JSONObject();
+    jsonObject.put("storeName", storeName);
+    if (isURL(fileOrUrlFilter)) {
+      jsonObject.put("filterOnUrl", fileOrUrlFilter);
+    } else {
+      jsonObject.put("filterOnFile", fileOrUrlFilter);
+    }
+
+    jsonObject.put("status", "deleted");
+
+    return toInputStream(jsonObject.toString(), StandardCharsets.UTF_8);
+  }
+
+  private boolean isURL(String fileNameFilter) {
+    try {
+      new URL(fileNameFilter);
+      return true;
+    } catch (Exception e) {
+      return false;
+    }
+  }
+  }
