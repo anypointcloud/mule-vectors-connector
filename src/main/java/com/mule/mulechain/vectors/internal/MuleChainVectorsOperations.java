@@ -27,6 +27,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.mule.runtime.extension.api.annotation.Alias;
 import org.mule.runtime.extension.api.annotation.param.MediaType;
+import org.mule.runtime.extension.api.annotation.param.Optional;
 import org.mule.runtime.extension.api.annotation.param.ParameterGroup;
 import static java.util.stream.Collectors.joining;
 import com.mule.mulechain.vectors.internal.helpers.fileTypeParameters;
@@ -760,7 +761,7 @@ public class MuleChainVectorsOperations {
   @Alias("EMBEDDING-query-from-store-with-filter")
   public InputStream queryByFilterFromEmbedding(String storeName, String question, Number maxResults, Double minScore,
                                         @Config MuleChainVectorsConfiguration configuration,
-                                        @ParameterGroup(name = "Filter") MuleChainVectorsFilterParameters filterParams,
+                                        @ParameterGroup(name = "Filter") MuleChainVectorsFilterParameters.SearchFilterParameters filterParams,
                                         @ParameterGroup(name = "Additional Properties") MuleChainVectorsModelParameters modelParams) {
     int maximumResults = (int) maxResults;
     if (minScore == null) { //|| minScore == 0) {
@@ -912,28 +913,21 @@ public class MuleChainVectorsOperations {
    */
   @MediaType(value = APPLICATION_JSON, strict = false)
   @Alias("EMBEDDING-remove-documents-by-filter")
-  public InputStream removeDocumentsByFilter(String storeName, String fileOrUrlFilter,
+  public InputStream removeDocumentsByFilter(String storeName,
                                             @Config MuleChainVectorsConfiguration configuration,
+                                             @ParameterGroup(name = "Filter") MuleChainVectorsFilterParameters.RemoveFilterParameters filterParams,
                                             @ParameterGroup(name = "Additional Properties") MuleChainVectorsModelParameters modelParams) {
 
     EmbeddingModel embeddingModel = createModel(configuration, modelParams);
     EmbeddingStore<TextSegment> store = createStore(configuration, storeName, embeddingModel.dimension());
 
-    Filter filter;
-    if (isURL(fileOrUrlFilter)) {
-      filter = metadataKey("url").isEqualTo(fileOrUrlFilter);
-    } else {
-      filter = metadataKey("file_name").isEqualTo(fileOrUrlFilter);
-    }
+    Filter filter = metadataKey(filterParams.metadataKey()).isEqualTo(filterParams.metadataValue());
 
     store.removeAll(filter);
     JSONObject jsonObject = new JSONObject();
     jsonObject.put("storeName", storeName);
-    if (isURL(fileOrUrlFilter)) {
-      jsonObject.put("filterOnUrl", fileOrUrlFilter);
-    } else {
-      jsonObject.put("filterOnFile", fileOrUrlFilter);
-    }
+    jsonObject.put("filteredByMetadataKey", filterParams.metadataKey());
+    jsonObject.put("filteredByMetadataValue", filterParams.metadataValue());
 
     jsonObject.put("status", "deleted");
 
