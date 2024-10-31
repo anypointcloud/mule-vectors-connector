@@ -1,7 +1,6 @@
 package com.mule.mulechain.vectors.internal;
 
 import static dev.langchain4j.store.embedding.filter.MetadataFilterBuilder.metadataKey;
-import static org.mule.runtime.extension.api.annotation.param.MediaType.ANY;
 import static org.apache.commons.io.IOUtils.toInputStream;
 import static org.mule.runtime.extension.api.annotation.param.MediaType.APPLICATION_JSON;
 
@@ -13,9 +12,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.IntPredicate;
 import java.util.stream.Stream;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
@@ -27,7 +24,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.mule.runtime.extension.api.annotation.Alias;
 import org.mule.runtime.extension.api.annotation.param.MediaType;
-import org.mule.runtime.extension.api.annotation.param.Optional;
 import org.mule.runtime.extension.api.annotation.param.ParameterGroup;
 import static java.util.stream.Collectors.joining;
 import com.mule.mulechain.vectors.internal.helpers.fileTypeParameters;
@@ -48,17 +44,11 @@ import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.model.embedding.EmbeddingModel;
 import dev.langchain4j.model.mistralai.MistralAiEmbeddingModel;
 import dev.langchain4j.model.nomic.NomicEmbeddingModel;
-import dev.langchain4j.model.openai.OpenAiChatModel;
 import dev.langchain4j.model.openai.OpenAiEmbeddingModel;
 import dev.langchain4j.store.embedding.chroma.ChromaEmbeddingStore;
 import dev.langchain4j.store.embedding.elasticsearch.ElasticsearchEmbeddingStore;
 import dev.langchain4j.store.embedding.milvus.MilvusEmbeddingStore;
 //import dev.langchain4j.store.embedding.neo4j.Neo4jEmbeddingStore;
-import dev.langchain4j.rag.content.Content;
-import dev.langchain4j.rag.content.retriever.ContentRetriever;
-import dev.langchain4j.rag.content.retriever.EmbeddingStoreContentRetriever;
-import dev.langchain4j.rag.query.Query;
-import dev.langchain4j.service.AiServices;
 import dev.langchain4j.service.Result;
 import dev.langchain4j.store.embedding.pgvector.PgVectorEmbeddingStore;
 import dev.langchain4j.store.embedding.pinecone.PineconeEmbeddingStore;
@@ -761,7 +751,7 @@ public class MuleChainVectorsOperations {
   @Alias("EMBEDDING-query-from-store-with-filter")
   public InputStream queryByFilterFromEmbedding(String storeName, String question, Number maxResults, Double minScore,
                                         @Config MuleChainVectorsConfiguration configuration,
-                                        @ParameterGroup(name = "Filter") MuleChainVectorsFilterParameters.SearchFilterParameters filterParams,
+                                        @ParameterGroup(name = "Filter") MuleChainVectorsFilterParameters.SearchFilterParameters searchFilterParams,
                                         @ParameterGroup(name = "Additional Properties") MuleChainVectorsModelParameters modelParams) {
     int maximumResults = (int) maxResults;
     if (minScore == null) { //|| minScore == 0) {
@@ -779,12 +769,13 @@ public class MuleChainVectorsOperations {
             .maxResults(maximumResults)
             .minScore(minScore);
 
-    Filter filter = null;
-    if(filterParams.metadataKey() != null && !filterParams.metadataKey().isEmpty() &&
-            filterParams.metadataValue() != null && !filterParams.metadataValue().isEmpty()) {
+    JSONObject jsonObject = new JSONObject();
 
-      filter = metadataKey(filterParams.metadataKey()).isEqualTo(filterParams.metadataValue());
+    if(searchFilterParams.areFilterParamsSet()) {
+
+      Filter filter = searchFilterParams.buildMetadataFilter();
       searchRequestBuilder.filter(filter);
+      jsonObject.put("filter", searchFilterParams.getFilterJSONObject());
     }
 
     EmbeddingSearchRequest searchRequest = searchRequestBuilder.build();
@@ -796,14 +787,10 @@ public class MuleChainVectorsOperations {
             .map(match -> match.embedded().text())
             .collect(joining("\n\n"));
 
-    JSONObject jsonObject = new JSONObject();
     jsonObject.put("response", information);
     jsonObject.put("storeName", storeName);
     jsonObject.put("question", question);
-    if(filter != null) {
-      jsonObject.put("filteredByMetadataKey", filterParams.metadataKey());
-      jsonObject.put("filteredByMetadataValue", filterParams.metadataValue());
-    }
+
     JSONArray sources = new JSONArray();
     String absoluteDirectoryPath;
     String fileName;
@@ -915,20 +902,18 @@ public class MuleChainVectorsOperations {
   @Alias("EMBEDDING-remove-documents-by-filter")
   public InputStream removeDocumentsByFilter(String storeName,
                                             @Config MuleChainVectorsConfiguration configuration,
-                                             @ParameterGroup(name = "Filter") MuleChainVectorsFilterParameters.RemoveFilterParameters filterParams,
+                                             @ParameterGroup(name = "Filter") MuleChainVectorsFilterParameters.RemoveFilterParameters removeFilterParams,
                                             @ParameterGroup(name = "Additional Properties") MuleChainVectorsModelParameters modelParams) {
 
     EmbeddingModel embeddingModel = createModel(configuration, modelParams);
     EmbeddingStore<TextSegment> store = createStore(configuration, storeName, embeddingModel.dimension());
 
-    Filter filter = metadataKey(filterParams.metadataKey()).isEqualTo(filterParams.metadataValue());
+    Filter filter = removeFilterParams.buildMetadataFilter();
 
     store.removeAll(filter);
     JSONObject jsonObject = new JSONObject();
     jsonObject.put("storeName", storeName);
-    jsonObject.put("filteredByMetadataKey", filterParams.metadataKey());
-    jsonObject.put("filteredByMetadataValue", filterParams.metadataValue());
-
+    jsonObject.put("filter", removeFilterParams.getFilterJSONObject());
     jsonObject.put("status", "deleted");
 
     return toInputStream(jsonObject.toString(), StandardCharsets.UTF_8);
