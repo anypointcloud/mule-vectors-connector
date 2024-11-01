@@ -1,14 +1,14 @@
 {
   "name": "MAC Vectors",
   "description": "This is the main class of an extension, is the entry point from which configurations, connection providers, operations and sources are going to be declared.",
-  "version": "0.1.47-SNAPSHOT",
+  "version": "0.1.52-SNAPSHOT",
   "vendor": "Mulesoft",
   "category": "COMMUNITY",
   "xmlDsl": {
     "prefix": "vectors",
     "namespace": "http://www.mulesoft.org/schema/mule/vectors",
     "schemaLocation": "http://www.mulesoft.org/schema/mule/vectors/current/mule-vectors.xsd",
-    "schemaVersion": "0.1.47-SNAPSHOT",
+    "schemaVersion": "0.1.52-SNAPSHOT",
     "xsdFileName": "mule-vectors.xsd"
   },
   "resources": [],
@@ -3441,7 +3441,48 @@
                   },
                   "allowedStereotypeModels": [],
                   "name": "metadataKey",
-                  "description": "",
+                  "displayModel": {
+                    "summary": "The metadata key used for filtering"
+                  },
+                  "description": "The metadata key used for filtering in search operations.",
+                  "modelProperties": {}
+                },
+                {
+                  "type": {
+                    "format": "java",
+                    "type": "String"
+                  },
+                  "hasDynamicType": false,
+                  "required": false,
+                  "isConfigOverride": false,
+                  "valueProviderModel": {
+                    "actingParameters": [],
+                    "partOrder": 1,
+                    "providerName": "filterMethod",
+                    "requiresConfiguration": false,
+                    "requiresConnection": false,
+                    "isOpen": true
+                  },
+                  "expressionSupport": "SUPPORTED",
+                  "defaultValue": "equalTo",
+                  "role": "BEHAVIOUR",
+                  "dslConfiguration": {
+                    "allowsInlineDefinition": true,
+                    "allowsReferences": true,
+                    "allowTopLevelDefinition": false
+                  },
+                  "layoutModel": {
+                    "password": false,
+                    "text": false,
+                    "query": false,
+                    "order": 9
+                  },
+                  "allowedStereotypeModels": [],
+                  "name": "filterMethod",
+                  "displayModel": {
+                    "summary": "The method used to apply the filter, e.g., equalsTo or notEqualsTo"
+                  },
+                  "description": "The filtering method, defaulting to \"equalTo\" if not specified.",
                   "modelProperties": {}
                 },
                 {
@@ -3463,11 +3504,14 @@
                     "password": false,
                     "text": false,
                     "query": false,
-                    "order": 9
+                    "order": 10
                   },
                   "allowedStereotypeModels": [],
                   "name": "metadataValue",
-                  "description": "",
+                  "displayModel": {
+                    "summary": "The metadata value to be used in the filter operation"
+                  },
+                  "description": "The metadata value used for filtering.",
                   "modelProperties": {}
                 }
               ],
@@ -3512,7 +3556,7 @@
                     "password": false,
                     "text": false,
                     "query": false,
-                    "order": 10
+                    "order": 11
                   },
                   "allowedStereotypeModels": [],
                   "name": "modelName",
@@ -3553,7 +3597,7 @@
                     "password": false,
                     "text": false,
                     "query": false,
-                    "order": 11,
+                    "order": 12,
                     "tabName": "Advanced"
                   },
                   "allowedStereotypeModels": [],
@@ -3584,7 +3628,7 @@
                     "password": false,
                     "text": false,
                     "query": false,
-                    "order": 12,
+                    "order": 13,
                     "tabName": "Advanced"
                   },
                   "allowedStereotypeModels": [],
@@ -3977,7 +4021,47 @@
                   },
                   "allowedStereotypeModels": [],
                   "name": "metadataKey",
-                  "description": "",
+                  "displayModel": {
+                    "summary": "The metadata key used for filtering"
+                  },
+                  "description": "The metadata key used for filtering in remove operations.",
+                  "modelProperties": {}
+                },
+                {
+                  "type": {
+                    "format": "java",
+                    "type": "String"
+                  },
+                  "hasDynamicType": false,
+                  "required": true,
+                  "isConfigOverride": false,
+                  "valueProviderModel": {
+                    "actingParameters": [],
+                    "partOrder": 1,
+                    "providerName": "filterMethod",
+                    "requiresConfiguration": false,
+                    "requiresConnection": false,
+                    "isOpen": true
+                  },
+                  "expressionSupport": "SUPPORTED",
+                  "role": "BEHAVIOUR",
+                  "dslConfiguration": {
+                    "allowsInlineDefinition": true,
+                    "allowsReferences": true,
+                    "allowTopLevelDefinition": false
+                  },
+                  "layoutModel": {
+                    "password": false,
+                    "text": false,
+                    "query": false,
+                    "order": 6
+                  },
+                  "allowedStereotypeModels": [],
+                  "name": "filterMethod",
+                  "displayModel": {
+                    "summary": "The method used to apply the filter, e.g., equalsTo or notEqualsTo"
+                  },
+                  "description": "The filtering method used in remove operations.",
                   "modelProperties": {}
                 },
                 {
@@ -3999,11 +4083,14 @@
                     "password": false,
                     "text": false,
                     "query": false,
-                    "order": 6
+                    "order": 7
                   },
                   "allowedStereotypeModels": [],
                   "name": "metadataValue",
-                  "description": "",
+                  "displayModel": {
+                    "summary": "The metadata value to be used in the filter operation"
+                  },
+                  "description": "The metadata value used for filtering in remove operations.",
                   "modelProperties": {}
                 }
               ],
@@ -4048,7 +4135,7 @@
                     "password": false,
                     "text": false,
                     "query": false,
-                    "order": 7
+                    "order": 8
                   },
                   "allowedStereotypeModels": [],
                   "name": "modelName",
@@ -4089,7 +4176,7 @@
                     "password": false,
                     "text": false,
                     "query": false,
-                    "order": 8,
+                    "order": 9,
                     "tabName": "Advanced"
                   },
                   "allowedStereotypeModels": [],
@@ -4120,7 +4207,7 @@
                     "password": false,
                     "text": false,
                     "query": false,
-                    "order": 9,
+                    "order": 10,
                     "tabName": "Advanced"
                   },
                   "allowedStereotypeModels": [],
