@@ -1,4 +1,4 @@
-package com.mule.mulechain.vectors.internal;
+package com.mule.mulechain.vectors.internal.providers;
 
 import java.util.Set;
 

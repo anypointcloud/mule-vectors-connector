@@ -1,8 +1,9 @@
-package com.mule.mulechain.vectors.internal;
+package com.mule.mulechain.vectors.internal.providers;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
+
+import com.mule.mulechain.vectors.internal.MuleChainVectorsConfiguration;
 import org.mule.runtime.api.value.Value;
 import org.mule.runtime.extension.api.annotation.param.Config;
 import org.mule.runtime.extension.api.values.ValueBuilder;

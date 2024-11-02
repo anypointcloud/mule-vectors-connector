@@ -1,5 +1,7 @@
 package com.mule.mulechain.vectors.internal;
 
+import com.mule.mulechain.vectors.internal.providers.MuleChainVectorsMetadataFilterMethodProvider;
+import com.mule.mulechain.vectors.internal.providers.MuleChainVectorsMetadataKeyProvider;
 import org.json.JSONObject;
 
 import org.mule.runtime.api.meta.ExpressionSupport;

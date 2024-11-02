@@ -1,4 +1,4 @@
-package com.mule.mulechain.vectors.internal;
+package com.mule.mulechain.vectors.internal.providers;
 
 import org.mule.runtime.api.value.Value;
 import org.mule.runtime.extension.api.values.ValueBuilder;
