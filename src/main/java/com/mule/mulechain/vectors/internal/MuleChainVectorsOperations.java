@@ -745,7 +745,7 @@ public class MuleChainVectorsOperations {
 
 
   /**
-   * Query information based on a file or url filter from embedding store , provide the storeName (Index, Collections, etc.)
+   * Query information from embedding store and filter results based on a metadata key filter
    */
   @MediaType(value = APPLICATION_JSON, strict = false)
   @Alias("EMBEDDING-query-from-store-with-filter")
