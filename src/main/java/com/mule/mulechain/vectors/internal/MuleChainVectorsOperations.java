@@ -1,5 +1,9 @@
 package com.mule.mulechain.vectors.internal;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.*;
+
 import static dev.langchain4j.store.embedding.filter.MetadataFilterBuilder.metadataKey;
 import static org.apache.commons.io.IOUtils.toInputStream;
 import static org.mule.runtime.extension.api.annotation.param.MediaType.APPLICATION_JSON;
@@ -59,6 +63,9 @@ import org.mule.runtime.extension.api.annotation.param.Config;
 import com.mule.mulechain.vectors.internal.storage.S3FileReader;
 import com.mule.mulechain.vectors.internal.helpers.storageTypeParameters;
 
+import com.mule.mulechain.vectors.internal.storage.AzureFileReader;
+import dev.langchain4j.store.embedding.azure.search.AzureAiSearchEmbeddingStore;
+
 
 /**
  * This class is a container for operations, every public method in this class will be taken as an extension operation.
@@ -95,6 +102,12 @@ public class MuleChainVectorsOperations {
 
     String vectorUrl;
     switch (configuration.getVectorDBProviderType()) {
+      case "AI_SEARCH":
+          vectorType = config.getJSONObject("AI_SEARCH");
+          vectorApiKey = vectorType.getString("AI_SEARCH_KEY");
+          vectorUrl = vectorType.getString("AI_SEARCH_URL");
+          store = createAISearchStore(vectorUrl, vectorApiKey, indexName, dimension);
+        break;
       case "CHROMA":
           vectorType = config.getJSONObject("CHROMA");
           vectorUrl = vectorType.getString("CHROMA_URL");
@@ -217,6 +230,15 @@ public class MuleChainVectorsOperations {
   }
 
 
+  private EmbeddingStore<TextSegment> createAISearchStore(String baseUrl, String apiKey, String collectionName, Integer dimension) {
+    return AzureAiSearchEmbeddingStore.builder()
+    .endpoint(baseUrl)
+    .apiKey(apiKey)
+    .indexName(collectionName)
+    .dimensions(dimension)
+    .build();
+    
+  }
 
   private EmbeddingStore<TextSegment> createChromaStore(String baseUrl, String collectionName) {
     return ChromaEmbeddingStore.builder()
@@ -493,42 +515,49 @@ public class MuleChainVectorsOperations {
         int currentFileCounter = fileCounter.incrementAndGet();
         System.out.println("Processing file " + currentFileCounter + ": " + file.getFileName());
         Document document = null;
-        try {
-          switch (fileType.getFileType()) {
-            case "text":
-              document = loadDocument(file.toString(), new TextDocumentParser());
-              System.out.println("File: " + file.toString());
-              document.metadata().add("file_type", "text");
-              document.metadata().add("file_name", file.getFileName());
-              document.metadata().add("full_path", folderPath + file.getFileName());
-              document.metadata().add("absolute_path", folderPath);
-              ingestor.ingest(document);
-              break;
-            case "any":
-              document = loadDocument(file.toString(), new ApacheTikaDocumentParser());
-              System.out.println("File: " + file.toString());
-              document.metadata().add("file_type", "text");
-              document.metadata().add("file_name", file.getFileName());
-              document.metadata().add("full_path", folderPath + file.getFileName());
-              document.metadata().add("absolute_path", folderPath);
-              ingestor.ingest(document);
-              break;
-            default:
-              throw new IllegalArgumentException("Unsupported File Type: " + fileType.getFileType());
-          }
-        } catch (BlankDocumentException e) {
-          System.out.println("Skipping file due to BlankDocumentException: " + file.getFileName());
+        switch (fileType.getFileType()) {
+          case "crawl":    
+            document = loadDocument(file.toString(), new TextDocumentParser());
+            addMetadata(Paths.get(file.toString()), document);
+            ingestor.ingest(document);    
+            break;
+          case "text":
+            document = loadDocument(file.toString(), new TextDocumentParser());
+            System.out.println("File: " + file.toString());
+            document.metadata().add("file_type", "text");
+            document.metadata().add("file_name", file.getFileName());
+            document.metadata().add("full_path", folderPath + file.getFileName());
+            document.metadata().add("absolute_path", folderPath);
+            ingestor.ingest(document);
+            break;
+          case "any":
+            document = loadDocument(file.toString(), new ApacheTikaDocumentParser());
+            System.out.println("File: " + file.toString());
+            document.metadata().add("file_type", "text");
+            document.metadata().add("file_name", file.getFileName());
+            document.metadata().add("full_path", folderPath + file.getFileName());
+            document.metadata().add("absolute_path", folderPath);
+            ingestor.ingest(document);
+            break;
+          default:
+            throw new IllegalArgumentException("Unsupported File Type: " + fileType.getFileType());
         }
       });
     } catch (IOException e) {
       e.printStackTrace();
     }
+    System.out.println("Processing complete ");
     JSONObject jsonObject = new JSONObject();
     jsonObject.put("filesCount", totalFiles);
     jsonObject.put("folderPath", folderPath);
     jsonObject.put("storeName", storeName);
     jsonObject.put("status", "updated");
     return jsonObject;
+  }
+
+  private static JsonNode convertToJson(String content) throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        return objectMapper.readTree(content);
   }
 
   private JSONObject ingestFromS3Folder(String folderPath, EmbeddingStoreIngestor ingestor, String storeName, fileTypeParameters fileType, String awsKey, String awsSecret, String awsRegion, String s3Bucket)
@@ -550,6 +579,29 @@ public class MuleChainVectorsOperations {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("fileType", fileType.getFileType());
         jsonObject.put("folderPath", folderPath);
+        jsonObject.put("storeName", storeName);
+        jsonObject.put("status", "updated");
+        return jsonObject; 
+  }
+
+  private JSONObject ingestFromAZContainer(String containerName, EmbeddingStoreIngestor ingestor, String storeName, fileTypeParameters fileType, String azureName, String azureKey)
+  {
+        AzureFileReader azFileReader = new AzureFileReader(azureName, azureKey);
+        azFileReader.readAllFiles(containerName, ingestor, fileType);   
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("fileType", fileType.getFileType());
+        jsonObject.put("folderPath", containerName);
+        jsonObject.put("storeName", storeName);
+        jsonObject.put("status", "updated");
+        return jsonObject; 
+  }
+  private JSONObject ingestFromAZFile(String containerName, String blobName, EmbeddingStoreIngestor ingestor, String storeName, fileTypeParameters fileType, String azureName, String azureKey)
+  {
+        AzureFileReader azFileReader = new AzureFileReader(azureName, azureKey);
+        azFileReader.readFile(containerName, blobName, fileType, ingestor);   
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("fileType", fileType.getFileType());
+        jsonObject.put("folderPath", containerName);
         jsonObject.put("storeName", storeName);
         jsonObject.put("status", "updated");
         return jsonObject; 
@@ -588,11 +640,36 @@ public class MuleChainVectorsOperations {
       String awsRegion = s3Json.getString("AWS_DEFAULT_REGION");
       String s3Bucket = s3Json.getString("AWS_S3_BUCKET");
       jsonObject = ingestFromS3File(contextPath, ingestor, storeName, fileType, awsKey, awsSecret, awsRegion, s3Bucket);
+    } else if (storageType.getStorageType().equals("AZURE_BLOB") && !fileType.getFileType().equals("url")) {
+      JSONObject azJson = config.getJSONObject("AZURE_BLOB");
+      String azureName = azJson.getString("AZURE_BLOB_ACCOUNT_NAME");
+      String azureKey = azJson.getString("AZURE_BLOB_ACCOUNT_KEY");
+      String[] parts = contextPath.split("/", 2);
+      jsonObject = ingestFromAZFile(parts[0], parts[1], ingestor, storeName, fileType, azureName, azureKey);
     } else {
       jsonObject = ingestFromLocalFile(contextPath, ingestor, storeName, fileType);
     }
 
     return toInputStream(jsonObject.toString(), StandardCharsets.UTF_8);
+  }
+
+  private void addMetadata(Path filePath, Document document) {
+    try {
+      String fileContent = new String(Files.readAllBytes(filePath));
+      JsonNode jsonNode = convertToJson(fileContent.toString());
+      String content = jsonNode.path("content").asText();
+      String source_url = jsonNode.path("url").asText();
+      String title = jsonNode.path("title").asText();
+      document.metadata().add("file_type", "text");
+      document.metadata().add("file_name", title);
+      document.metadata().add("full_path", source_url);
+      document.metadata().add("absolute_path", document.ABSOLUTE_DIRECTORY_PATH);
+      document.metadata().put("source", source_url);
+      document.metadata().add("title", title);
+    } catch (IOException e) { 
+      System.err.println("Error accessing folder: " + e.getMessage());
+    }
+
   }
 
   private JSONObject ingestFromLocalFile(String contextPath, EmbeddingStoreIngestor ingestor, String storeName, fileTypeParameters fileType) {
@@ -604,6 +681,15 @@ public class MuleChainVectorsOperations {
     String fileName;
 
     switch (fileType.getFileType()) {
+      case "crawl":
+        filePath = Paths.get(contextPath.toString()); 
+        fileName = getFileNameFromPath(contextPath);
+
+        document = loadDocument(filePath.toString(), new TextDocumentParser());
+        addMetadata(filePath, document);
+        ingestor.ingest(document);
+
+        break;
       case "text":
         filePath = Paths.get(contextPath.toString()); 
         fileName = getFileNameFromPath(contextPath);

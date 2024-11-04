@@ -13,7 +13,7 @@ public class storageTypeEmbedding implements ValueProvider {
   @Override
   public Set<Value> resolve() throws ValueResolvingException {
     // TODO Auto-generated method stub
-    return ValueBuilder.getValuesFor("Local", "S3");
+    return ValueBuilder.getValuesFor("Local", "S3", "AZURE_BLOB");
   }
 
 }

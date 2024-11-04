@@ -6,7 +6,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.mule.mulechain</groupId>
     <artifactId>mulechain-vectors</artifactId>
-    <version>0.1.52-SNAPSHOT</version>
+    <version>0.1.53-SNAPSHOT</version>
     <packaging>mule-extension</packaging>
     <name>MAC Vectors</name>
 
@@ -68,7 +68,17 @@
         </dependencies>
     </dependencyManagement>
 
-    <dependencies>
+    <dependencies>        
+		<dependency>
+			<groupId>dev.langchain4j</groupId>
+			<artifactId>langchain4j-azure-ai-search</artifactId>
+			<version>${langchain4jVersion}</version>
+		</dependency>
+		<dependency>
+			<groupId>dev.langchain4j</groupId>
+			<artifactId>langchain4j-document-loader-azure-storage-blob</artifactId>
+			<version>${langchain4jVersion}</version>
+		</dependency>
 		<dependency>
 			<groupId>dev.langchain4j</groupId>
 			<artifactId>langchain4j-document-loader-amazon-s3</artifactId>
