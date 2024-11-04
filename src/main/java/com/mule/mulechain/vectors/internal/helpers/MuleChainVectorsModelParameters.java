@@ -1,6 +1,5 @@
-package com.mule.mulechain.vectors.internal;
+package com.mule.mulechain.vectors.internal.helpers;
 
-import com.mule.mulechain.vectors.internal.providers.MuleChainVectorsParameterEModelNameProvider;
 import org.mule.runtime.api.meta.ExpressionSupport;
 import org.mule.runtime.extension.api.annotation.Expression;
 import org.mule.runtime.extension.api.annotation.param.Parameter;

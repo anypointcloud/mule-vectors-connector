@@ -6,16 +6,16 @@ import org.mule.runtime.extension.api.annotation.param.Optional;
 import org.mule.runtime.extension.api.annotation.param.Parameter;
 import org.mule.runtime.extension.api.annotation.values.OfValues;
 
-public class fileTypeParameters {
+public class StorageTypeParameters {
 
   @Parameter
   @Expression(ExpressionSupport.SUPPORTED)
-  @OfValues(fileTypeEmbedding.class)
-  @Optional(defaultValue = "text")
-  private String fileType;
+  @OfValues(StorageTypeEmbeddingProvider.class)
+  @Optional(defaultValue = "Local")
+  private String storageType;
 
-  public String getFileType() {
-    return fileType;
+  public String getStorageType() {
+    return storageType;
   }
 
 }

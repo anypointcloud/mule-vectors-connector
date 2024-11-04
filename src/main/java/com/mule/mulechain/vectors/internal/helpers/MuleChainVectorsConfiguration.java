@@ -1,7 +1,6 @@
-package com.mule.mulechain.vectors.internal;
+package com.mule.mulechain.vectors.internal.helpers;
 
-import com.mule.mulechain.vectors.internal.providers.MuleChainVectorsEmbeddingModelTypeProvider;
-import com.mule.mulechain.vectors.internal.providers.MuleChainVectorsStoreTypeProvider;
+import com.mule.mulechain.vectors.internal.operation.MuleChainVectorsOperations;
 import org.mule.runtime.extension.api.annotation.Operations;
 import org.mule.runtime.extension.api.annotation.param.Parameter;
 import org.mule.runtime.extension.api.annotation.values.OfValues;

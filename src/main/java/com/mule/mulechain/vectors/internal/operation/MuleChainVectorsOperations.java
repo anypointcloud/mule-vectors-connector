@@ -1,10 +1,8 @@
-package com.mule.mulechain.vectors.internal;
+package com.mule.mulechain.vectors.internal.operation;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.*;
 
-import static dev.langchain4j.store.embedding.filter.MetadataFilterBuilder.metadataKey;
 import static org.apache.commons.io.IOUtils.toInputStream;
 import static org.mule.runtime.extension.api.annotation.param.MediaType.APPLICATION_JSON;
 
@@ -21,6 +19,9 @@ import java.util.stream.Stream;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 
+import com.mule.mulechain.vectors.internal.helpers.MuleChainVectorsConfiguration;
+import com.mule.mulechain.vectors.internal.helpers.MuleChainVectorsFilterParameters;
+import com.mule.mulechain.vectors.internal.helpers.MuleChainVectorsModelParameters;
 import dev.langchain4j.model.huggingface.HuggingFaceEmbeddingModel;
 import dev.langchain4j.store.embedding.*;
 import dev.langchain4j.store.embedding.filter.Filter;
@@ -30,10 +31,9 @@ import org.mule.runtime.extension.api.annotation.Alias;
 import org.mule.runtime.extension.api.annotation.param.MediaType;
 import org.mule.runtime.extension.api.annotation.param.ParameterGroup;
 import static java.util.stream.Collectors.joining;
-import com.mule.mulechain.vectors.internal.helpers.fileTypeParameters;
+import com.mule.mulechain.vectors.internal.helpers.FileTypeParameters;
 import static dev.langchain4j.data.document.loader.FileSystemDocumentLoader.loadDocument;
 
-import dev.langchain4j.data.document.BlankDocumentException;
 import dev.langchain4j.data.document.Document;
 import dev.langchain4j.data.document.DocumentSplitter;
 import dev.langchain4j.data.document.Metadata;
@@ -61,7 +61,7 @@ import dev.langchain4j.store.embedding.weaviate.WeaviateEmbeddingStore;
 
 import org.mule.runtime.extension.api.annotation.param.Config;
 import com.mule.mulechain.vectors.internal.storage.S3FileReader;
-import com.mule.mulechain.vectors.internal.helpers.storageTypeParameters;
+import com.mule.mulechain.vectors.internal.helpers.StorageTypeParameters;
 
 import com.mule.mulechain.vectors.internal.storage.AzureFileReader;
 import dev.langchain4j.store.embedding.azure.search.AzureAiSearchEmbeddingStore;
@@ -371,7 +371,7 @@ public class MuleChainVectorsOperations {
   @MediaType(value = APPLICATION_JSON, strict = false)
   @Alias("Document-split-into-chunks")
   public InputStream documentSplitter(String contextPath, @Config MuleChainVectorsConfiguration configuration,
-                                @ParameterGroup(name = "Context") fileTypeParameters fileType, 
+                                @ParameterGroup(name = "Context") FileTypeParameters fileType,
                                 int maxSegmentSizeInChars, int maxOverlapSizeInChars){
 
 
@@ -423,7 +423,7 @@ public class MuleChainVectorsOperations {
   @MediaType(value = APPLICATION_JSON, strict = false)
   @Alias("Document-parser")
   public InputStream documentParser(String contextPath, @Config MuleChainVectorsConfiguration configuration,
-                              @ParameterGroup(name = "Context") fileTypeParameters fileType){
+                              @ParameterGroup(name = "Context") FileTypeParameters fileType){
 
     Document document = null;
     switch (fileType.getFileType()) {
@@ -468,8 +468,8 @@ public class MuleChainVectorsOperations {
   @MediaType(value = APPLICATION_JSON, strict = false)
   @Alias("Embedding-add-folder-to-store")
   public InputStream addFolderToStore(String storeName, String folderPath, @Config MuleChainVectorsConfiguration configuration,
-                                @ParameterGroup(name = "Context") fileTypeParameters fileType, 
-                                @ParameterGroup(name = "Storage") storageTypeParameters storageType,  
+                                @ParameterGroup(name = "Context") FileTypeParameters fileType,
+                                @ParameterGroup(name = "Storage") StorageTypeParameters storageType,
                                 int maxSegmentSizeInChars, int maxOverlapSizeInChars,
                                 @ParameterGroup(name = "Additional Properties") MuleChainVectorsModelParameters modelParams){
 
@@ -500,7 +500,7 @@ public class MuleChainVectorsOperations {
     return toInputStream(jsonObject.toString(), StandardCharsets.UTF_8);
   }
     
-  private JSONObject ingestFromLocalFolder(String folderPath, EmbeddingStoreIngestor ingestor, String storeName, fileTypeParameters fileType) {
+  private JSONObject ingestFromLocalFolder(String folderPath, EmbeddingStoreIngestor ingestor, String storeName, FileTypeParameters fileType) {
     long totalFiles = 0;
     try (Stream<Path> paths = Files.walk(Paths.get(folderPath))) {
       totalFiles = paths.filter(Files::isRegularFile).count();
@@ -560,7 +560,7 @@ public class MuleChainVectorsOperations {
         return objectMapper.readTree(content);
   }
 
-  private JSONObject ingestFromS3Folder(String folderPath, EmbeddingStoreIngestor ingestor, String storeName, fileTypeParameters fileType, String awsKey, String awsSecret, String awsRegion, String s3Bucket)
+  private JSONObject ingestFromS3Folder(String folderPath, EmbeddingStoreIngestor ingestor, String storeName, FileTypeParameters fileType, String awsKey, String awsSecret, String awsRegion, String s3Bucket)
   {
         S3FileReader s3FileReader = new S3FileReader(s3Bucket, awsKey, awsSecret, awsRegion);
         long totalFiles = s3FileReader.readAllFiles(folderPath, ingestor, fileType);   
@@ -572,7 +572,7 @@ public class MuleChainVectorsOperations {
         return jsonObject; 
   }
 
-  private JSONObject ingestFromS3File(String folderPath, EmbeddingStoreIngestor ingestor, String storeName, fileTypeParameters fileType, String awsKey, String awsSecret, String awsRegion, String s3Bucket)
+  private JSONObject ingestFromS3File(String folderPath, EmbeddingStoreIngestor ingestor, String storeName, FileTypeParameters fileType, String awsKey, String awsSecret, String awsRegion, String s3Bucket)
   {
         S3FileReader s3FileReader = new S3FileReader(s3Bucket, awsKey, awsSecret, awsRegion);
         s3FileReader.readFile(folderPath, fileType, ingestor);   
@@ -584,7 +584,7 @@ public class MuleChainVectorsOperations {
         return jsonObject; 
   }
 
-  private JSONObject ingestFromAZContainer(String containerName, EmbeddingStoreIngestor ingestor, String storeName, fileTypeParameters fileType, String azureName, String azureKey)
+  private JSONObject ingestFromAZContainer(String containerName, EmbeddingStoreIngestor ingestor, String storeName, FileTypeParameters fileType, String azureName, String azureKey)
   {
         AzureFileReader azFileReader = new AzureFileReader(azureName, azureKey);
         azFileReader.readAllFiles(containerName, ingestor, fileType);   
@@ -595,7 +595,7 @@ public class MuleChainVectorsOperations {
         jsonObject.put("status", "updated");
         return jsonObject; 
   }
-  private JSONObject ingestFromAZFile(String containerName, String blobName, EmbeddingStoreIngestor ingestor, String storeName, fileTypeParameters fileType, String azureName, String azureKey)
+  private JSONObject ingestFromAZFile(String containerName, String blobName, EmbeddingStoreIngestor ingestor, String storeName, FileTypeParameters fileType, String azureName, String azureKey)
   {
         AzureFileReader azFileReader = new AzureFileReader(azureName, azureKey);
         azFileReader.readFile(containerName, blobName, fileType, ingestor);   
@@ -614,8 +614,8 @@ public class MuleChainVectorsOperations {
   @MediaType(value = APPLICATION_JSON, strict = false)
   @Alias("EMBEDDING-add-document-to-store")
   public InputStream addFileEmbedding(String storeName, String contextPath, @Config MuleChainVectorsConfiguration configuration,
-                                 @ParameterGroup(name = "Context") fileTypeParameters fileType, 
-                                 @ParameterGroup(name = "Storage") storageTypeParameters storageType,
+                                 @ParameterGroup(name = "Context") FileTypeParameters fileType,
+                                 @ParameterGroup(name = "Storage") StorageTypeParameters storageType,
                                  int maxSegmentSizeInChars, int maxOverlapSizeInChars,
                                  @ParameterGroup(name = "Additional Properties") MuleChainVectorsModelParameters modelParams) {
 
@@ -672,7 +672,7 @@ public class MuleChainVectorsOperations {
 
   }
 
-  private JSONObject ingestFromLocalFile(String contextPath, EmbeddingStoreIngestor ingestor, String storeName, fileTypeParameters fileType) {
+  private JSONObject ingestFromLocalFile(String contextPath, EmbeddingStoreIngestor ingestor, String storeName, FileTypeParameters fileType) {
 
     System.out.println("file Type: " + fileType.getFileType());
     

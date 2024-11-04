@@ -2,29 +2,20 @@ package com.mule.mulechain.vectors.internal.storage;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.*;
 
-import java.io.BufferedReader;
-import java.io.FileOutputStream;
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 
-import dev.langchain4j.model.embedding.EmbeddingModel;
 import dev.langchain4j.store.embedding.EmbeddingStoreIngestor;
 import dev.langchain4j.data.document.loader.amazon.s3.AmazonS3DocumentLoader;
 import dev.langchain4j.data.document.loader.amazon.s3.AwsCredentials;
 import dev.langchain4j.data.document.DocumentParser;
 import java.util.List;
 
-import com.mule.mulechain.vectors.internal.helpers.fileTypeParameters;
-import java.util.concurrent.atomic.AtomicInteger;
+import com.mule.mulechain.vectors.internal.helpers.FileTypeParameters;
 import dev.langchain4j.data.document.parser.TextDocumentParser;
 import dev.langchain4j.data.document.parser.apache.tika.ApacheTikaDocumentParser;
 import dev.langchain4j.data.document.Document;
-import dev.langchain4j.store.embedding.EmbeddingStoreIngestor;
+
 import static dev.langchain4j.data.document.loader.FileSystemDocumentLoader.loadDocument;
 
 public class S3FileReader {
@@ -41,7 +32,7 @@ public class S3FileReader {
                     .build();
     }
 
-    public long readAllFiles(String folderPath, EmbeddingStoreIngestor ingestor, fileTypeParameters fileType) 
+    public long readAllFiles(String folderPath, EmbeddingStoreIngestor ingestor, FileTypeParameters fileType)
     {
         DocumentParser parser = null;
         switch (fileType.getFileType()){
@@ -69,7 +60,7 @@ public class S3FileReader {
         return totalFiles;
     }
 
-    public void readFile(String key, fileTypeParameters fileType, EmbeddingStoreIngestor ingestor) {
+    public void readFile(String key, FileTypeParameters fileType, EmbeddingStoreIngestor ingestor) {
         DocumentParser parser = null;
         switch (fileType.getFileType()){
             case "text":
