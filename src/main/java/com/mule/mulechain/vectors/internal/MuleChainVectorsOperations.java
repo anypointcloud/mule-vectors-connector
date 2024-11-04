@@ -165,8 +165,15 @@ public class MuleChainVectorsOperations {
     JSONObject config = readConfigFile(configuration.getConfigFilePath());
     JSONObject llmType;
     String llmTypeKey;
+    String llmTypeEndpoint;
 
     switch (configuration.getEmbeddingProviderType()) {
+      case "AZURE_OPENAI":
+          llmType = config.getJSONObject("AZURE_OPENAI");
+          llmTypeKey = llmType.getString("AZURE_OPENAI_KEY");
+          llmTypeEndpoint = llmType.getString("AZURE_OPENAI_ENDPOINT");
+          model = createAzureOpenAiModel(llmTypeKey, llmTypeEndpoint, modelParams);
+        break;
       case "OPENAI":
           llmType = config.getJSONObject("OPENAI");
           llmTypeKey = llmType.getString("OPENAI_API_KEY");
@@ -195,6 +202,15 @@ public class MuleChainVectorsOperations {
     }
     return model;
   }
+
+  private EmbeddingModel createAzureOpenAiModel(String llmTypeKey, String llmTypeEndpoint, MuleChainVectorsModelParameters modelParams) {
+    System.out.println("Inside createAzureOpenAiModel");
+      return AzureOpenAiEmbeddingModel.builder()
+        .apiKey(llmTypeKey)
+        .endpoint(llmTypeEndpoint)
+        .deploymentName(modelParams.getModelName())
+        .build();
+    }
 
   private EmbeddingModel createOpenAiModel(String llmTypeKey, MuleChainVectorsModelParameters modelParams) {
       return OpenAiEmbeddingModel.builder()

@@ -15,6 +15,12 @@ public class MuleChainVectorsParameterEModelNameProvider implements ValueProvide
   @Config
   private MuleChainVectorsConfiguration configuration;
 
+  private static final Set<Value> VALUES_FOR_AZURE_OPENAI = ValueBuilder.getValuesFor(
+          "text-embedding-3-small",
+          "text-embedding-3-large",
+          "text-embedding-ada-002"
+  );
+
   private static final Set<Value> VALUES_FOR_OPENAI = ValueBuilder.getValuesFor(
           "text-embedding-3-small",
           "text-embedding-3-large",

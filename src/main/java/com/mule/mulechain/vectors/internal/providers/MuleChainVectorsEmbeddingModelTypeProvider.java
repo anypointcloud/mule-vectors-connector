@@ -11,7 +11,8 @@ public class MuleChainVectorsEmbeddingModelTypeProvider implements ValueProvider
 
   @Override
   public Set<Value> resolve() throws ValueResolvingException {
-    return ValueBuilder.getValuesFor("OPENAI", "MISTRAL_AI", "NOMIC", "HUGGING_FACE"); //"OLLAMA", "COHERE", "AZURE_OPENAI", "HUGGING_FACE";
-  }
+//aw    return ValueBuilder.getValuesFor("OPENAI", "MISTRAL_AI", "NOMIC", "HUGGING_FACE"); //"OLLAMA", "COHERE", "AZURE_OPENAI", "HUGGING_FACE";
+    return ValueBuilder.getValuesFor("OPENAI", "MISTRAL_AI", "NOMIC", "HUGGING_FACE", "AZURE_OPENAI"); //"OLLAMA", "COHERE", "AZURE_OPENAI", "HUGGING_FACE";
+}
 
 }
