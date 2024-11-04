@@ -1,6 +1,6 @@
-package com.mule.mulechain.vectors.internal.extension;
+package org.mule.mulechain.vectors.internal.extension;
 
-import com.mule.mulechain.vectors.internal.helpers.MuleChainVectorsConfiguration;
+import org.mule.mulechain.vectors.internal.helpers.MuleChainVectorsConfiguration;
 import org.mule.runtime.extension.api.annotation.Extension;
 import org.mule.runtime.extension.api.annotation.Configurations;
 import org.mule.runtime.extension.api.annotation.dsl.xml.Xml;

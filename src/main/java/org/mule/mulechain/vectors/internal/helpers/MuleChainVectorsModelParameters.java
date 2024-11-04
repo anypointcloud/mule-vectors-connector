@@ -1,4 +1,4 @@
-package com.mule.mulechain.vectors.internal.helpers;
+package org.mule.mulechain.vectors.internal.helpers;
 
 import org.mule.runtime.api.meta.ExpressionSupport;
 import org.mule.runtime.extension.api.annotation.Expression;

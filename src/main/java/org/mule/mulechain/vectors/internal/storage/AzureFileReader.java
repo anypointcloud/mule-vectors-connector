@@ -1,4 +1,4 @@
-package com.mule.mulechain.vectors.internal.storage;
+package org.mule.mulechain.vectors.internal.storage;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -13,7 +13,7 @@ import java.io.IOException;
 import dev.langchain4j.store.embedding.EmbeddingStoreIngestor;
 import dev.langchain4j.data.document.DocumentParser;
 import java.util.List;
-import com.mule.mulechain.vectors.internal.helpers.FileTypeParameters;
+import org.mule.mulechain.vectors.internal.helpers.FileTypeParameters;
 import dev.langchain4j.data.document.parser.TextDocumentParser;
 import dev.langchain4j.data.document.parser.apache.tika.ApacheTikaDocumentParser;
 import dev.langchain4j.data.document.Document;
