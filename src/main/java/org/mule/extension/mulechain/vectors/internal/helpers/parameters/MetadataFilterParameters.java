@@ -2,9 +2,9 @@ package org.mule.extension.mulechain.vectors.internal.helpers.parameters;
 
 import org.json.JSONObject;
 
-import org.mule.extension.mulechain.vectors.internal.constants.MuleChainVectorsConstants;
-import org.mule.extension.mulechain.vectors.internal.helpers.providers.MuleChainVectorsMetadataFilterMethodProvider;
-import org.mule.extension.mulechain.vectors.internal.helpers.providers.MuleChainVectorsMetadataKeyProvider;
+import org.mule.extension.mulechain.vectors.internal.constants.Constants;
+import org.mule.extension.mulechain.vectors.internal.helpers.providers.MetadataFilterMethodProvider;
+import org.mule.extension.mulechain.vectors.internal.helpers.providers.MetadataKeyProvider;
 import org.mule.runtime.api.meta.ExpressionSupport;
 
 import org.mule.runtime.extension.api.annotation.Expression;
@@ -20,7 +20,7 @@ import dev.langchain4j.store.embedding.filter.Filter;
  * Abstract class that defines filter parameters for MuleChain Vectors.
  * Provides methods to validate parameters and build a metadata filter.
  */
-public abstract class MuleChainVectorsMetadataFilterParameters {
+public abstract class MetadataFilterParameters {
 
   /**
    * @return The metadata key to be used for filtering.
@@ -63,11 +63,11 @@ public abstract class MuleChainVectorsMetadataFilterParameters {
     Filter filter;
     switch(getFilterMethod()) {
 
-      case MuleChainVectorsConstants.METADATA_FILTER_METHOD_IS_EQUAL_TO:
+      case Constants.METADATA_FILTER_METHOD_IS_EQUAL_TO:
         filter = metadataKey(getMetadataKey()).isEqualTo(getMetadataValue());
         break;
 
-      case MuleChainVectorsConstants.METADATA_FILTER_METHOD_IS_NOT_EQUAL_TO:
+      case Constants.METADATA_FILTER_METHOD_IS_NOT_EQUAL_TO:
         filter = metadataKey(getMetadataKey()).isNotEqualTo(getMetadataValue());
         break;
 
@@ -104,14 +104,14 @@ public abstract class MuleChainVectorsMetadataFilterParameters {
   /**
    * Inner class representing the filter parameters for search operations.
    */
-  public static class SearchFilterParameters extends MuleChainVectorsMetadataFilterParameters {
+  public static class SearchFilterParameters extends MetadataFilterParameters {
 
     /**
      * The metadata key used for filtering in search operations.
      */
     @Parameter
     @Expression(ExpressionSupport.SUPPORTED)
-    @OfValues(MuleChainVectorsMetadataKeyProvider.class)
+    @OfValues(MetadataKeyProvider.class)
     @Summary("The metadata key used for filtering")
     @Optional
     private String metadataKey;
@@ -121,9 +121,9 @@ public abstract class MuleChainVectorsMetadataFilterParameters {
      */
     @Parameter
     @Expression(ExpressionSupport.SUPPORTED)
-    @OfValues(MuleChainVectorsMetadataFilterMethodProvider.class)
+    @OfValues(MetadataFilterMethodProvider.class)
     @Summary("The method used to apply the filter, e.g., isEqualsTo or notEqualsTo")
-    @Optional(defaultValue=MuleChainVectorsConstants.METADATA_FILTER_METHOD_IS_EQUAL_TO)
+    @Optional(defaultValue= Constants.METADATA_FILTER_METHOD_IS_EQUAL_TO)
     private String filterMethod;
 
     /**
@@ -154,14 +154,14 @@ public abstract class MuleChainVectorsMetadataFilterParameters {
   /**
    * Inner class representing the filter parameters for remove operations.
    */
-  public static class RemoveFilterParameters extends MuleChainVectorsMetadataFilterParameters {
+  public static class RemoveFilterParameters extends MetadataFilterParameters {
 
     /**
      * The metadata key used for filtering in remove operations.
      */
     @Parameter
     @Expression(ExpressionSupport.SUPPORTED)
-    @OfValues(MuleChainVectorsMetadataKeyProvider.class)
+    @OfValues(MetadataKeyProvider.class)
     @Summary("The metadata key used for filtering")
     private String metadataKey;
 
@@ -170,7 +170,7 @@ public abstract class MuleChainVectorsMetadataFilterParameters {
      */
     @Parameter
     @Expression(ExpressionSupport.SUPPORTED)
-    @OfValues(MuleChainVectorsMetadataFilterMethodProvider.class)
+    @OfValues(MetadataFilterMethodProvider.class)
     @Summary("The method used to apply the filter, e.g., equalsTo or notEqualsTo")
     private String filterMethod;
 

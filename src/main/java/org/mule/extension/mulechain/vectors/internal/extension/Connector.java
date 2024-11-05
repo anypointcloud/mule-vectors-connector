@@ -1,6 +1,6 @@
 package org.mule.extension.mulechain.vectors.internal.extension;
 
-import org.mule.extension.mulechain.vectors.internal.config.MuleChainVectorsConfiguration;
+import org.mule.extension.mulechain.vectors.internal.config.Configuration;
 import org.mule.runtime.extension.api.annotation.Extension;
 import org.mule.runtime.extension.api.annotation.Configurations;
 import org.mule.runtime.extension.api.annotation.dsl.xml.Xml;
@@ -15,8 +15,8 @@ import static org.mule.sdk.api.meta.JavaVersion.JAVA_8;
  */
 @Xml(prefix = "vectors")
 @Extension(name = "MAC Vectors")
-@Configurations(MuleChainVectorsConfiguration.class)
+@Configurations(Configuration.class)
 @JavaVersionSupport({JAVA_8, JAVA_11, JAVA_17})
-public class MuleChainVectorsConnector {
+public class Connector {
 
 }

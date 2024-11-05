@@ -3,9 +3,9 @@
  */
 package org.mule.extension.mulechain.vectors.internal.constants;
 
-public class MuleChainVectorsConstants {
+public class Constants {
 
-  private MuleChainVectorsConstants() {}
+  private Constants() {}
 
   public static final String FILE_TYPE_ANY = "any";
   public static final String FILE_TYPE_TEXT = "text";
@@ -34,7 +34,7 @@ public class MuleChainVectorsConstants {
   public static final String VECTOR_STORE_WEAVIATE = "WEAVIATE";
   public static final String VECTOR_STORE_AI_SEARCH = "AI_SEARCH";
   public static final String VECTOR_STORE_NEO4J = "NEO4J";
-  
+
   public static final String METADATA_KEY_FILE_NAME = "file_name";
   public static final String METADATA_KEY_FILE_TYPE = "file_type";
   public static final String METADATA_KEY_FULL_PATH = "full_path";
