@@ -11,10 +11,12 @@ import dev.langchain4j.data.document.loader.amazon.s3.AwsCredentials;
 import dev.langchain4j.data.document.DocumentParser;
 import java.util.List;
 
+import org.mule.extension.mulechain.vectors.internal.constants.MuleChainVectorsConstants;
 import org.mule.extension.mulechain.vectors.internal.helpers.FileTypeParameters;
 import dev.langchain4j.data.document.parser.TextDocumentParser;
 import dev.langchain4j.data.document.parser.apache.tika.ApacheTikaDocumentParser;
 import dev.langchain4j.data.document.Document;
+import org.mule.extension.mulechain.vectors.internal.util.JsonUtils;
 
 import static dev.langchain4j.data.document.loader.FileSystemDocumentLoader.loadDocument;
 
@@ -36,10 +38,10 @@ public class S3FileReader {
     {
         DocumentParser parser = null;
         switch (fileType.getFileType()){
-            case "text":
+            case MuleChainVectorsConstants.FILE_TYPE_TEXT:
                 parser = new TextDocumentParser();
                 break;
-            case "any":
+            case MuleChainVectorsConstants.FILE_TYPE_ANY:
                 parser = new ApacheTikaDocumentParser();
                 break;
             default:
@@ -63,18 +65,18 @@ public class S3FileReader {
     public void readFile(String key, FileTypeParameters fileType, EmbeddingStoreIngestor ingestor) {
         DocumentParser parser = null;
         switch (fileType.getFileType()){
-            case "text":
-            case "crawl":
+            case MuleChainVectorsConstants.FILE_TYPE_TEXT:
+            case MuleChainVectorsConstants.FILE_TYPE_CRAWL:
                 parser = new TextDocumentParser();
                 break;
-            case "any":
+            case MuleChainVectorsConstants.FILE_TYPE_ANY:
                 parser = new ApacheTikaDocumentParser();
                 break;
             default:
                 throw new IllegalArgumentException("Unsupported File Type: " + fileType.getFileType());
         }
         Document document = loader.loadDocument(bucketName, key, parser);
-        if (fileType.getFileType().equals("crawl")){
+        if (fileType.getFileType().equals(MuleChainVectorsConstants.FILE_TYPE_CRAWL)){
             addMetadata(document);
         }
         ingestor.ingest(document);
@@ -82,14 +84,13 @@ public class S3FileReader {
     private void addMetadata(Document document) {
         try {
             String fileContent = document.text();
-            JsonNode jsonNode = convertToJson(fileContent.toString());
+            JsonNode jsonNode = JsonUtils.stringToJsonNode(fileContent.toString());
             String content = jsonNode.path("content").asText();
             String source_url = jsonNode.path("url").asText();
             String title = jsonNode.path("title").asText();
-            document.metadata().add("file_type", "text");
-            document.metadata().add("file_name", title);
-            document.metadata().add("full_path", source_url);
-            document.metadata().add("absolute_path", document.ABSOLUTE_DIRECTORY_PATH);
+            document.metadata().add(MuleChainVectorsConstants.METADATA_KEY_FILE_TYPE, MuleChainVectorsConstants.FILE_TYPE_TEXT);
+            document.metadata().add(MuleChainVectorsConstants.METADATA_KEY_FILE_NAME, title);
+            document.metadata().add(MuleChainVectorsConstants.METADATA_KEY_FULL_PATH, source_url);
             document.metadata().put("source", source_url);
             document.metadata().add("title", title);
         } catch (IOException e) { 
@@ -97,8 +98,4 @@ public class S3FileReader {
         }
 
     }
-    private static JsonNode convertToJson(String content) throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        return objectMapper.readTree(content);
-  }
 }

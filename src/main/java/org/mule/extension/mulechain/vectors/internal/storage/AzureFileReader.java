@@ -14,6 +14,7 @@ import dev.langchain4j.store.embedding.EmbeddingStoreIngestor;
 import dev.langchain4j.data.document.DocumentParser;
 import java.util.List;
 
+import org.mule.extension.mulechain.vectors.internal.constants.MuleChainVectorsConstants;
 import org.mule.extension.mulechain.vectors.internal.helpers.FileTypeParameters;
 import dev.langchain4j.data.document.parser.TextDocumentParser;
 import dev.langchain4j.data.document.parser.apache.tika.ApacheTikaDocumentParser;
@@ -53,11 +54,11 @@ public class AzureFileReader {
     {
         DocumentParser parser = null;
         switch (fileType.getFileType()){
-            case "text":
-            case "crawl":
+            case MuleChainVectorsConstants.FILE_TYPE_TEXT:
+            case MuleChainVectorsConstants.FILE_TYPE_CRAWL:
                 parser = new TextDocumentParser();
                 break;
-            case "any":
+            case MuleChainVectorsConstants.FILE_TYPE_ANY:
                 parser = new ApacheTikaDocumentParser();
                 break;
             default:
@@ -72,7 +73,7 @@ public class AzureFileReader {
         for (Document document : documents) {
             totalFiles += 1;
             
-            if (fileType.getFileType().equals("crawl")){
+            if (fileType.getFileType().equals(MuleChainVectorsConstants.FILE_TYPE_CRAWL)){
                 addMetadata(document);
             }
             
@@ -86,11 +87,11 @@ public class AzureFileReader {
     public void readFile(String containerName, String blobName, FileTypeParameters fileType, EmbeddingStoreIngestor ingestor) {
         DocumentParser parser = null;
         switch (fileType.getFileType()){
-            case "text":
-            case "crawl":
+            case MuleChainVectorsConstants.FILE_TYPE_TEXT:
+            case MuleChainVectorsConstants.FILE_TYPE_CRAWL:
                 parser = new TextDocumentParser();
                 break;
-            case "any":
+            case MuleChainVectorsConstants.FILE_TYPE_ANY:
                 parser = new ApacheTikaDocumentParser();
                 break;
             default:
@@ -99,7 +100,7 @@ public class AzureFileReader {
         Document document = loader.loadDocument(containerName, blobName, parser);
         System.out.println("Ready to add metadata: " + fileType.getFileType());
         
-        if (fileType.getFileType().equals("crawl")){
+        if (fileType.getFileType().equals(MuleChainVectorsConstants.FILE_TYPE_CRAWL)){
             addMetadata(document);
         }
         
@@ -116,9 +117,9 @@ public class AzureFileReader {
             String title = jsonNode.path("title").asText();
             System.out.println("source: " + source_url);
             System.out.println("title: " + title);
-            document.metadata().add("file_type", "text");
-            document.metadata().add("file_name", title);
-            document.metadata().add("full_path", source_url);
+            document.metadata().add(MuleChainVectorsConstants.METADATA_KEY_FILE_TYPE, MuleChainVectorsConstants.FILE_TYPE_TEXT);
+            document.metadata().add(MuleChainVectorsConstants.METADATA_KEY_FILE_NAME, title);
+            document.metadata().add(MuleChainVectorsConstants.METADATA_KEY_FULL_PATH, source_url);
             document.metadata().add("absolute_path", document.ABSOLUTE_DIRECTORY_PATH);
             document.metadata().put("source", source_url);
             document.metadata().add("title", title);

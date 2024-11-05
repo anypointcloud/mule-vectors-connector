@@ -10,7 +10,7 @@ public class StorageTypeParameters {
 
   @Parameter
   @Expression(ExpressionSupport.SUPPORTED)
-  @OfValues(StorageTypeEmbeddingProvider.class)
+  @OfValues(StorageTypeProvider.class)
   @Optional(defaultValue = "Local")
   private String storageType;
 

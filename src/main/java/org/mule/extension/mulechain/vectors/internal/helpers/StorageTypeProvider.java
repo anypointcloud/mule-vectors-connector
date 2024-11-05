@@ -8,7 +8,7 @@ import org.mule.runtime.extension.api.values.ValueBuilder;
 import org.mule.runtime.extension.api.values.ValueProvider;
 import org.mule.runtime.extension.api.values.ValueResolvingException;
 
-public class StorageTypeEmbeddingProvider implements ValueProvider {
+public class StorageTypeProvider implements ValueProvider {
 
   @Override
   public Set<Value> resolve() throws ValueResolvingException {
