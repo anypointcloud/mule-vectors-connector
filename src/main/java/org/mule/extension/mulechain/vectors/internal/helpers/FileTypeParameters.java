@@ -1,5 +1,6 @@
 package org.mule.extension.mulechain.vectors.internal.helpers;
 
+import org.mule.extension.mulechain.vectors.internal.constants.MuleChainVectorsConstants;
 import org.mule.runtime.api.meta.ExpressionSupport;
 import org.mule.runtime.extension.api.annotation.Expression;
 import org.mule.runtime.extension.api.annotation.param.Optional;
@@ -11,7 +12,7 @@ public class FileTypeParameters {
   @Parameter
   @Expression(ExpressionSupport.SUPPORTED)
   @OfValues(FileTypeEmbeddingProvider.class)
-  @Optional(defaultValue = "text")
+  @Optional(defaultValue = MuleChainVectorsConstants.FILE_TYPE_TEXT)
   private String fileType;
 
   public String getFileType() {

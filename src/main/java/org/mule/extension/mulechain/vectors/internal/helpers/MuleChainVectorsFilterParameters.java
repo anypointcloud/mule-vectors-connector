@@ -2,6 +2,7 @@ package org.mule.extension.mulechain.vectors.internal.helpers;
 
 import org.json.JSONObject;
 
+import org.mule.extension.mulechain.vectors.internal.constants.MuleChainVectorsConstants;
 import org.mule.runtime.api.meta.ExpressionSupport;
 
 import org.mule.runtime.extension.api.annotation.Expression;
@@ -60,11 +61,11 @@ public abstract class MuleChainVectorsFilterParameters {
     Filter filter;
     switch(getFilterMethod()) {
 
-      case MuleChainVectorsMetadataFilterMethodProvider.IS_EQUAL_TO:
+      case MuleChainVectorsConstants.IS_EQUAL_TO:
         filter = metadataKey(getMetadataKey()).isEqualTo(getMetadataValue());
         break;
 
-      case MuleChainVectorsMetadataFilterMethodProvider.IS_NOT_EQUAL_TO:
+      case MuleChainVectorsConstants.IS_NOT_EQUAL_TO:
         filter = metadataKey(getMetadataKey()).isNotEqualTo(getMetadataValue());
         break;
 
@@ -119,8 +120,8 @@ public abstract class MuleChainVectorsFilterParameters {
     @Parameter
     @Expression(ExpressionSupport.SUPPORTED)
     @OfValues(MuleChainVectorsMetadataFilterMethodProvider.class)
-    @Summary("The method used to apply the filter, e.g., equalsTo or notEqualsTo")
-    @Optional(defaultValue="equalTo")
+    @Summary("The method used to apply the filter, e.g., isEqualsTo or notEqualsTo")
+    @Optional(defaultValue=MuleChainVectorsConstants.IS_EQUAL_TO)
     private String filterMethod;
 
     /**

@@ -1,5 +1,6 @@
 package org.mule.extension.mulechain.vectors.internal.helpers;
 
+import org.mule.extension.mulechain.vectors.internal.constants.MuleChainVectorsConstants;
 import org.mule.runtime.api.value.Value;
 import org.mule.runtime.extension.api.values.ValueBuilder;
 import org.mule.runtime.extension.api.values.ValueProvider;
@@ -14,9 +15,6 @@ import java.util.Set;
  */
 public class MuleChainVectorsMetadataFilterMethodProvider implements ValueProvider {
 
-  public static final String IS_EQUAL_TO = "isEqualTo";
-  public static final String IS_NOT_EQUAL_TO = "isNotEqualTo";
-
   /**
    * Resolves and returns a set of filter methods for metadata filtering.
    *
@@ -26,7 +24,10 @@ public class MuleChainVectorsMetadataFilterMethodProvider implements ValueProvid
    */
   @Override
   public Set<Value> resolve() throws ValueResolvingException {
-    return ValueBuilder.getValuesFor(IS_EQUAL_TO, IS_NOT_EQUAL_TO); // Additional methods can be added as needed
+
+    return ValueBuilder.getValuesFor(
+            MuleChainVectorsConstants.IS_EQUAL_TO,
+            MuleChainVectorsConstants.IS_NOT_EQUAL_TO); // Additional methods can be added as needed
   }
 
 }

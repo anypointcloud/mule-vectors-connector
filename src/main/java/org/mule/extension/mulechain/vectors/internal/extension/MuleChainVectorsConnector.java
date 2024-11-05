@@ -17,6 +17,6 @@ import static org.mule.sdk.api.meta.JavaVersion.JAVA_8;
 @Extension(name = "MAC Vectors")
 @Configurations(MuleChainVectorsConfiguration.class)
 @JavaVersionSupport({JAVA_8, JAVA_11, JAVA_17})
-public class MuleChainVectorsExtension {
+public class MuleChainVectorsConnector {
 
 }

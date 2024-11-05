@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import static org.apache.commons.io.IOUtils.toInputStream;
+import static org.mule.extension.mulechain.vectors.internal.util.JsonUtils.readConfigFile;
 import static org.mule.runtime.extension.api.annotation.param.MediaType.APPLICATION_JSON;
 
 import java.io.IOException;
@@ -19,6 +20,7 @@ import java.util.stream.Stream;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 
+import org.mule.extension.mulechain.vectors.internal.constants.MuleChainVectorsConstants;
 import org.mule.extension.mulechain.vectors.internal.helpers.FileTypeParameters;
 import org.mule.extension.mulechain.vectors.internal.helpers.MuleChainVectorsConfiguration;
 import org.mule.extension.mulechain.vectors.internal.helpers.MuleChainVectorsFilterParameters;
@@ -72,23 +74,6 @@ import dev.langchain4j.store.embedding.azure.search.AzureAiSearchEmbeddingStore;
  * This class is a container for operations, every public method in this class will be taken as an extension operation.
  */
 public class MuleChainVectorsOperations {
-
-
-    private static JSONObject readConfigFile(String filePath) {
-    Path path = Paths.get(filePath);
-    if (Files.exists(path)) {
-      try {
-        String content = new String(Files.readAllBytes(path));
-        return new JSONObject(content);
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
-    } else {
-      //System.out.println("File does not exist: " + filePath);
-    }
-    return null;
-  }
-
 
   private EmbeddingStore<TextSegment> createStore(MuleChainVectorsConfiguration configuration, String indexName, Integer dimension) {
     EmbeddingStore<TextSegment> store = null;
@@ -396,17 +381,17 @@ public class MuleChainVectorsOperations {
     DocumentSplitter splitter;
     Document document = null;
     switch (fileType.getFileType()) {
-      case "text":
+      case MuleChainVectorsConstants.FILE_TYPE_TEXT:
         document = loadDocument(contextPath, new TextDocumentParser());
         splitter = DocumentSplitters.recursive(maxSegmentSizeInChars, maxOverlapSizeInChars);
         segments = splitter.split(document);
         break;
-      case "any":
+      case MuleChainVectorsConstants.FILE_TYPE_ANY:
         document = loadDocument(contextPath, new ApacheTikaDocumentParser());
         splitter = DocumentSplitters.recursive(maxSegmentSizeInChars, maxOverlapSizeInChars);
         segments = splitter.split(document);
         break;
-      case "url":
+      case MuleChainVectorsConstants.FILE_TYPE_URL:
         URL url = null;
         try {
           url = new URL(contextPath);
@@ -442,13 +427,13 @@ public class MuleChainVectorsOperations {
 
     Document document = null;
     switch (fileType.getFileType()) {
-      case "text":
+      case MuleChainVectorsConstants.FILE_TYPE_TEXT:
         document = loadDocument(contextPath, new TextDocumentParser());
        break;
-      case "any":
+      case MuleChainVectorsConstants.FILE_TYPE_ANY:
         document = loadDocument(contextPath, new ApacheTikaDocumentParser());
         break;
-      case "url":
+      case MuleChainVectorsConstants.FILE_TYPE_URL:
         URL url = null;
         try {
           url = new URL(contextPath);
@@ -536,22 +521,20 @@ public class MuleChainVectorsOperations {
             addMetadata(Paths.get(file.toString()), document);
             ingestor.ingest(document);    
             break;
-          case "text":
+          case MuleChainVectorsConstants.FILE_TYPE_TEXT:
             document = loadDocument(file.toString(), new TextDocumentParser());
             System.out.println("File: " + file.toString());
-            document.metadata().add("file_type", "text");
-            document.metadata().add("file_name", file.getFileName());
-            document.metadata().add("full_path", folderPath + file.getFileName());
-            document.metadata().add("absolute_path", folderPath);
+            document.metadata().add(MuleChainVectorsConstants.METADATA_KEY_FILE_TYPE, MuleChainVectorsConstants.FILE_TYPE_TEXT);
+            document.metadata().add(MuleChainVectorsConstants.METADATA_KEY_FILE_NAME, file.getFileName());
+            document.metadata().add(MuleChainVectorsConstants.METADATA_KEY_FULL_PATH, folderPath + file.getFileName());
             ingestor.ingest(document);
             break;
-          case "any":
+          case MuleChainVectorsConstants.FILE_TYPE_ANY:
             document = loadDocument(file.toString(), new ApacheTikaDocumentParser());
             System.out.println("File: " + file.toString());
-            document.metadata().add("file_type", "text");
-            document.metadata().add("file_name", file.getFileName());
-            document.metadata().add("full_path", folderPath + file.getFileName());
-            document.metadata().add("absolute_path", folderPath);
+            document.metadata().add(MuleChainVectorsConstants.METADATA_KEY_FILE_TYPE, MuleChainVectorsConstants.FILE_TYPE_ANY);
+            document.metadata().add(MuleChainVectorsConstants.METADATA_KEY_FILE_NAME, file.getFileName());
+            document.metadata().add(MuleChainVectorsConstants.METADATA_KEY_FULL_PATH, folderPath + file.getFileName());
             ingestor.ingest(document);
             break;
           default:
@@ -675,10 +658,9 @@ public class MuleChainVectorsOperations {
       String content = jsonNode.path("content").asText();
       String source_url = jsonNode.path("url").asText();
       String title = jsonNode.path("title").asText();
-      document.metadata().add("file_type", "text");
-      document.metadata().add("file_name", title);
-      document.metadata().add("full_path", source_url);
-      document.metadata().add("absolute_path", document.ABSOLUTE_DIRECTORY_PATH);
+      document.metadata().add(MuleChainVectorsConstants.METADATA_KEY_FILE_TYPE, "text");
+      document.metadata().add(MuleChainVectorsConstants.METADATA_KEY_FILE_NAME, title);
+      document.metadata().add(MuleChainVectorsConstants.METADATA_KEY_FULL_PATH, source_url);
       document.metadata().put("source", source_url);
       document.metadata().add("title", title);
     } catch (IOException e) { 
@@ -709,10 +691,9 @@ public class MuleChainVectorsOperations {
         filePath = Paths.get(contextPath.toString()); 
         fileName = getFileNameFromPath(contextPath);
         document = loadDocument(filePath.toString(), new TextDocumentParser());
-        document.metadata().add("file_type", "text");
-        document.metadata().add("file_name", fileName);
-        document.metadata().add("full_path", contextPath);
-        document.metadata().add("absolute_path", document.ABSOLUTE_DIRECTORY_PATH);
+        document.metadata().add(MuleChainVectorsConstants.METADATA_KEY_FILE_TYPE, "text");
+        document.metadata().add(MuleChainVectorsConstants.METADATA_KEY_FILE_NAME, fileName);
+        document.metadata().add(MuleChainVectorsConstants.METADATA_KEY_FULL_PATH, contextPath);
         ingestor.ingest(document);
 
 
@@ -721,10 +702,9 @@ public class MuleChainVectorsOperations {
         filePath = Paths.get(contextPath.toString()); 
         fileName = getFileNameFromPath(contextPath);
         document = loadDocument(filePath.toString(), new ApacheTikaDocumentParser());
-        document.metadata().add("file_type", "text");
-        document.metadata().add("file_name", fileName);
-        document.metadata().add("full_path", contextPath);
-        document.metadata().add("absolute_path", document.ABSOLUTE_DIRECTORY_PATH);
+        document.metadata().add(MuleChainVectorsConstants.METADATA_KEY_FILE_TYPE, "text");
+        document.metadata().add(MuleChainVectorsConstants.METADATA_KEY_FILE_NAME, fileName);
+        document.metadata().add(MuleChainVectorsConstants.METADATA_KEY_FULL_PATH, contextPath);
         ingestor.ingest(document);
 
         break;
@@ -815,10 +795,10 @@ public class MuleChainVectorsOperations {
     for (EmbeddingMatch<TextSegment> match : embeddingMatches) {
       Metadata matchMetadata = match.embedded().metadata();
 
-      fileName = matchMetadata.getString("file_name");
-      url = matchMetadata.getString("url");
-      fullPath = matchMetadata.getString("full_path");
-      absoluteDirectoryPath = matchMetadata.getString("absolute_directory_path");
+      fileName = matchMetadata.getString(MuleChainVectorsConstants.METADATA_KEY_FILE_NAME);
+      url = matchMetadata.getString(MuleChainVectorsConstants.METADATA_KEY_URL);
+      fullPath = matchMetadata.getString(MuleChainVectorsConstants.METADATA_KEY_FULL_PATH);
+      absoluteDirectoryPath = matchMetadata.getString(MuleChainVectorsConstants.METADATA_KEY_ABSOLUTE_DIRECTORY_PATH);
       textSegment = matchMetadata.getString("textSegment");
 
       contentObject = new JSONObject();
@@ -903,10 +883,10 @@ public class MuleChainVectorsOperations {
     for (EmbeddingMatch<TextSegment> match : embeddingMatches) {
       Metadata matchMetadata = match.embedded().metadata();
 
-      fileName = matchMetadata.getString("file_name");
-      url = matchMetadata.getString("url");
-      fullPath = matchMetadata.getString("full_path");
-      absoluteDirectoryPath = matchMetadata.getString("absolute_directory_path");
+      fileName = matchMetadata.getString(MuleChainVectorsConstants.METADATA_KEY_FILE_NAME);
+      url = matchMetadata.getString(MuleChainVectorsConstants.METADATA_KEY_URL);
+      fullPath = matchMetadata.getString(MuleChainVectorsConstants.METADATA_KEY_FULL_PATH);
+      absoluteDirectoryPath = matchMetadata.getString(MuleChainVectorsConstants.METADATA_KEY_ABSOLUTE_DIRECTORY_PATH);
       textSegment = matchMetadata.getString("textSegment");
 
       contentObject = new JSONObject();
@@ -973,10 +953,10 @@ public class MuleChainVectorsOperations {
     String fullPath;
     for (EmbeddingMatch<TextSegment> match : embeddingMatches) {
       Metadata matchMetadata = match.embedded().metadata();
-      fileName = matchMetadata.getString("file_name");
-      url = matchMetadata.getString("url");
-      fullPath = matchMetadata.getString("full_path");
-      absoluteDirectoryPath = matchMetadata.getString("absolute_directory_path");
+      fileName = matchMetadata.getString(MuleChainVectorsConstants.METADATA_KEY_FILE_NAME);
+      url = matchMetadata.getString(MuleChainVectorsConstants.METADATA_KEY_URL);
+      fullPath = matchMetadata.getString(MuleChainVectorsConstants.METADATA_KEY_FULL_PATH);
+      absoluteDirectoryPath = matchMetadata.getString(MuleChainVectorsConstants.METADATA_KEY_ABSOLUTE_DIRECTORY_PATH);
 
       contentObject = new JSONObject();
       contentObject.put("absoluteDirectoryPath", absoluteDirectoryPath);

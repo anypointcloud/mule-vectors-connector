@@ -2,6 +2,7 @@ package org.mule.extension.mulechain.vectors.internal.helpers;
 
 import java.util.Set;
 
+import org.mule.extension.mulechain.vectors.internal.constants.MuleChainVectorsConstants;
 import org.mule.runtime.api.value.Value;
 import org.mule.runtime.extension.api.values.ValueBuilder;
 import org.mule.runtime.extension.api.values.ValueProvider;
@@ -11,8 +12,13 @@ public class MuleChainVectorsEmbeddingModelTypeProvider implements ValueProvider
 
   @Override
   public Set<Value> resolve() throws ValueResolvingException {
-//aw    return ValueBuilder.getValuesFor("OPENAI", "MISTRAL_AI", "NOMIC", "HUGGING_FACE"); //"OLLAMA", "COHERE", "AZURE_OPENAI", "HUGGING_FACE";
-    return ValueBuilder.getValuesFor("OPENAI", "MISTRAL_AI", "NOMIC", "HUGGING_FACE", "AZURE_OPENAI"); //"OLLAMA", "COHERE", "AZURE_OPENAI", "HUGGING_FACE";
+
+    return ValueBuilder.getValuesFor(
+            MuleChainVectorsConstants.OPENAI,
+            MuleChainVectorsConstants.MISTRAL_AI,
+            MuleChainVectorsConstants.NOMIC,
+            MuleChainVectorsConstants.HUGGING_FACE,
+            MuleChainVectorsConstants.AZURE_OPENAI); //"OLLAMA", "COHERE", "AZURE_OPENAI", "HUGGING_FACE";
 }
 
 }
