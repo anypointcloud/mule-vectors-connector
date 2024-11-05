@@ -1,4 +1,4 @@
-package org.mule.mulechain.vectors.internal.operation;
+package org.mule.extension.mulechain.vectors.internal.operation;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -19,15 +19,15 @@ import java.util.stream.Stream;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 
-import org.mule.mulechain.vectors.internal.helpers.MuleChainVectorsConfiguration;
-import org.mule.mulechain.vectors.internal.helpers.MuleChainVectorsFilterParameters;
-import org.mule.mulechain.vectors.internal.helpers.MuleChainVectorsModelParameters;
+import org.mule.extension.mulechain.vectors.internal.helpers.FileTypeParameters;
+import org.mule.extension.mulechain.vectors.internal.helpers.MuleChainVectorsConfiguration;
+import org.mule.extension.mulechain.vectors.internal.helpers.MuleChainVectorsFilterParameters;
+import org.mule.extension.mulechain.vectors.internal.helpers.MuleChainVectorsModelParameters;
 import dev.langchain4j.model.huggingface.HuggingFaceEmbeddingModel;
 import dev.langchain4j.store.embedding.*;
 import dev.langchain4j.store.embedding.filter.Filter;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.mule.mulechain.vectors.internal.helpers.FileTypeParameters;
 import org.mule.runtime.extension.api.annotation.Alias;
 import org.mule.runtime.extension.api.annotation.param.MediaType;
 import org.mule.runtime.extension.api.annotation.param.ParameterGroup;
@@ -61,10 +61,10 @@ import dev.langchain4j.store.embedding.pinecone.PineconeServerlessIndexConfig;
 import dev.langchain4j.store.embedding.weaviate.WeaviateEmbeddingStore;
 
 import org.mule.runtime.extension.api.annotation.param.Config;
-import org.mule.mulechain.vectors.internal.storage.S3FileReader;
-import org.mule.mulechain.vectors.internal.helpers.StorageTypeParameters;
+import org.mule.extension.mulechain.vectors.internal.storage.S3FileReader;
+import org.mule.extension.mulechain.vectors.internal.helpers.StorageTypeParameters;
 
-import org.mule.mulechain.vectors.internal.storage.AzureFileReader;
+import org.mule.extension.mulechain.vectors.internal.storage.AzureFileReader;
 import dev.langchain4j.store.embedding.azure.search.AzureAiSearchEmbeddingStore;
 
 

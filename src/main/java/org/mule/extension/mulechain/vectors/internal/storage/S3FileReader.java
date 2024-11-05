@@ -1,59 +1,42 @@
-package org.mule.mulechain.vectors.internal.storage;
+package org.mule.extension.mulechain.vectors.internal.storage;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import com.azure.storage.blob.BlobServiceClient;
-import com.azure.storage.blob.BlobServiceClientBuilder;
-import com.azure.storage.common.StorageSharedKeyCredential;
-import dev.langchain4j.data.document.loader.azure.storage.blob.AzureBlobStorageDocumentLoader;
-
 import java.io.IOException;
 
 import dev.langchain4j.store.embedding.EmbeddingStoreIngestor;
+import dev.langchain4j.data.document.loader.amazon.s3.AmazonS3DocumentLoader;
+import dev.langchain4j.data.document.loader.amazon.s3.AwsCredentials;
 import dev.langchain4j.data.document.DocumentParser;
 import java.util.List;
-import org.mule.mulechain.vectors.internal.helpers.FileTypeParameters;
+
+import org.mule.extension.mulechain.vectors.internal.helpers.FileTypeParameters;
 import dev.langchain4j.data.document.parser.TextDocumentParser;
 import dev.langchain4j.data.document.parser.apache.tika.ApacheTikaDocumentParser;
 import dev.langchain4j.data.document.Document;
 
 import static dev.langchain4j.data.document.loader.FileSystemDocumentLoader.loadDocument;
 
-public class AzureFileReader {
+public class S3FileReader {
 
-    private final AzureBlobStorageDocumentLoader loader;
+    private final String bucketName;
+    private final AmazonS3DocumentLoader loader;
 
-    public AzureFileReader(String azureName, String azureKey) {
-        StorageSharedKeyCredential credential = new StorageSharedKeyCredential(azureName, azureKey);
-
-        // Azure SDK client builders accept the credential as a parameter
-        BlobServiceClient blobServiceClient = new BlobServiceClientBuilder()
-                .endpoint(String.format("https://%s.blob.core.windows.net/", azureName))
-                .credential(credential)
-                .buildClient();
-
-        this.loader = new AzureBlobStorageDocumentLoader(blobServiceClient);
+    public S3FileReader(String bucketName, String awsKey, String awsSecret, String awsRegion) {
+        this.bucketName = bucketName;
+        AwsCredentials creds = new AwsCredentials(awsKey, awsSecret);
+        this.loader = AmazonS3DocumentLoader.builder()
+                    .region(awsRegion)
+                    .awsCredentials(creds)
+                    .build();
     }
 
-    public static BlobServiceClient GetBlobServiceClientAccountKey(String accountName, String accountKey) {
-        StorageSharedKeyCredential credential = new StorageSharedKeyCredential(accountName, accountKey);
-
-        // Azure SDK client builders accept the credential as a parameter
-        BlobServiceClient blobServiceClient = new BlobServiceClientBuilder()
-                .endpoint(String.format("https://%s.blob.core.windows.net/", accountName))
-                .credential(credential)
-                .buildClient();
-
-        return blobServiceClient;        
-    }
-
-    public long readAllFiles(String containerName, EmbeddingStoreIngestor ingestor, FileTypeParameters fileType)
+    public long readAllFiles(String folderPath, EmbeddingStoreIngestor ingestor, FileTypeParameters fileType)
     {
         DocumentParser parser = null;
         switch (fileType.getFileType()){
             case "text":
-            case "crawl":
                 parser = new TextDocumentParser();
                 break;
             case "any":
@@ -63,26 +46,21 @@ public class AzureFileReader {
                 throw new IllegalArgumentException("Unsupported File Type: " + fileType.getFileType());
         }
 
-        List<Document> documents = loader.loadDocuments(containerName, parser);
+        List<Document> documents = loader.loadDocuments(bucketName, folderPath, parser);
         int fileCount = documents.size();
-        System.out.println("Total number of files in '" + containerName + "': " + fileCount);
+        System.out.println("Total number of files in '" + folderPath + "': " + fileCount);
 
         long totalFiles = 0;
         for (Document document : documents) {
-            totalFiles += 1;
-            
-            if (fileType.getFileType().equals("crawl")){
-                addMetadata(document);
-            }
-            
-            System.out.println("Ingesting File " + totalFiles + ": " + document.metadata().toMap().get("source"));
             ingestor.ingest(document);
+            totalFiles += 1;
+            System.out.println("Ingesting File " + totalFiles + ": " + document.metadata().toMap().get("source"));
         }
         System.out.println("Total number of files processed: " + totalFiles);
         return totalFiles;
     }
 
-    public void readFile(String containerName, String blobName, FileTypeParameters fileType, EmbeddingStoreIngestor ingestor) {
+    public void readFile(String key, FileTypeParameters fileType, EmbeddingStoreIngestor ingestor) {
         DocumentParser parser = null;
         switch (fileType.getFileType()){
             case "text":
@@ -95,17 +73,12 @@ public class AzureFileReader {
             default:
                 throw new IllegalArgumentException("Unsupported File Type: " + fileType.getFileType());
         }
-        Document document = loader.loadDocument(containerName, blobName, parser);
-        System.out.println("Ready to add metadata: " + fileType.getFileType());
-        
+        Document document = loader.loadDocument(bucketName, key, parser);
         if (fileType.getFileType().equals("crawl")){
             addMetadata(document);
         }
-        
         ingestor.ingest(document);
-
     }
-    
     private void addMetadata(Document document) {
         try {
             String fileContent = document.text();
@@ -113,8 +86,6 @@ public class AzureFileReader {
             String content = jsonNode.path("content").asText();
             String source_url = jsonNode.path("url").asText();
             String title = jsonNode.path("title").asText();
-            System.out.println("source: " + source_url);
-            System.out.println("title: " + title);
             document.metadata().add("file_type", "text");
             document.metadata().add("file_name", title);
             document.metadata().add("full_path", source_url);
@@ -126,7 +97,6 @@ public class AzureFileReader {
         }
 
     }
-  
     private static JsonNode convertToJson(String content) throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
         return objectMapper.readTree(content);

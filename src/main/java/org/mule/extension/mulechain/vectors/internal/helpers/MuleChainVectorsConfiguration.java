@@ -1,6 +1,6 @@
-package org.mule.mulechain.vectors.internal.helpers;
+package org.mule.extension.mulechain.vectors.internal.helpers;
 
-import org.mule.mulechain.vectors.internal.operation.MuleChainVectorsOperations;
+import org.mule.extension.mulechain.vectors.internal.operation.MuleChainVectorsOperations;
 import org.mule.runtime.extension.api.annotation.Operations;
 import org.mule.runtime.extension.api.annotation.param.Parameter;
 import org.mule.runtime.extension.api.annotation.values.OfValues;
