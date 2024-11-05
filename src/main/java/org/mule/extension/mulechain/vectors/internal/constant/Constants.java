@@ -1,7 +1,7 @@
 /**
  * (c) 2003-2024 MuleSoft, Inc. The software in this package is published under the terms of the Commercial Free Software license V.1 a copy of which has been included with this distribution in the LICENSE.md file.
  */
-package org.mule.extension.mulechain.vectors.internal.constants;
+package org.mule.extension.mulechain.vectors.internal.constant;
 
 public class Constants {
 
@@ -11,6 +11,10 @@ public class Constants {
   public static final String FILE_TYPE_TEXT = "text";
   public static final String FILE_TYPE_CRAWL = "crawl";
   public static final String FILE_TYPE_URL = "url";
+
+  public static final String STORAGE_TYPE_LOCAL = "Local";
+  public static final String STORAGE_TYPE_S3 = "S3";
+  public static final String STORAGE_TYPE_AZURE_BLOB = "AZURE_BLOB";
 
   public static final String EMBEDDING_MODEL_SERVICE_OPENAI = "OPENAI";
   public static final String EMBEDDING_MODEL_SERVICE_MISTRAL_AI = "MISTRAL_AI";
@@ -40,6 +44,8 @@ public class Constants {
   public static final String METADATA_KEY_FULL_PATH = "full_path";
   public static final String METADATA_KEY_ABSOLUTE_DIRECTORY_PATH = "absolute_directory_path";
   public static final String METADATA_KEY_URL = "url";
+  public static final String METADATA_KEY_SOURCE = "source";
+  public static final String METADATA_KEY_TITLE = "title";
 
   public static final String METADATA_FILTER_METHOD_IS_EQUAL_TO = "isEqualTo";
   public static final String METADATA_FILTER_METHOD_IS_NOT_EQUAL_TO = "isNotEqualTo";

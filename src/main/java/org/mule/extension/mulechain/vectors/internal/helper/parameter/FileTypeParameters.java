@@ -1,7 +1,7 @@
-package org.mule.extension.mulechain.vectors.internal.helpers.parameters;
+package org.mule.extension.mulechain.vectors.internal.helper.parameter;
 
-import org.mule.extension.mulechain.vectors.internal.constants.Constants;
-import org.mule.extension.mulechain.vectors.internal.helpers.providers.FileTypeEmbeddingProvider;
+import org.mule.extension.mulechain.vectors.internal.constant.Constants;
+import org.mule.extension.mulechain.vectors.internal.helper.provider.FileTypeEmbeddingProvider;
 import org.mule.runtime.api.meta.ExpressionSupport;
 import org.mule.runtime.extension.api.annotation.Expression;
 import org.mule.runtime.extension.api.annotation.param.Optional;

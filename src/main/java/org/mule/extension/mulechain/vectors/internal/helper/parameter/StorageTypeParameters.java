@@ -1,6 +1,7 @@
-package org.mule.extension.mulechain.vectors.internal.helpers.parameters;
+package org.mule.extension.mulechain.vectors.internal.helper.parameter;
 
-import org.mule.extension.mulechain.vectors.internal.helpers.providers.StorageTypeProvider;
+import org.mule.extension.mulechain.vectors.internal.constant.Constants;
+import org.mule.extension.mulechain.vectors.internal.helper.provider.StorageTypeProvider;
 import org.mule.runtime.api.meta.ExpressionSupport;
 import org.mule.runtime.extension.api.annotation.Expression;
 import org.mule.runtime.extension.api.annotation.param.Optional;
@@ -12,7 +13,7 @@ public class StorageTypeParameters {
   @Parameter
   @Expression(ExpressionSupport.SUPPORTED)
   @OfValues(StorageTypeProvider.class)
-  @Optional(defaultValue = "Local")
+  @Optional(defaultValue = Constants.STORAGE_TYPE_LOCAL)
   private String storageType;
 
   public String getStorageType() {

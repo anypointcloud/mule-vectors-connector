@@ -1,25 +1,25 @@
 package org.mule.extension.mulechain.vectors.internal.storage;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
-import java.io.IOException;
-
 import dev.langchain4j.store.embedding.EmbeddingStoreIngestor;
 import dev.langchain4j.data.document.loader.amazon.s3.AmazonS3DocumentLoader;
 import dev.langchain4j.data.document.loader.amazon.s3.AwsCredentials;
 import dev.langchain4j.data.document.DocumentParser;
 import java.util.List;
 
-import org.mule.extension.mulechain.vectors.internal.constants.Constants;
-import org.mule.extension.mulechain.vectors.internal.helpers.parameters.FileTypeParameters;
+import org.mule.extension.mulechain.vectors.internal.constant.Constants;
+import org.mule.extension.mulechain.vectors.internal.helper.parameter.FileTypeParameters;
 import dev.langchain4j.data.document.parser.TextDocumentParser;
 import dev.langchain4j.data.document.parser.apache.tika.ApacheTikaDocumentParser;
 import dev.langchain4j.data.document.Document;
-import org.mule.extension.mulechain.vectors.internal.util.JsonUtils;
+import org.mule.extension.mulechain.vectors.internal.util.DocumentUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static dev.langchain4j.data.document.loader.FileSystemDocumentLoader.loadDocument;
 
 public class S3FileReader {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(S3FileReader.class);
 
     private final String bucketName;
     private final AmazonS3DocumentLoader loader;
@@ -49,15 +49,15 @@ public class S3FileReader {
 
         List<Document> documents = loader.loadDocuments(bucketName, folderPath, parser);
         int fileCount = documents.size();
-        System.out.println("Total number of files in '" + folderPath + "': " + fileCount);
+        LOGGER.debug("Total number of files in '" + folderPath + "': " + fileCount);
 
         long totalFiles = 0;
         for (Document document : documents) {
             ingestor.ingest(document);
             totalFiles += 1;
-            System.out.println("Ingesting File " + totalFiles + ": " + document.metadata().toMap().get("source"));
+            LOGGER.debug("Ingesting File " + totalFiles + ": " + document.metadata().toMap().get("source"));
         }
-        System.out.println("Total number of files processed: " + totalFiles);
+        LOGGER.debug("Total number of files processed: " + totalFiles);
         return totalFiles;
     }
 
@@ -76,25 +76,8 @@ public class S3FileReader {
         }
         Document document = loader.loadDocument(bucketName, key, parser);
         if (fileType.getFileType().equals(Constants.FILE_TYPE_CRAWL)){
-            addMetadata(document);
+            DocumentUtils.addMetadataToDocument(document);
         }
         ingestor.ingest(document);
-    }
-    private void addMetadata(Document document) {
-        try {
-            String fileContent = document.text();
-            JsonNode jsonNode = JsonUtils.stringToJsonNode(fileContent.toString());
-            String content = jsonNode.path("content").asText();
-            String source_url = jsonNode.path("url").asText();
-            String title = jsonNode.path("title").asText();
-            document.metadata().add(Constants.METADATA_KEY_FILE_TYPE, Constants.FILE_TYPE_TEXT);
-            document.metadata().add(Constants.METADATA_KEY_FILE_NAME, title);
-            document.metadata().add(Constants.METADATA_KEY_FULL_PATH, source_url);
-            document.metadata().put("source", source_url);
-            document.metadata().add("title", title);
-        } catch (IOException e) { 
-            System.err.println("Error accessing folder: " + e.getMessage());
-        }
-
     }
 }

@@ -1,4 +1,4 @@
-package org.mule.extension.mulechain.vectors.internal.helpers;
+package org.mule.extension.mulechain.vectors.internal.helper.factory;
 
 import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.store.embedding.EmbeddingStore;
@@ -12,7 +12,7 @@ import dev.langchain4j.store.embedding.pinecone.PineconeServerlessIndexConfig;
 import dev.langchain4j.store.embedding.weaviate.WeaviateEmbeddingStore;
 import org.json.JSONObject;
 import org.mule.extension.mulechain.vectors.internal.config.Configuration;
-import org.mule.extension.mulechain.vectors.internal.constants.Constants;
+import org.mule.extension.mulechain.vectors.internal.constant.Constants;
 
 import static org.mule.extension.mulechain.vectors.internal.util.JsonUtils.readConfigFile;
 

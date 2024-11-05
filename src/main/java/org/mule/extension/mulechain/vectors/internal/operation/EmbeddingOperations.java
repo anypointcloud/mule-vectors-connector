@@ -1,36 +1,30 @@
 package org.mule.extension.mulechain.vectors.internal.operation;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import static org.apache.commons.io.IOUtils.toInputStream;
 import static org.mule.extension.mulechain.vectors.internal.util.JsonUtils.readConfigFile;
 import static org.mule.runtime.extension.api.annotation.param.MediaType.APPLICATION_JSON;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Stream;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 
-import org.mule.extension.mulechain.vectors.internal.constants.Constants;
-import org.mule.extension.mulechain.vectors.internal.helpers.EmbeddingModelFactory;
-import org.mule.extension.mulechain.vectors.internal.helpers.EmbeddingStoreFactory;
-import org.mule.extension.mulechain.vectors.internal.helpers.parameters.FileTypeParameters;
+import org.mule.extension.mulechain.vectors.internal.constant.Constants;
+import org.mule.extension.mulechain.vectors.internal.helper.EmbeddingStoreIngestorHelper;
+import org.mule.extension.mulechain.vectors.internal.helper.factory.EmbeddingModelFactory;
+import org.mule.extension.mulechain.vectors.internal.helper.factory.EmbeddingStoreFactory;
+import org.mule.extension.mulechain.vectors.internal.helper.parameter.FileTypeParameters;
 import org.mule.extension.mulechain.vectors.internal.config.Configuration;
-import org.mule.extension.mulechain.vectors.internal.helpers.parameters.MetadataFilterParameters;
-import org.mule.extension.mulechain.vectors.internal.helpers.parameters.EmbeddingModelNameParameters;
+import org.mule.extension.mulechain.vectors.internal.helper.parameter.MetadataFilterParameters;
+import org.mule.extension.mulechain.vectors.internal.helper.parameter.EmbeddingModelNameParameters;
 import dev.langchain4j.store.embedding.*;
 import dev.langchain4j.store.embedding.filter.Filter;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.mule.extension.mulechain.vectors.internal.util.JsonUtils;
 import org.mule.runtime.extension.api.annotation.Alias;
 import org.mule.runtime.extension.api.annotation.param.MediaType;
 import org.mule.runtime.extension.api.annotation.param.ParameterGroup;
@@ -50,12 +44,12 @@ import dev.langchain4j.model.embedding.EmbeddingModel;
 import dev.langchain4j.service.Result;
 
 import org.mule.runtime.extension.api.annotation.param.Config;
-import org.mule.extension.mulechain.vectors.internal.storage.S3FileReader;
-import org.mule.extension.mulechain.vectors.internal.helpers.parameters.StorageTypeParameters;
+import org.mule.extension.mulechain.vectors.internal.helper.parameter.StorageTypeParameters;
 
-import org.mule.extension.mulechain.vectors.internal.storage.AzureFileReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import org.mule.extension.mulechain.vectors.internal.util.DocumentUtils;
 
 /**
  * This class is a container for operations, every public method in this class will be taken as an extension operation.
@@ -87,7 +81,6 @@ public class EmbeddingOperations {
 
     return toInputStream(jsonObject.toString(), StandardCharsets.UTF_8);
   }
-
 
    /**
    * Adds Text to Embedding Store
@@ -140,112 +133,12 @@ public class EmbeddingOperations {
       String awsSecret = s3Json.getString("AWS_SECRET_ACCESS_KEY");
       String awsRegion = s3Json.getString("AWS_DEFAULT_REGION");
       String s3Bucket = s3Json.getString("AWS_S3_BUCKET");
-      jsonObject = ingestFromS3Folder(folderPath, ingestor, storeName, fileType, awsKey, awsSecret, awsRegion, s3Bucket);
+      jsonObject = EmbeddingStoreIngestorHelper.ingestFromS3Folder(folderPath, ingestor, storeName, fileType, awsKey, awsSecret, awsRegion, s3Bucket);
     } else {
-      jsonObject = ingestFromLocalFolder(folderPath, ingestor, storeName, fileType);
+      jsonObject = EmbeddingStoreIngestorHelper.ingestFromLocalFolder(folderPath, ingestor, storeName, fileType);
     }
 
     return toInputStream(jsonObject.toString(), StandardCharsets.UTF_8);
-  }
-    
-  private JSONObject ingestFromLocalFolder(String folderPath, EmbeddingStoreIngestor ingestor, String storeName, FileTypeParameters fileType) {
-    long totalFiles = 0;
-    try (Stream<Path> paths = Files.walk(Paths.get(folderPath))) {
-      totalFiles = paths.filter(Files::isRegularFile).count();
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-
-    System.out.println("Total number of files to process: " + totalFiles);
-    AtomicInteger fileCounter = new AtomicInteger(0);
-    try (Stream<Path> paths = Files.walk(Paths.get(folderPath))) {
-      paths.filter(Files::isRegularFile).forEach(file -> {
-        int currentFileCounter = fileCounter.incrementAndGet();
-        System.out.println("Processing file " + currentFileCounter + ": " + file.getFileName());
-        Document document = null;
-        switch (fileType.getFileType()) {
-          case Constants.FILE_TYPE_CRAWL:
-            document = loadDocument(file.toString(), new TextDocumentParser());
-            addMetadata(Paths.get(file.toString()), document);
-            ingestor.ingest(document);    
-            break;
-          case Constants.FILE_TYPE_TEXT:
-            document = loadDocument(file.toString(), new TextDocumentParser());
-            System.out.println("File: " + file.toString());
-            document.metadata().add(Constants.METADATA_KEY_FILE_TYPE, Constants.FILE_TYPE_TEXT);
-            document.metadata().add(Constants.METADATA_KEY_FILE_NAME, file.getFileName());
-            document.metadata().add(Constants.METADATA_KEY_FULL_PATH, folderPath + file.getFileName());
-            ingestor.ingest(document);
-            break;
-          case Constants.FILE_TYPE_ANY:
-            document = loadDocument(file.toString(), new ApacheTikaDocumentParser());
-            System.out.println("File: " + file.toString());
-            document.metadata().add(Constants.METADATA_KEY_FILE_TYPE, Constants.FILE_TYPE_ANY);
-            document.metadata().add(Constants.METADATA_KEY_FILE_NAME, file.getFileName());
-            document.metadata().add(Constants.METADATA_KEY_FULL_PATH, folderPath + file.getFileName());
-            ingestor.ingest(document);
-            break;
-          default:
-            throw new IllegalArgumentException("Unsupported File Type: " + fileType.getFileType());
-        }
-      });
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-    System.out.println("Processing complete ");
-    JSONObject jsonObject = new JSONObject();
-    jsonObject.put("filesCount", totalFiles);
-    jsonObject.put("folderPath", folderPath);
-    jsonObject.put("storeName", storeName);
-    jsonObject.put("status", "updated");
-    return jsonObject;
-  }
-
-  private JSONObject ingestFromS3Folder(String folderPath, EmbeddingStoreIngestor ingestor, String storeName, FileTypeParameters fileType, String awsKey, String awsSecret, String awsRegion, String s3Bucket)
-  {
-        S3FileReader s3FileReader = new S3FileReader(s3Bucket, awsKey, awsSecret, awsRegion);
-        long totalFiles = s3FileReader.readAllFiles(folderPath, ingestor, fileType);   
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("filesCount", totalFiles);
-        jsonObject.put("folderPath", folderPath);
-        jsonObject.put("storeName", storeName);
-        jsonObject.put("status", "updated");
-        return jsonObject; 
-  }
-
-  private JSONObject ingestFromS3File(String folderPath, EmbeddingStoreIngestor ingestor, String storeName, FileTypeParameters fileType, String awsKey, String awsSecret, String awsRegion, String s3Bucket)
-  {
-        S3FileReader s3FileReader = new S3FileReader(s3Bucket, awsKey, awsSecret, awsRegion);
-        s3FileReader.readFile(folderPath, fileType, ingestor);   
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("fileType", fileType.getFileType());
-        jsonObject.put("folderPath", folderPath);
-        jsonObject.put("storeName", storeName);
-        jsonObject.put("status", "updated");
-        return jsonObject; 
-  }
-
-  private JSONObject ingestFromAZContainer(String containerName, EmbeddingStoreIngestor ingestor, String storeName, FileTypeParameters fileType, String azureName, String azureKey)
-  {
-        AzureFileReader azFileReader = new AzureFileReader(azureName, azureKey);
-        azFileReader.readAllFiles(containerName, ingestor, fileType);   
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("fileType", fileType.getFileType());
-        jsonObject.put("folderPath", containerName);
-        jsonObject.put("storeName", storeName);
-        jsonObject.put("status", "updated");
-        return jsonObject; 
-  }
-  private JSONObject ingestFromAZFile(String containerName, String blobName, EmbeddingStoreIngestor ingestor, String storeName, FileTypeParameters fileType, String azureName, String azureKey)
-  {
-        AzureFileReader azFileReader = new AzureFileReader(azureName, azureKey);
-        azFileReader.readFile(containerName, blobName, fileType, ingestor);   
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("fileType", fileType.getFileType());
-        jsonObject.put("folderPath", containerName);
-        jsonObject.put("storeName", storeName);
-        jsonObject.put("status", "updated");
-        return jsonObject; 
   }
 
     /**
@@ -280,116 +173,19 @@ public class EmbeddingOperations {
       String awsSecret = s3Json.getString("AWS_SECRET_ACCESS_KEY");
       String awsRegion = s3Json.getString("AWS_DEFAULT_REGION");
       String s3Bucket = s3Json.getString("AWS_S3_BUCKET");
-      jsonObject = ingestFromS3File(contextPath, ingestor, storeName, fileType, awsKey, awsSecret, awsRegion, s3Bucket);
+      jsonObject = EmbeddingStoreIngestorHelper.ingestFromS3File(contextPath, ingestor, storeName, fileType, awsKey, awsSecret, awsRegion, s3Bucket);
     } else if (storageType.getStorageType().equals("AZURE_BLOB") && !fileType.getFileType().equals("url")) {
       JSONObject azJson = config.getJSONObject("AZURE_BLOB");
       String azureName = azJson.getString("AZURE_BLOB_ACCOUNT_NAME");
       String azureKey = azJson.getString("AZURE_BLOB_ACCOUNT_KEY");
       String[] parts = contextPath.split("/", 2);
-      jsonObject = ingestFromAZFile(parts[0], parts[1], ingestor, storeName, fileType, azureName, azureKey);
+      jsonObject = EmbeddingStoreIngestorHelper.ingestFromAZFile(parts[0], parts[1], ingestor, storeName, fileType, azureName, azureKey);
     } else {
-      jsonObject = ingestFromLocalFile(contextPath, ingestor, storeName, fileType);
+      jsonObject = EmbeddingStoreIngestorHelper.ingestFromLocalFile(contextPath, ingestor, storeName, fileType);
     }
 
     return toInputStream(jsonObject.toString(), StandardCharsets.UTF_8);
   }
-
-  private void addMetadata(Path filePath, Document document) {
-    try {
-      String fileContent = new String(Files.readAllBytes(filePath));
-      JsonNode jsonNode = JsonUtils.stringToJsonNode(fileContent.toString());
-      String content = jsonNode.path("content").asText();
-      String source_url = jsonNode.path("url").asText();
-      String title = jsonNode.path("title").asText();
-      document.metadata().add(Constants.METADATA_KEY_FILE_TYPE, Constants.FILE_TYPE_TEXT);
-      document.metadata().add(Constants.METADATA_KEY_FILE_NAME, title);
-      document.metadata().add(Constants.METADATA_KEY_FULL_PATH, source_url);
-      document.metadata().put("source", source_url);
-      document.metadata().add("title", title);
-    } catch (IOException e) { 
-      System.err.println("Error accessing folder: " + e.getMessage());
-    }
-
-  }
-
-  private JSONObject ingestFromLocalFile(String contextPath, EmbeddingStoreIngestor ingestor, String storeName, FileTypeParameters fileType) {
-
-    System.out.println("file Type: " + fileType.getFileType());
-    
-    Document document = null;
-    Path filePath; 
-    String fileName;
-
-    switch (fileType.getFileType()) {
-      case Constants.FILE_TYPE_CRAWL:
-        filePath = Paths.get(contextPath.toString()); 
-        fileName = getFileNameFromPath(contextPath);
-
-        document = loadDocument(filePath.toString(), new TextDocumentParser());
-        addMetadata(filePath, document);
-        ingestor.ingest(document);
-
-        break;
-      case Constants.FILE_TYPE_TEXT:
-        filePath = Paths.get(contextPath.toString()); 
-        fileName = getFileNameFromPath(contextPath);
-        document = loadDocument(filePath.toString(), new TextDocumentParser());
-        document.metadata().add(Constants.METADATA_KEY_FILE_TYPE, Constants.FILE_TYPE_TEXT);
-        document.metadata().add(Constants.METADATA_KEY_FILE_NAME, fileName);
-        document.metadata().add(Constants.METADATA_KEY_FULL_PATH, contextPath);
-        ingestor.ingest(document);
-
-
-        break;
-      case Constants.FILE_TYPE_ANY:
-        filePath = Paths.get(contextPath.toString()); 
-        fileName = getFileNameFromPath(contextPath);
-        document = loadDocument(filePath.toString(), new ApacheTikaDocumentParser());
-        document.metadata().add(Constants.METADATA_KEY_FILE_TYPE, Constants.FILE_TYPE_ANY);
-        document.metadata().add(Constants.METADATA_KEY_FILE_NAME, fileName);
-        document.metadata().add(Constants.METADATA_KEY_FULL_PATH, contextPath);
-        ingestor.ingest(document);
-
-        break;
-      case Constants.FILE_TYPE_URL:
-        System.out.println("Context Path: " + contextPath);
-
-        URL url = null;
-        try {
-          url = new URL(contextPath);
-        } catch (MalformedURLException e) {
-          e.printStackTrace();
-        }
-
-        Document htmlDocument = UrlDocumentLoader.load(url, new TextDocumentParser());
-        HtmlToTextDocumentTransformer transformer = new HtmlToTextDocumentTransformer(null, null, true);
-        document = transformer.transform(htmlDocument);
-        document.metadata().add(Constants.METADATA_KEY_URL, contextPath);
-        ingestor.ingest(document);
-
-        break;
-      default:
-        throw new IllegalArgumentException("Unsupported File Type: " + fileType.getFileType());
-    }
-
-
-
-    JSONObject jsonObject = new JSONObject();
-    jsonObject.put("fileType", fileType.getFileType());
-    jsonObject.put("filePath", contextPath);
-    jsonObject.put("storeName", storeName);
-    jsonObject.put("status", "updated");
-
-    return jsonObject;
-  }
-
-
-  private String getFileNameFromPath(String fullPath) {
-
-      File file = new File(fullPath);
-      return file.getName();
-  }
-
 
   /**
    * Query information from embedding store , provide the storeName (Index, Collections, etc.)
@@ -554,11 +350,6 @@ public class EmbeddingOperations {
     return toInputStream(jsonObject.toString(), StandardCharsets.UTF_8);
   }
 
-
-  interface AssistantSources {
-
-    Result<String> chat(String userMessage);
-  }
 
   /**
    * List all documents from a store

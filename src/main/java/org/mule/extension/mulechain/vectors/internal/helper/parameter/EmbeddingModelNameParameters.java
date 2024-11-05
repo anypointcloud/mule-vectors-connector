@@ -1,6 +1,6 @@
-package org.mule.extension.mulechain.vectors.internal.helpers.parameters;
+package org.mule.extension.mulechain.vectors.internal.helper.parameter;
 
-import org.mule.extension.mulechain.vectors.internal.helpers.providers.EmbeddingModelNameProvider;
+import org.mule.extension.mulechain.vectors.internal.helper.provider.EmbeddingModelNameProvider;
 import org.mule.runtime.api.meta.ExpressionSupport;
 import org.mule.runtime.extension.api.annotation.Expression;
 import org.mule.runtime.extension.api.annotation.param.Parameter;

@@ -1,6 +1,6 @@
-package org.mule.extension.mulechain.vectors.internal.helpers.providers;
+package org.mule.extension.mulechain.vectors.internal.helper.provider;
 
-import org.mule.extension.mulechain.vectors.internal.constants.Constants;
+import org.mule.extension.mulechain.vectors.internal.constant.Constants;
 import org.mule.runtime.api.value.Value;
 import org.mule.runtime.extension.api.values.ValueBuilder;
 import org.mule.runtime.extension.api.values.ValueProvider;

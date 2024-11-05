@@ -1,4 +1,4 @@
-package org.mule.extension.mulechain.vectors.internal.helpers;
+package org.mule.extension.mulechain.vectors.internal.helper.factory;
 
 import dev.langchain4j.model.azure.AzureOpenAiEmbeddingModel;
 import dev.langchain4j.model.embedding.EmbeddingModel;
@@ -8,8 +8,8 @@ import dev.langchain4j.model.nomic.NomicEmbeddingModel;
 import dev.langchain4j.model.openai.OpenAiEmbeddingModel;
 import org.json.JSONObject;
 import org.mule.extension.mulechain.vectors.internal.config.Configuration;
-import org.mule.extension.mulechain.vectors.internal.constants.Constants;
-import org.mule.extension.mulechain.vectors.internal.helpers.parameters.EmbeddingModelNameParameters;
+import org.mule.extension.mulechain.vectors.internal.constant.Constants;
+import org.mule.extension.mulechain.vectors.internal.helper.parameter.EmbeddingModelNameParameters;
 
 import static org.mule.extension.mulechain.vectors.internal.util.JsonUtils.readConfigFile;
 

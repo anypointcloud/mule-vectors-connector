@@ -1,7 +1,7 @@
 package org.mule.extension.mulechain.vectors.internal.config;
 
-import org.mule.extension.mulechain.vectors.internal.helpers.providers.EmbeddingModelServiceProvider;
-import org.mule.extension.mulechain.vectors.internal.helpers.providers.VectorStoreProvider;
+import org.mule.extension.mulechain.vectors.internal.helper.provider.EmbeddingModelServiceProvider;
+import org.mule.extension.mulechain.vectors.internal.helper.provider.VectorStoreProvider;
 import org.mule.extension.mulechain.vectors.internal.operation.DocumentOperations;
 import org.mule.extension.mulechain.vectors.internal.operation.EmbeddingOperations;
 import org.mule.runtime.extension.api.annotation.Operations;

@@ -1,10 +1,10 @@
-package org.mule.extension.mulechain.vectors.internal.helpers.providers;
+package org.mule.extension.mulechain.vectors.internal.helper.provider;
 
 import java.util.Collections;
 import java.util.Set;
 
 import org.mule.extension.mulechain.vectors.internal.config.Configuration;
-import org.mule.extension.mulechain.vectors.internal.constants.Constants;
+import org.mule.extension.mulechain.vectors.internal.constant.Constants;
 import org.mule.runtime.api.value.Value;
 import org.mule.runtime.extension.api.annotation.param.Config;
 import org.mule.runtime.extension.api.values.ValueBuilder;
