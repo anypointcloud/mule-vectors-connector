@@ -387,8 +387,7 @@ public class MuleChainVectorsOperations {
    */
   @MediaType(value = APPLICATION_JSON, strict = false)
   @Alias("Document-split-into-chunks")
-  public InputStream documentSplitter(String contextPath, @Config MuleChainVectorsConfiguration configuration,
-                                @ParameterGroup(name = "Context") FileTypeParameters fileType,
+  public InputStream documentSplitter(String contextPath, @ParameterGroup(name = "Context") FileTypeParameters fileType,
                                 int maxSegmentSizeInChars, int maxOverlapSizeInChars){
 
 
@@ -439,8 +438,7 @@ public class MuleChainVectorsOperations {
    */
   @MediaType(value = APPLICATION_JSON, strict = false)
   @Alias("Document-parser")
-  public InputStream documentParser(String contextPath, @Config MuleChainVectorsConfiguration configuration,
-                              @ParameterGroup(name = "Context") FileTypeParameters fileType){
+  public InputStream documentParser(String contextPath,  @ParameterGroup(name = "Context") FileTypeParameters fileType){
 
     Document document = null;
     switch (fileType.getFileType()) {
