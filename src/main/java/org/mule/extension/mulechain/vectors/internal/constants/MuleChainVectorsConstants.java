@@ -7,12 +7,6 @@ public class MuleChainVectorsConstants {
 
   private MuleChainVectorsConstants() {}
 
-  public static final String METADATA_KEY_FILE_NAME = "file_name";
-  public static final String METADATA_KEY_FILE_TYPE = "file_type";
-  public static final String METADATA_KEY_FULL_PATH = "full_path";
-  public static final String METADATA_KEY_ABSOLUTE_DIRECTORY_PATH = "absolute_directory_path";
-  public static final String METADATA_KEY_URL = "url";
-
   public static final String FILE_TYPE_ANY = "any";
   public static final String FILE_TYPE_TEXT = "text";
   public static final String FILE_TYPE_CRAWL = "crawl";
@@ -31,6 +25,21 @@ public class MuleChainVectorsConstants {
   public static final String EMBEDDING_MODEL_NAME_NOMIC_EMBED_TEXT = "nomic-embed-text";
   public static final String EMBEDDING_MODEL_NAME_FALCON_7B_INSTRUCT = "tiiuae/falcon-7b-instruct";
   public static final String EMBEDDING_MODEL_NAME_MINI_LM_L6_V2 = "sentence-transformers/all-MiniLM-L6-v2";
+
+  public static final String VECTOR_STORE_PGVECTOR = "PGVECTOR";
+  public static final String VECTOR_STORE_ELASTICSEARCH = "ELASTICSEARCH";
+  public static final String VECTOR_STORE_MILVUS = "MILVUS";
+  public static final String VECTOR_STORE_CHROMA = "CHROMA";
+  public static final String VECTOR_STORE_PINECONE = "PINECONE";
+  public static final String VECTOR_STORE_WEAVIATE = "WEAVIATE";
+  public static final String VECTOR_STORE_AI_SEARCH = "AI_SEARCH";
+  public static final String VECTOR_STORE_NEO4J = "NEO4J";
+  
+  public static final String METADATA_KEY_FILE_NAME = "file_name";
+  public static final String METADATA_KEY_FILE_TYPE = "file_type";
+  public static final String METADATA_KEY_FULL_PATH = "full_path";
+  public static final String METADATA_KEY_ABSOLUTE_DIRECTORY_PATH = "absolute_directory_path";
+  public static final String METADATA_KEY_URL = "url";
 
   public static final String METADATA_FILTER_METHOD_IS_EQUAL_TO = "isEqualTo";
   public static final String METADATA_FILTER_METHOD_IS_NOT_EQUAL_TO = "isNotEqualTo";

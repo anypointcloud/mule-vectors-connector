@@ -1,7 +1,7 @@
 package org.mule.extension.mulechain.vectors.internal.config;
 
 import org.mule.extension.mulechain.vectors.internal.helpers.MuleChainVectorsEmbeddingModelServiceProvider;
-import org.mule.extension.mulechain.vectors.internal.helpers.MuleChainVectorsStoreTypeProvider;
+import org.mule.extension.mulechain.vectors.internal.helpers.MuleChainVectorsVectorStoreProvider;
 import org.mule.extension.mulechain.vectors.internal.operation.MuleChainVectorsOperations;
 import org.mule.runtime.extension.api.annotation.Configuration;
 import org.mule.runtime.extension.api.annotation.Operations;
@@ -24,8 +24,8 @@ public class MuleChainVectorsConfiguration {
 
   @Parameter
   @Placement(order = 2, tab = Placement.DEFAULT_TAB)
-  @OfValues(MuleChainVectorsStoreTypeProvider.class)
-  private String vectorDBProviderType;
+  @OfValues(MuleChainVectorsVectorStoreProvider.class)
+  private String vectorStore;
 
   @Parameter
   @Placement(order = 3, tab = Placement.DEFAULT_TAB)
@@ -35,8 +35,8 @@ public class MuleChainVectorsConfiguration {
     return embeddingModelService;
   }
 
-  public String getVectorDBProviderType() {
-    return vectorDBProviderType;
+  public String getVectorStore() {
+    return vectorStore;
   }
 
   public String getConfigFilePath() {

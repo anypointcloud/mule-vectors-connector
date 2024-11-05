@@ -43,7 +43,6 @@ import dev.langchain4j.data.document.loader.UrlDocumentLoader;
 import dev.langchain4j.data.document.parser.TextDocumentParser;
 import dev.langchain4j.data.document.parser.apache.tika.ApacheTikaDocumentParser;
 import dev.langchain4j.data.document.splitter.DocumentSplitters;
-//import dev.langchain4j.data.document.transformer.HtmlTextExtractor;
 import dev.langchain4j.data.document.transformer.jsoup.HtmlToTextDocumentTransformer;
 import dev.langchain4j.data.embedding.Embedding;
 import dev.langchain4j.data.segment.TextSegment;
@@ -55,7 +54,6 @@ import dev.langchain4j.model.azure.AzureOpenAiEmbeddingModel;
 import dev.langchain4j.store.embedding.chroma.ChromaEmbeddingStore;
 import dev.langchain4j.store.embedding.elasticsearch.ElasticsearchEmbeddingStore;
 import dev.langchain4j.store.embedding.milvus.MilvusEmbeddingStore;
-//import dev.langchain4j.store.embedding.neo4j.Neo4jEmbeddingStore;
 import dev.langchain4j.service.Result;
 import dev.langchain4j.store.embedding.pgvector.PgVectorEmbeddingStore;
 import dev.langchain4j.store.embedding.pinecone.PineconeEmbeddingStore;
@@ -68,7 +66,6 @@ import org.mule.extension.mulechain.vectors.internal.helpers.StorageTypeParamete
 
 import org.mule.extension.mulechain.vectors.internal.storage.AzureFileReader;
 import dev.langchain4j.store.embedding.azure.search.AzureAiSearchEmbeddingStore;
-
 
 /**
  * This class is a container for operations, every public method in this class will be taken as an extension operation.
@@ -87,57 +84,58 @@ public class MuleChainVectorsOperations {
     String vectorApiKey;
 
     String vectorUrl;
-    switch (configuration.getVectorDBProviderType()) {
-      case "AI_SEARCH":
-          vectorType = config.getJSONObject("AI_SEARCH");
-          vectorApiKey = vectorType.getString("AI_SEARCH_KEY");
-          vectorUrl = vectorType.getString("AI_SEARCH_URL");
-          store = createAISearchStore(vectorUrl, vectorApiKey, indexName, dimension);
+    switch (configuration.getVectorStore()) {
+      case MuleChainVectorsConstants.VECTOR_STORE_AI_SEARCH:
+        vectorType = config.getJSONObject("AI_SEARCH");
+        vectorApiKey = vectorType.getString("AI_SEARCH_KEY");
+        vectorUrl = vectorType.getString("AI_SEARCH_URL");
+        store = createAISearchStore(vectorUrl, vectorApiKey, indexName, dimension);
         break;
-      case "CHROMA":
-          vectorType = config.getJSONObject("CHROMA");
-          vectorUrl = vectorType.getString("CHROMA_URL");
-          store = createChromaStore(vectorUrl, indexName);
-        break;
-      case "MILVUS":
-          vectorType = config.getJSONObject("MILVUS");
-          vectorUrl = vectorType.getString("MILVUS_URL");
-          store = createMilvusStore(vectorUrl, indexName, dimension);
 
+      case MuleChainVectorsConstants.VECTOR_STORE_CHROMA:
+        vectorType = config.getJSONObject("CHROMA");
+        vectorUrl = vectorType.getString("CHROMA_URL");
+        store = createChromaStore(vectorUrl, indexName);
         break;
-      case "PINECONE":
+
+      case MuleChainVectorsConstants.VECTOR_STORE_MILVUS:
+        vectorType = config.getJSONObject("MILVUS");
+        vectorUrl = vectorType.getString("MILVUS_URL");
+        store = createMilvusStore(vectorUrl, indexName, dimension);
+        break;
+
+      case MuleChainVectorsConstants.VECTOR_STORE_PINECONE:
         vectorType = config.getJSONObject("PINECONE");
         vectorApiKey = vectorType.getString("PINECONE_APIKEY");
         String vectorCloud = vectorType.getString("PINECONE_SERVERLESS_CLOUD");
         String vectorCloudRegion = vectorType.getString("PINECONE_SERVERLESS_REGION");
         store = createPineconeStore(vectorApiKey, vectorCloud, vectorCloudRegion, indexName, dimension);
-
-      break;
-
-      case "ELASTICSEARCH":
-          vectorType = config.getJSONObject("ELASTICSEARCH");
-          vectorUrl = vectorType.getString("ELASTICSEARCH_URL");
-          userName = vectorType.getString("ELASTICSEARCH_USER");
-          password = vectorType.getString("ELASTICSEARCH_PASSWORD");
-          store = createElasticStore(vectorUrl, userName, password, indexName, dimension);
-        break;
-      case "PGVECTOR":
-          vectorType = config.getJSONObject("PGVECTOR");
-          vectorHost = vectorType.getString("POSTGRES_HOST");
-          vectorPort = vectorType.getInt("POSTGRES_PORT");
-          vectorDatabase = vectorType.getString("POSTGRES_DATABASE");
-          userName = vectorType.getString("POSTGRES_USER");
-          password = vectorType.getString("POSTGRES_PASSWORD");
-          store = createPGVectorStore(vectorHost, vectorPort, vectorDatabase, userName, password, indexName, dimension);
         break;
 
-      case "WEAVIATE":
-          vectorType = config.getJSONObject("WEAVIATE");
-          vectorHost = vectorType.getString("WEAVIATE_HOST");
-          String vectorProtocol = vectorType.getString("WEAVIATE_PROTOCOL");
-          vectorApiKey = vectorType.getString("WEAVIATE_APIKEY");
-          String weaviateIdex = indexName.substring(0, 1).toUpperCase() + indexName.substring(1);
-          store = createWeaviateStore(vectorProtocol, vectorHost, vectorApiKey, weaviateIdex);
+      case MuleChainVectorsConstants.VECTOR_STORE_ELASTICSEARCH:
+        vectorType = config.getJSONObject("ELASTICSEARCH");
+        vectorUrl = vectorType.getString("ELASTICSEARCH_URL");
+        userName = vectorType.getString("ELASTICSEARCH_USER");
+        password = vectorType.getString("ELASTICSEARCH_PASSWORD");
+        store = createElasticStore(vectorUrl, userName, password, indexName, dimension);
+        break;
+      case MuleChainVectorsConstants.VECTOR_STORE_PGVECTOR:
+        vectorType = config.getJSONObject("PGVECTOR");
+        vectorHost = vectorType.getString("POSTGRES_HOST");
+        vectorPort = vectorType.getInt("POSTGRES_PORT");
+        vectorDatabase = vectorType.getString("POSTGRES_DATABASE");
+        userName = vectorType.getString("POSTGRES_USER");
+        password = vectorType.getString("POSTGRES_PASSWORD");
+        store = createPGVectorStore(vectorHost, vectorPort, vectorDatabase, userName, password, indexName, dimension);
+        break;
+
+      case MuleChainVectorsConstants.VECTOR_STORE_WEAVIATE:
+        vectorType = config.getJSONObject("WEAVIATE");
+        vectorHost = vectorType.getString("WEAVIATE_HOST");
+        String vectorProtocol = vectorType.getString("WEAVIATE_PROTOCOL");
+        vectorApiKey = vectorType.getString("WEAVIATE_APIKEY");
+        String weaviateIdex = indexName.substring(0, 1).toUpperCase() + indexName.substring(1);
+        store = createWeaviateStore(vectorProtocol, vectorHost, vectorApiKey, weaviateIdex);
         break;
       default:
         throw new IllegalArgumentException("Unsupported VectorDB type: " + configuration.getEmbeddingModelService());
@@ -161,17 +159,19 @@ public class MuleChainVectorsOperations {
           llmTypeEndpoint = llmType.getString("AZURE_OPENAI_ENDPOINT");
           model = createAzureOpenAiModel(llmTypeKey, llmTypeEndpoint, modelParams);
         break;
+
       case MuleChainVectorsConstants.EMBEDDING_MODEL_SERVICE_OPENAI:
           llmType = config.getJSONObject("OPENAI");
           llmTypeKey = llmType.getString("OPENAI_API_KEY");
           model = createOpenAiModel(llmTypeKey, modelParams);
         break;
+
       case MuleChainVectorsConstants.EMBEDDING_MODEL_SERVICE_MISTRAL_AI:
           llmType = config.getJSONObject("MISTRAL_AI");
           llmTypeKey = llmType.getString("MISTRAL_AI_API_KEY");
           model = createMistralAIModel(llmTypeKey, modelParams);
-
         break;
+
       case MuleChainVectorsConstants.EMBEDDING_MODEL_SERVICE_NOMIC:
           llmType = config.getJSONObject("NOMIC");
           llmTypeKey = llmType.getString("NOMIC_API_KEY");
