@@ -15,7 +15,7 @@ import dev.langchain4j.data.document.DocumentParser;
 import java.util.List;
 
 import org.mule.extension.mulechain.vectors.internal.constants.MuleChainVectorsConstants;
-import org.mule.extension.mulechain.vectors.internal.helpers.FileTypeParameters;
+import org.mule.extension.mulechain.vectors.internal.helpers.parameters.FileTypeParameters;
 import dev.langchain4j.data.document.parser.TextDocumentParser;
 import dev.langchain4j.data.document.parser.apache.tika.ApacheTikaDocumentParser;
 import dev.langchain4j.data.document.Document;

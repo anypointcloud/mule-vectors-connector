@@ -21,10 +21,10 @@ import java.io.File;
 import java.nio.charset.StandardCharsets;
 
 import org.mule.extension.mulechain.vectors.internal.constants.MuleChainVectorsConstants;
-import org.mule.extension.mulechain.vectors.internal.helpers.FileTypeParameters;
+import org.mule.extension.mulechain.vectors.internal.helpers.parameters.FileTypeParameters;
 import org.mule.extension.mulechain.vectors.internal.config.MuleChainVectorsConfiguration;
-import org.mule.extension.mulechain.vectors.internal.helpers.MuleChainVectorsMetadataFilterParameters;
-import org.mule.extension.mulechain.vectors.internal.helpers.MuleChainVectorsEmbeddingModelNameParameters;
+import org.mule.extension.mulechain.vectors.internal.helpers.parameters.MuleChainVectorsMetadataFilterParameters;
+import org.mule.extension.mulechain.vectors.internal.helpers.parameters.MuleChainVectorsEmbeddingModelNameParameters;
 import dev.langchain4j.model.huggingface.HuggingFaceEmbeddingModel;
 import dev.langchain4j.store.embedding.*;
 import dev.langchain4j.store.embedding.filter.Filter;
@@ -62,7 +62,7 @@ import dev.langchain4j.store.embedding.weaviate.WeaviateEmbeddingStore;
 
 import org.mule.runtime.extension.api.annotation.param.Config;
 import org.mule.extension.mulechain.vectors.internal.storage.S3FileReader;
-import org.mule.extension.mulechain.vectors.internal.helpers.StorageTypeParameters;
+import org.mule.extension.mulechain.vectors.internal.helpers.parameters.StorageTypeParameters;
 
 import org.mule.extension.mulechain.vectors.internal.storage.AzureFileReader;
 import dev.langchain4j.store.embedding.azure.search.AzureAiSearchEmbeddingStore;

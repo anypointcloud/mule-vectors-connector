@@ -1,8 +1,10 @@
-package org.mule.extension.mulechain.vectors.internal.helpers;
+package org.mule.extension.mulechain.vectors.internal.helpers.parameters;
 
 import org.json.JSONObject;
 
 import org.mule.extension.mulechain.vectors.internal.constants.MuleChainVectorsConstants;
+import org.mule.extension.mulechain.vectors.internal.helpers.providers.MuleChainVectorsMetadataFilterMethodProvider;
+import org.mule.extension.mulechain.vectors.internal.helpers.providers.MuleChainVectorsMetadataKeyProvider;
 import org.mule.runtime.api.meta.ExpressionSupport;
 
 import org.mule.runtime.extension.api.annotation.Expression;

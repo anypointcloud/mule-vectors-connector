@@ -1,5 +1,6 @@
-package org.mule.extension.mulechain.vectors.internal.helpers;
+package org.mule.extension.mulechain.vectors.internal.helpers.parameters;
 
+import org.mule.extension.mulechain.vectors.internal.helpers.providers.StorageTypeProvider;
 import org.mule.runtime.api.meta.ExpressionSupport;
 import org.mule.runtime.extension.api.annotation.Expression;
 import org.mule.runtime.extension.api.annotation.param.Optional;

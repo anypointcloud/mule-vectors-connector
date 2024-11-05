@@ -1,4 +1,4 @@
-package org.mule.extension.mulechain.vectors.internal.helpers;
+package org.mule.extension.mulechain.vectors.internal.helpers.providers;
 
 import java.util.Collections;
 import java.util.Set;
