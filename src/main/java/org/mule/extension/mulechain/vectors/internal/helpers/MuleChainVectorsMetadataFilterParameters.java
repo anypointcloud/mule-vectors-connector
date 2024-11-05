@@ -18,7 +18,7 @@ import dev.langchain4j.store.embedding.filter.Filter;
  * Abstract class that defines filter parameters for MuleChain Vectors.
  * Provides methods to validate parameters and build a metadata filter.
  */
-public abstract class MuleChainVectorsFilterParameters {
+public abstract class MuleChainVectorsMetadataFilterParameters {
 
   /**
    * @return The metadata key to be used for filtering.
@@ -61,11 +61,11 @@ public abstract class MuleChainVectorsFilterParameters {
     Filter filter;
     switch(getFilterMethod()) {
 
-      case MuleChainVectorsConstants.IS_EQUAL_TO:
+      case MuleChainVectorsConstants.METADATA_FILTER_METHOD_IS_EQUAL_TO:
         filter = metadataKey(getMetadataKey()).isEqualTo(getMetadataValue());
         break;
 
-      case MuleChainVectorsConstants.IS_NOT_EQUAL_TO:
+      case MuleChainVectorsConstants.METADATA_FILTER_METHOD_IS_NOT_EQUAL_TO:
         filter = metadataKey(getMetadataKey()).isNotEqualTo(getMetadataValue());
         break;
 
@@ -102,7 +102,7 @@ public abstract class MuleChainVectorsFilterParameters {
   /**
    * Inner class representing the filter parameters for search operations.
    */
-  public static class SearchFilterParameters extends MuleChainVectorsFilterParameters {
+  public static class SearchFilterParameters extends MuleChainVectorsMetadataFilterParameters {
 
     /**
      * The metadata key used for filtering in search operations.
@@ -121,7 +121,7 @@ public abstract class MuleChainVectorsFilterParameters {
     @Expression(ExpressionSupport.SUPPORTED)
     @OfValues(MuleChainVectorsMetadataFilterMethodProvider.class)
     @Summary("The method used to apply the filter, e.g., isEqualsTo or notEqualsTo")
-    @Optional(defaultValue=MuleChainVectorsConstants.IS_EQUAL_TO)
+    @Optional(defaultValue=MuleChainVectorsConstants.METADATA_FILTER_METHOD_IS_EQUAL_TO)
     private String filterMethod;
 
     /**
@@ -152,7 +152,7 @@ public abstract class MuleChainVectorsFilterParameters {
   /**
    * Inner class representing the filter parameters for remove operations.
    */
-  public static class RemoveFilterParameters extends MuleChainVectorsFilterParameters {
+  public static class RemoveFilterParameters extends MuleChainVectorsMetadataFilterParameters {
 
     /**
      * The metadata key used for filtering in remove operations.

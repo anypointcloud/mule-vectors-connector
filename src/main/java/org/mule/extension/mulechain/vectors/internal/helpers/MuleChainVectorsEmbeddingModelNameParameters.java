@@ -5,15 +5,15 @@ import org.mule.runtime.extension.api.annotation.Expression;
 import org.mule.runtime.extension.api.annotation.param.Parameter;
 import org.mule.runtime.extension.api.annotation.values.OfValues;
 
-public class MuleChainVectorsModelParameters {
+public class MuleChainVectorsEmbeddingModelNameParameters {
 
   @Parameter
   @Expression(ExpressionSupport.SUPPORTED)
-  @OfValues(MuleChainVectorsParameterEModelNameProvider.class)
-  private String modelName;
+  @OfValues(MuleChainVectorsEmbeddingModelNameProvider.class)
+  private String embeddingModelName;
 
-  public String getModelName() {
-    return modelName;
+  public String getEmbeddingModelName() {
+    return embeddingModelName;
   }
 
 }

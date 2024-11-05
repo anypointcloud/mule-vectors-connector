@@ -22,9 +22,9 @@ import java.nio.charset.StandardCharsets;
 
 import org.mule.extension.mulechain.vectors.internal.constants.MuleChainVectorsConstants;
 import org.mule.extension.mulechain.vectors.internal.helpers.FileTypeParameters;
-import org.mule.extension.mulechain.vectors.internal.helpers.MuleChainVectorsConfiguration;
-import org.mule.extension.mulechain.vectors.internal.helpers.MuleChainVectorsFilterParameters;
-import org.mule.extension.mulechain.vectors.internal.helpers.MuleChainVectorsModelParameters;
+import org.mule.extension.mulechain.vectors.internal.config.MuleChainVectorsConfiguration;
+import org.mule.extension.mulechain.vectors.internal.helpers.MuleChainVectorsMetadataFilterParameters;
+import org.mule.extension.mulechain.vectors.internal.helpers.MuleChainVectorsEmbeddingModelNameParameters;
 import dev.langchain4j.model.huggingface.HuggingFaceEmbeddingModel;
 import dev.langchain4j.store.embedding.*;
 import dev.langchain4j.store.embedding.filter.Filter;
@@ -140,83 +140,84 @@ public class MuleChainVectorsOperations {
           store = createWeaviateStore(vectorProtocol, vectorHost, vectorApiKey, weaviateIdex);
         break;
       default:
-        throw new IllegalArgumentException("Unsupported VectorDB type: " + configuration.getEmbeddingProviderType());
+        throw new IllegalArgumentException("Unsupported VectorDB type: " + configuration.getEmbeddingModelService());
     }
 
     return store;
   }
 
-  private EmbeddingModel createModel(MuleChainVectorsConfiguration configuration, MuleChainVectorsModelParameters modelParams) {
+  private EmbeddingModel createModel(MuleChainVectorsConfiguration configuration, MuleChainVectorsEmbeddingModelNameParameters modelParams) {
+
     EmbeddingModel model = null;
     JSONObject config = readConfigFile(configuration.getConfigFilePath());
     JSONObject llmType;
     String llmTypeKey;
     String llmTypeEndpoint;
 
-    switch (configuration.getEmbeddingProviderType()) {
-      case "AZURE_OPENAI":
+    switch (configuration.getEmbeddingModelService()) {
+      case MuleChainVectorsConstants.EMBEDDING_MODEL_SERVICE_AZURE_OPENAI:
           llmType = config.getJSONObject("AZURE_OPENAI");
           llmTypeKey = llmType.getString("AZURE_OPENAI_KEY");
           llmTypeEndpoint = llmType.getString("AZURE_OPENAI_ENDPOINT");
           model = createAzureOpenAiModel(llmTypeKey, llmTypeEndpoint, modelParams);
         break;
-      case "OPENAI":
+      case MuleChainVectorsConstants.EMBEDDING_MODEL_SERVICE_OPENAI:
           llmType = config.getJSONObject("OPENAI");
           llmTypeKey = llmType.getString("OPENAI_API_KEY");
           model = createOpenAiModel(llmTypeKey, modelParams);
         break;
-      case "MISTRAL_AI":
+      case MuleChainVectorsConstants.EMBEDDING_MODEL_SERVICE_MISTRAL_AI:
           llmType = config.getJSONObject("MISTRAL_AI");
           llmTypeKey = llmType.getString("MISTRAL_AI_API_KEY");
           model = createMistralAIModel(llmTypeKey, modelParams);
 
         break;
-      case "NOMIC":
+      case MuleChainVectorsConstants.EMBEDDING_MODEL_SERVICE_NOMIC:
           llmType = config.getJSONObject("NOMIC");
           llmTypeKey = llmType.getString("NOMIC_API_KEY");
           model = createNomicModel(llmTypeKey, modelParams);
 
         break;
-      case "HUGGING_FACE":
+      case MuleChainVectorsConstants.EMBEDDING_MODEL_SERVICE_HUGGING_FACE:
         llmType = config.getJSONObject("HUGGING_FACE");
         llmTypeKey = llmType.getString("HUGGING_FACE_API_KEY");
         model = createHuggingFaceModel(llmTypeKey, modelParams);
 
         break;
       default:
-        throw new IllegalArgumentException("Unsupported Embedding Model: " + configuration.getEmbeddingProviderType());
+        throw new IllegalArgumentException("Unsupported Embedding Model: " + configuration.getEmbeddingModelService());
     }
     return model;
   }
 
-  private EmbeddingModel createAzureOpenAiModel(String llmTypeKey, String llmTypeEndpoint, MuleChainVectorsModelParameters modelParams) {
+  private EmbeddingModel createAzureOpenAiModel(String llmTypeKey, String llmTypeEndpoint, MuleChainVectorsEmbeddingModelNameParameters modelParams) {
     System.out.println("Inside createAzureOpenAiModel");
       return AzureOpenAiEmbeddingModel.builder()
         .apiKey(llmTypeKey)
         .endpoint(llmTypeEndpoint)
-        .deploymentName(modelParams.getModelName())
+        .deploymentName(modelParams.getEmbeddingModelName())
         .build();
     }
 
-  private EmbeddingModel createOpenAiModel(String llmTypeKey, MuleChainVectorsModelParameters modelParams) {
+  private EmbeddingModel createOpenAiModel(String llmTypeKey, MuleChainVectorsEmbeddingModelNameParameters modelParams) {
       return OpenAiEmbeddingModel.builder()
         .apiKey(llmTypeKey)
-        .modelName(modelParams.getModelName())
+        .modelName(modelParams.getEmbeddingModelName())
         .build();
     }
 
-  private EmbeddingModel createMistralAIModel(String llmTypeKey, MuleChainVectorsModelParameters modelParams) {
+  private EmbeddingModel createMistralAIModel(String llmTypeKey, MuleChainVectorsEmbeddingModelNameParameters modelParams) {
     return MistralAiEmbeddingModel.builder()
       .apiKey(llmTypeKey)
-      .modelName(modelParams.getModelName())
+      .modelName(modelParams.getEmbeddingModelName())
       .build();
   }
 
-  private EmbeddingModel createNomicModel(String llmTypeKey, MuleChainVectorsModelParameters modelParams) {
+  private EmbeddingModel createNomicModel(String llmTypeKey, MuleChainVectorsEmbeddingModelNameParameters modelParams) {
     return NomicEmbeddingModel.builder()
       //.baseUrl("https://api-atlas.nomic.ai/v1/")
       .apiKey(llmTypeKey)
-      .modelName(modelParams.getModelName())
+      .modelName(modelParams.getEmbeddingModelName())
       //.taskType("clustering")
       .maxRetries(2)
       .logRequests(true)
@@ -224,10 +225,10 @@ public class MuleChainVectorsOperations {
       .build();
   }
 
-  private EmbeddingModel createHuggingFaceModel(String llmTypeKey, MuleChainVectorsModelParameters modelParams) {
+  private EmbeddingModel createHuggingFaceModel(String llmTypeKey, MuleChainVectorsEmbeddingModelNameParameters modelParams) {
     return HuggingFaceEmbeddingModel.builder()
             .accessToken(llmTypeKey)
-            .modelId(modelParams.getModelName())
+            .modelId(modelParams.getEmbeddingModelName())
             .build();
   }
 
@@ -324,7 +325,7 @@ public class MuleChainVectorsOperations {
    */
   @MediaType(value = APPLICATION_JSON, strict = false)
   @Alias("Embedding-add-text-to-store")
-  public InputStream addTextToStore(String storeName, String textToAdd,@Config MuleChainVectorsConfiguration configuration,  @ParameterGroup(name = "Additional Properties") MuleChainVectorsModelParameters modelParams){
+  public InputStream addTextToStore(String storeName, String textToAdd,@Config MuleChainVectorsConfiguration configuration,  @ParameterGroup(name = "Additional Properties") MuleChainVectorsEmbeddingModelNameParameters modelParams){
 
     EmbeddingModel embeddingModel = createModel(configuration, modelParams);
 
@@ -349,7 +350,7 @@ public class MuleChainVectorsOperations {
    */
   @MediaType(value = APPLICATION_JSON, strict = false)
   @Alias("Embedding-generate-from-text")
-  public InputStream generateEmbedding(String textToAdd, @Config MuleChainVectorsConfiguration configuration,  @ParameterGroup(name = "Additional Properties") MuleChainVectorsModelParameters modelParams){
+  public InputStream generateEmbedding(String textToAdd, @Config MuleChainVectorsConfiguration configuration,  @ParameterGroup(name = "Additional Properties") MuleChainVectorsEmbeddingModelNameParameters modelParams){
 
     EmbeddingModel embeddingModel = createModel(configuration, modelParams);
 
@@ -374,8 +375,6 @@ public class MuleChainVectorsOperations {
   @Alias("Document-split-into-chunks")
   public InputStream documentSplitter(String contextPath, @ParameterGroup(name = "Context") FileTypeParameters fileType,
                                 int maxSegmentSizeInChars, int maxOverlapSizeInChars){
-
-
 
     List<TextSegment> segments;
     DocumentSplitter splitter;
@@ -402,7 +401,7 @@ public class MuleChainVectorsOperations {
         Document htmlDocument = UrlDocumentLoader.load(url, new TextDocumentParser());
         HtmlToTextDocumentTransformer transformer = new HtmlToTextDocumentTransformer(null, null, true);
         document = transformer.transform(htmlDocument);
-        document.metadata().add("url", contextPath);
+        document.metadata().add(MuleChainVectorsConstants.METADATA_KEY_URL, contextPath);
         splitter = DocumentSplitters.recursive(maxSegmentSizeInChars, maxOverlapSizeInChars);
         segments = splitter.split(document);
         break;
@@ -444,7 +443,7 @@ public class MuleChainVectorsOperations {
         Document htmlDocument = UrlDocumentLoader.load(url, new TextDocumentParser());
         HtmlToTextDocumentTransformer transformer = new HtmlToTextDocumentTransformer(null, null, true);
         document = transformer.transform(htmlDocument);
-        document.metadata().add("url", contextPath);
+        document.metadata().add(MuleChainVectorsConstants.METADATA_KEY_URL, contextPath);
 
         break;
       default:
@@ -471,7 +470,7 @@ public class MuleChainVectorsOperations {
                                 @ParameterGroup(name = "Context") FileTypeParameters fileType,
                                 @ParameterGroup(name = "Storage") StorageTypeParameters storageType,
                                 int maxSegmentSizeInChars, int maxOverlapSizeInChars,
-                                @ParameterGroup(name = "Additional Properties") MuleChainVectorsModelParameters modelParams){
+                                @ParameterGroup(name = "Additional Properties") MuleChainVectorsEmbeddingModelNameParameters modelParams){
 
     EmbeddingModel embeddingModel = createModel(configuration, modelParams);
 
@@ -516,7 +515,7 @@ public class MuleChainVectorsOperations {
         System.out.println("Processing file " + currentFileCounter + ": " + file.getFileName());
         Document document = null;
         switch (fileType.getFileType()) {
-          case "crawl":    
+          case MuleChainVectorsConstants.FILE_TYPE_CRAWL:
             document = loadDocument(file.toString(), new TextDocumentParser());
             addMetadata(Paths.get(file.toString()), document);
             ingestor.ingest(document);    
@@ -615,7 +614,7 @@ public class MuleChainVectorsOperations {
                                  @ParameterGroup(name = "Context") FileTypeParameters fileType,
                                  @ParameterGroup(name = "Storage") StorageTypeParameters storageType,
                                  int maxSegmentSizeInChars, int maxOverlapSizeInChars,
-                                 @ParameterGroup(name = "Additional Properties") MuleChainVectorsModelParameters modelParams) {
+                                 @ParameterGroup(name = "Additional Properties") MuleChainVectorsEmbeddingModelNameParameters modelParams) {
 
                                   
     EmbeddingModel embeddingModel = createModel(configuration, modelParams);
@@ -658,7 +657,7 @@ public class MuleChainVectorsOperations {
       String content = jsonNode.path("content").asText();
       String source_url = jsonNode.path("url").asText();
       String title = jsonNode.path("title").asText();
-      document.metadata().add(MuleChainVectorsConstants.METADATA_KEY_FILE_TYPE, "text");
+      document.metadata().add(MuleChainVectorsConstants.METADATA_KEY_FILE_TYPE, MuleChainVectorsConstants.FILE_TYPE_TEXT);
       document.metadata().add(MuleChainVectorsConstants.METADATA_KEY_FILE_NAME, title);
       document.metadata().add(MuleChainVectorsConstants.METADATA_KEY_FULL_PATH, source_url);
       document.metadata().put("source", source_url);
@@ -678,7 +677,7 @@ public class MuleChainVectorsOperations {
     String fileName;
 
     switch (fileType.getFileType()) {
-      case "crawl":
+      case MuleChainVectorsConstants.FILE_TYPE_CRAWL:
         filePath = Paths.get(contextPath.toString()); 
         fileName = getFileNameFromPath(contextPath);
 
@@ -687,28 +686,28 @@ public class MuleChainVectorsOperations {
         ingestor.ingest(document);
 
         break;
-      case "text":
+      case MuleChainVectorsConstants.FILE_TYPE_TEXT:
         filePath = Paths.get(contextPath.toString()); 
         fileName = getFileNameFromPath(contextPath);
         document = loadDocument(filePath.toString(), new TextDocumentParser());
-        document.metadata().add(MuleChainVectorsConstants.METADATA_KEY_FILE_TYPE, "text");
+        document.metadata().add(MuleChainVectorsConstants.METADATA_KEY_FILE_TYPE, MuleChainVectorsConstants.FILE_TYPE_TEXT);
         document.metadata().add(MuleChainVectorsConstants.METADATA_KEY_FILE_NAME, fileName);
         document.metadata().add(MuleChainVectorsConstants.METADATA_KEY_FULL_PATH, contextPath);
         ingestor.ingest(document);
 
 
         break;
-      case "any":
+      case MuleChainVectorsConstants.FILE_TYPE_ANY:
         filePath = Paths.get(contextPath.toString()); 
         fileName = getFileNameFromPath(contextPath);
         document = loadDocument(filePath.toString(), new ApacheTikaDocumentParser());
-        document.metadata().add(MuleChainVectorsConstants.METADATA_KEY_FILE_TYPE, "text");
+        document.metadata().add(MuleChainVectorsConstants.METADATA_KEY_FILE_TYPE, MuleChainVectorsConstants.FILE_TYPE_ANY);
         document.metadata().add(MuleChainVectorsConstants.METADATA_KEY_FILE_NAME, fileName);
         document.metadata().add(MuleChainVectorsConstants.METADATA_KEY_FULL_PATH, contextPath);
         ingestor.ingest(document);
 
         break;
-      case "url":
+      case MuleChainVectorsConstants.FILE_TYPE_URL:
         System.out.println("Context Path: " + contextPath);
 
         URL url = null;
@@ -721,7 +720,7 @@ public class MuleChainVectorsOperations {
         Document htmlDocument = UrlDocumentLoader.load(url, new TextDocumentParser());
         HtmlToTextDocumentTransformer transformer = new HtmlToTextDocumentTransformer(null, null, true);
         document = transformer.transform(htmlDocument);
-        document.metadata().add("url", contextPath);
+        document.metadata().add(MuleChainVectorsConstants.METADATA_KEY_URL, contextPath);
         ingestor.ingest(document);
 
         break;
@@ -755,7 +754,7 @@ public class MuleChainVectorsOperations {
   @Alias("EMBEDDING-query-from-store")
   public InputStream queryFromEmbedding(String storeName, String question, Number maxResults, Double minScore, 
                                   @Config MuleChainVectorsConfiguration configuration,
-                                  @ParameterGroup(name = "Additional Properties") MuleChainVectorsModelParameters modelParams) {
+                                  @ParameterGroup(name = "Additional Properties") MuleChainVectorsEmbeddingModelNameParameters modelParams) {
     int maximumResults = (int) maxResults;
     if (minScore == null) { //|| minScore == 0) {
       minScore = 0.7;
@@ -832,8 +831,8 @@ public class MuleChainVectorsOperations {
   @Alias("EMBEDDING-query-from-store-with-filter")
   public InputStream queryByFilterFromEmbedding(String storeName, String question, Number maxResults, Double minScore,
                                         @Config MuleChainVectorsConfiguration configuration,
-                                        @ParameterGroup(name = "Filter") MuleChainVectorsFilterParameters.SearchFilterParameters searchFilterParams,
-                                        @ParameterGroup(name = "Additional Properties") MuleChainVectorsModelParameters modelParams) {
+                                        @ParameterGroup(name = "Filter") MuleChainVectorsMetadataFilterParameters.SearchFilterParameters searchFilterParams,
+                                        @ParameterGroup(name = "Additional Properties") MuleChainVectorsEmbeddingModelNameParameters modelParams) {
     int maximumResults = (int) maxResults;
     if (minScore == null) { //|| minScore == 0) {
       minScore = 0.7;
@@ -924,7 +923,7 @@ public class MuleChainVectorsOperations {
   @Alias("EMBEDDING-list-documents")
   public InputStream listDocumentsFromStore(String storeName,
                                         @Config MuleChainVectorsConfiguration configuration,
-                                        @ParameterGroup(name = "Additional Properties") MuleChainVectorsModelParameters modelParams) {
+                                        @ParameterGroup(name = "Additional Properties") MuleChainVectorsEmbeddingModelNameParameters modelParams) {
 
     EmbeddingModel embeddingModel = createModel(configuration, modelParams);
     EmbeddingStore<TextSegment> store = createStore(configuration, storeName, embeddingModel.dimension());
@@ -983,8 +982,8 @@ public class MuleChainVectorsOperations {
   @Alias("EMBEDDING-remove-documents-by-filter")
   public InputStream removeDocumentsByFilter(String storeName,
                                             @Config MuleChainVectorsConfiguration configuration,
-                                             @ParameterGroup(name = "Filter") MuleChainVectorsFilterParameters.RemoveFilterParameters removeFilterParams,
-                                            @ParameterGroup(name = "Additional Properties") MuleChainVectorsModelParameters modelParams) {
+                                             @ParameterGroup(name = "Filter") MuleChainVectorsMetadataFilterParameters.RemoveFilterParameters removeFilterParams,
+                                            @ParameterGroup(name = "Additional Properties") MuleChainVectorsEmbeddingModelNameParameters modelParams) {
 
     EmbeddingModel embeddingModel = createModel(configuration, modelParams);
     EmbeddingStore<TextSegment> store = createStore(configuration, storeName, embeddingModel.dimension());
@@ -999,13 +998,4 @@ public class MuleChainVectorsOperations {
 
     return toInputStream(jsonObject.toString(), StandardCharsets.UTF_8);
   }
-
-  private boolean isURL(String fileNameFilter) {
-    try {
-      new URL(fileNameFilter);
-      return true;
-    } catch (Exception e) {
-      return false;
-    }
-  }
-  }
+}

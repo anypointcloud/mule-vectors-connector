@@ -26,8 +26,8 @@ public class MuleChainVectorsMetadataFilterMethodProvider implements ValueProvid
   public Set<Value> resolve() throws ValueResolvingException {
 
     return ValueBuilder.getValuesFor(
-            MuleChainVectorsConstants.IS_EQUAL_TO,
-            MuleChainVectorsConstants.IS_NOT_EQUAL_TO); // Additional methods can be added as needed
+            MuleChainVectorsConstants.METADATA_FILTER_METHOD_IS_EQUAL_TO,
+            MuleChainVectorsConstants.METADATA_FILTER_METHOD_IS_NOT_EQUAL_TO); // Additional methods can be added as needed
   }
 
 }
