@@ -6,7 +6,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.mule.mulechain</groupId>
     <artifactId>mulechain-vectors</artifactId>
-    <version>0.1.31</version>
+    <version>0.1.68-SNAPSHOT</version>
     <packaging>mule-extension</packaging>
     <name>MAC Vectors</name>
 
@@ -21,6 +21,8 @@
 		<formatterConfigPath>formatter.xml</formatterConfigPath>
 		<javaFormatter.plugin.version>2.0.1</javaFormatter.plugin.version>
 		<formatterGoal>validate</formatterGoal>	
+		<langchain4jVersion>0.35.0</langchain4jVersion>
+		<slf4jApi.version>2.0.7</slf4jApi.version>
     </properties>
 
 <!-- 	<build>
@@ -67,7 +69,23 @@
         </dependencies>
     </dependencyManagement>
 
-    <dependencies>
+    <dependencies>        
+		<dependency>
+			<groupId>dev.langchain4j</groupId>
+			<artifactId>langchain4j-azure-ai-search</artifactId>
+			<version>${langchain4jVersion}</version>
+		</dependency>
+		<dependency>
+			<groupId>dev.langchain4j</groupId>
+			<artifactId>langchain4j-document-loader-azure-storage-blob</artifactId>
+			<version>${langchain4jVersion}</version>
+		</dependency>
+		<dependency>
+			<groupId>dev.langchain4j</groupId>
+			<artifactId>langchain4j-document-loader-amazon-s3</artifactId>
+			<version>${langchain4jVersion}</version>
+		</dependency>
+		
         <dependency>
             <groupId>org.mule.sdk</groupId>
             <artifactId>mule-sdk-api</artifactId>
@@ -77,9 +95,13 @@
 		<dependency>
 			<groupId>dev.langchain4j</groupId>
 			<artifactId>langchain4j</artifactId>
-			<version>0.32.0</version>
+			<version>${langchain4jVersion}</version>
 		</dependency>
-
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>${slf4jApi.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
@@ -88,13 +110,13 @@
 		<dependency>
 			<groupId>dev.langchain4j</groupId>
 			<artifactId>langchain4j-document-parser-apache-tika</artifactId>
-			<version>0.32.0</version>
+			<version>${langchain4jVersion}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>dev.langchain4j</groupId>
 			<artifactId>langchain4j-easy-rag</artifactId>
-			<version>0.32.0</version>
+			<version>${langchain4jVersion}</version>
 		</dependency>
 
 		<dependency>
@@ -105,57 +127,69 @@
 
 		<dependency>
 			<groupId>dev.langchain4j</groupId>
+			<artifactId>langchain4j-azure-open-ai</artifactId>
+			<version>${langchain4jVersion}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>dev.langchain4j</groupId>
 			<artifactId>langchain4j-open-ai</artifactId>
-			<version>0.32.0</version>
+			<version>${langchain4jVersion}</version>
 		</dependency>
 
         <dependency>
             <groupId>dev.langchain4j</groupId>
             <artifactId>langchain4j-mistral-ai</artifactId>
-            <version>0.32.0</version>
+            <version>${langchain4jVersion}</version>
         </dependency>
 
 		<dependency>
 			<groupId>dev.langchain4j</groupId>
 			<artifactId>langchain4j-nomic</artifactId>
-			<version>0.32.0</version>
+			<version>${langchain4jVersion}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>dev.langchain4j</groupId>
 			<artifactId>langchain4j-hugging-face</artifactId>
-			<version>0.32.0</version>
+			<version>${langchain4jVersion}</version>
 		</dependency>
 
         <dependency>
             <groupId>dev.langchain4j</groupId>
             <artifactId>langchain4j-chroma</artifactId>
-            <version>0.32.0</version>
+            <version>${langchain4jVersion}</version>
         </dependency>
 
 		<dependency>
             <groupId>dev.langchain4j</groupId>
             <artifactId>langchain4j-milvus</artifactId>
-            <version>0.32.0</version>
+            <version>${langchain4jVersion}</version>
         </dependency>
 
         <dependency>
             <groupId>dev.langchain4j</groupId>
             <artifactId>langchain4j-elasticsearch</artifactId>
-            <version>0.32.0</version>
+            <version>${langchain4jVersion}</version>
         </dependency>
 
         <dependency>
             <groupId>dev.langchain4j</groupId>
             <artifactId>langchain4j-pgvector</artifactId>
-            <version>0.32.0</version>
+            <version>${langchain4jVersion}</version>
         </dependency>
 
         <dependency>
             <groupId>dev.langchain4j</groupId>
             <artifactId>langchain4j-weaviate</artifactId>
-            <version>0.32.0</version>
+            <version>${langchain4jVersion}</version>
         </dependency>
+
+		<dependency>
+			<groupId>dev.langchain4j</groupId>
+			<artifactId>langchain4j-document-transformer-jsoup</artifactId>
+			<version>${langchain4jVersion}</version>
+		</dependency>
 
 		<!--<dependency>
             <groupId>dev.langchain4j</groupId>
@@ -166,7 +200,7 @@
         <dependency>
             <groupId>dev.langchain4j</groupId>
             <artifactId>langchain4j-pinecone</artifactId>
-            <version>0.33.0</version>
+            <version>${langchain4jVersion}</version>
         </dependency>
 
         <dependency>
