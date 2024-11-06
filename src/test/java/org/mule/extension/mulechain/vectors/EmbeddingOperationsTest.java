@@ -1,11 +1,11 @@
-package com.mule.mulechain.vectors;
+package org.mule.extension.mulechain.vectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import org.mule.functional.junit4.MuleArtifactFunctionalTestCase;
 import org.junit.Test;
 
-public class MuleChainVectorsOperationsTestCase extends MuleArtifactFunctionalTestCase {
+public class EmbeddingOperationsTest extends MuleArtifactFunctionalTestCase {
 
   /**
    * Specifies the mule config xml with the flows that are going to be executed in the tests, this file lives in the test resources.
@@ -31,6 +31,7 @@ public class MuleChainVectorsOperationsTestCase extends MuleArtifactFunctionalTe
                                       .getMessage()
                                       .getPayload()
                                       .getValue());
+
     assertThat(payloadValue, is("Using Configuration [configId] with Connection id [aValue:100]"));
   }
 }
