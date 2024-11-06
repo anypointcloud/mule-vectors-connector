@@ -100,7 +100,7 @@ public class EmbeddingStoreIngestorHelper {
     }
     LOGGER.info("Processing complete");
 
-    return createIngestionStatusObject(totalFiles, folderPath);
+    return createFolderIngestionStatusObject(totalFiles, folderPath);
   }
 
   /**
@@ -135,7 +135,7 @@ public class EmbeddingStoreIngestorHelper {
         throw new IllegalArgumentException("Unsupported File Type: " + fileTypeParameters.getFileType());
     }
     ingestor.ingest(document);
-    return createStatusObject(fileTypeParameters.getFileType(), filePath);
+    return createFileIngestionStatusObject(fileTypeParameters.getFileType(), filePath);
   }
 
   /**
@@ -153,7 +153,7 @@ public class EmbeddingStoreIngestorHelper {
 
     S3FileReader s3FileReader = new S3FileReader(s3Bucket, awsKey, awsSecret, awsRegion);
     long totalFiles = s3FileReader.readAllFiles(folderPath, ingestor, fileTypeParameters);
-    return createIngestionStatusObject(totalFiles, folderPath);
+    return createFolderIngestionStatusObject(totalFiles, folderPath);
   }
 
   /**
@@ -171,7 +171,7 @@ public class EmbeddingStoreIngestorHelper {
 
     S3FileReader s3FileReader = new S3FileReader(s3Bucket, awsKey, awsSecret, awsRegion);
     s3FileReader.readFile(filePath, fileTypeParameters, ingestor);
-    return createStatusObject(fileTypeParameters.getFileType(), filePath);
+    return createFileIngestionStatusObject(fileTypeParameters.getFileType(), filePath);
   }
 
   /**
@@ -186,8 +186,8 @@ public class EmbeddingStoreIngestorHelper {
   public JSONObject ingestFromAZContainer(String containerName, FileTypeParameters fileType, String azureName, String azureKey) {
 
     AzureFileReader azFileReader = new AzureFileReader(azureName, azureKey);
-    azFileReader.readAllFiles(containerName, ingestor, fileType);
-    return createStatusObject(fileType.getFileType(), containerName);
+    long totalFiles = azFileReader.readAllFiles(containerName, ingestor, fileType);
+    return createFolderIngestionStatusObject(totalFiles, containerName);
   }
 
   /**
@@ -204,7 +204,7 @@ public class EmbeddingStoreIngestorHelper {
 
     AzureFileReader azFileReader = new AzureFileReader(azureName, azureKey);
     azFileReader.readFile(containerName, blobName, fileType, ingestor);
-    return createStatusObject(fileType.getFileType(), containerName);
+    return createFileIngestionStatusObject(fileType.getFileType(), containerName);
   }
 
   /**
@@ -235,11 +235,11 @@ public class EmbeddingStoreIngestorHelper {
    * @param folderPath the path of the ingested file or folder.
    * @return a JSONObject containing ingestion status metadata.
    */
-  private JSONObject createStatusObject(String fileType, String folderPath) {
+  private JSONObject createFileIngestionStatusObject(String fileType, String folderPath) {
 
     JSONObject jsonObject = new JSONObject();
     jsonObject.put("fileType", fileType);
-    jsonObject.put("folderPath", folderPath);
+    jsonObject.put("filePath", folderPath);
     jsonObject.put("storeName", storeName);
     jsonObject.put("status", "updated");
     return jsonObject;
@@ -252,7 +252,7 @@ public class EmbeddingStoreIngestorHelper {
    * @param folderPath the path of the processed folder.
    * @return a JSONObject containing the ingestion status with file count, folder path, store name, and status.
    */
-  private JSONObject createIngestionStatusObject(long totalFiles, String folderPath) {
+  private JSONObject createFolderIngestionStatusObject(Long totalFiles, String folderPath) {
 
     JSONObject jsonObject = new JSONObject();
     jsonObject.put("filesCount", totalFiles);
