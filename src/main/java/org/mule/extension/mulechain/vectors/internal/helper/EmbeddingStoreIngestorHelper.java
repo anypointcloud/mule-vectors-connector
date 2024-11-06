@@ -12,6 +12,7 @@ import org.mule.extension.mulechain.vectors.internal.helper.parameter.FileTypePa
 import org.mule.extension.mulechain.vectors.internal.storage.AzureFileReader;
 import org.mule.extension.mulechain.vectors.internal.storage.S3FileReader;
 import org.mule.extension.mulechain.vectors.internal.util.DocumentUtils;
+import org.mule.extension.mulechain.vectors.internal.util.Utils;
 
 import java.io.File;
 import java.io.IOException;
@@ -54,6 +55,7 @@ public class EmbeddingStoreIngestorHelper {
             document.metadata().add(Constants.METADATA_KEY_FILE_TYPE, Constants.FILE_TYPE_TEXT);
             document.metadata().add(Constants.METADATA_KEY_FILE_NAME, file.getFileName());
             document.metadata().add(Constants.METADATA_KEY_FULL_PATH, folderPath + file.getFileName());
+            document.metadata().add(Constants.METADATA_KEY_INGESTION_DATETIME, Utils.getCurrentISO8601Timestamp());
             ingestor.ingest(document);
             break;
           case Constants.FILE_TYPE_ANY:
@@ -62,6 +64,7 @@ public class EmbeddingStoreIngestorHelper {
             document.metadata().add(Constants.METADATA_KEY_FILE_TYPE, Constants.FILE_TYPE_ANY);
             document.metadata().add(Constants.METADATA_KEY_FILE_NAME, file.getFileName());
             document.metadata().add(Constants.METADATA_KEY_FULL_PATH, folderPath + file.getFileName());
+            document.metadata().add(Constants.METADATA_KEY_INGESTION_DATETIME, Utils.getCurrentISO8601Timestamp());
             ingestor.ingest(document);
             break;
           default:
@@ -106,6 +109,7 @@ public class EmbeddingStoreIngestorHelper {
         document.metadata().add(Constants.METADATA_KEY_FILE_TYPE, Constants.FILE_TYPE_TEXT);
         document.metadata().add(Constants.METADATA_KEY_FILE_NAME, fileName);
         document.metadata().add(Constants.METADATA_KEY_FULL_PATH, contextPath);
+        document.metadata().add(Constants.METADATA_KEY_INGESTION_DATETIME, Utils.getCurrentISO8601Timestamp());
         ingestor.ingest(document);
 
 
@@ -117,6 +121,7 @@ public class EmbeddingStoreIngestorHelper {
         document.metadata().add(Constants.METADATA_KEY_FILE_TYPE, Constants.FILE_TYPE_ANY);
         document.metadata().add(Constants.METADATA_KEY_FILE_NAME, fileName);
         document.metadata().add(Constants.METADATA_KEY_FULL_PATH, contextPath);
+        document.metadata().add(Constants.METADATA_KEY_INGESTION_DATETIME, Utils.getCurrentISO8601Timestamp());
         ingestor.ingest(document);
 
         break;

@@ -227,7 +227,7 @@ public class EmbeddingOperations {
     String absoluteDirectoryPath;
     String fileName;
     String url;
-    String textSegment;
+    String ingestionDateTime;
 
     JSONObject contentObject;
     String fullPath;
@@ -238,7 +238,7 @@ public class EmbeddingOperations {
       url = matchMetadata.getString(Constants.METADATA_KEY_URL);
       fullPath = matchMetadata.getString(Constants.METADATA_KEY_FULL_PATH);
       absoluteDirectoryPath = matchMetadata.getString(Constants.METADATA_KEY_ABSOLUTE_DIRECTORY_PATH);
-      textSegment = matchMetadata.getString("textSegment");
+      ingestionDateTime = matchMetadata.getString(Constants.METADATA_KEY_INGESTION_DATETIME);
 
       contentObject = new JSONObject();
       contentObject.put("absoluteDirectoryPath", absoluteDirectoryPath);
@@ -246,6 +246,7 @@ public class EmbeddingOperations {
       contentObject.put("file_name", fileName);
       contentObject.put("url", url);
       contentObject.put("individualScore", match.score());
+      contentObject.put("ingestion_datetime", ingestionDateTime);
       
       contentObject.put("textSegment", match.embedded().text());
       sources.put(contentObject);
@@ -315,7 +316,7 @@ public class EmbeddingOperations {
     String absoluteDirectoryPath;
     String fileName;
     String url;
-    String textSegment;
+    String ingestionDateTime;
 
     JSONObject contentObject;
     String fullPath;
@@ -326,7 +327,7 @@ public class EmbeddingOperations {
       url = matchMetadata.getString(Constants.METADATA_KEY_URL);
       fullPath = matchMetadata.getString(Constants.METADATA_KEY_FULL_PATH);
       absoluteDirectoryPath = matchMetadata.getString(Constants.METADATA_KEY_ABSOLUTE_DIRECTORY_PATH);
-      textSegment = matchMetadata.getString("textSegment");
+      ingestionDateTime = matchMetadata.getString(Constants.METADATA_KEY_INGESTION_DATETIME);
 
       contentObject = new JSONObject();
       contentObject.put("absoluteDirectoryPath", absoluteDirectoryPath);
@@ -334,6 +335,7 @@ public class EmbeddingOperations {
       contentObject.put("file_name", fileName);
       contentObject.put("url", url);
       contentObject.put("individualScore", match.score());
+      contentObject.put("ingestion_datetime", ingestionDateTime);
 
       contentObject.put("textSegment", match.embedded().text());
       sources.put(contentObject);

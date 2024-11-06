@@ -22,6 +22,7 @@ public class DocumentUtils {
       document.metadata().add(Constants.METADATA_KEY_FULL_PATH, source_url);
       document.metadata().put(Constants.METADATA_KEY_SOURCE, source_url);
       document.metadata().add(Constants.METADATA_KEY_TITLE, title);
+      document.metadata().add(Constants.METADATA_KEY_INGESTION_DATETIME, Utils.getCurrentISO8601Timestamp());
     } catch (IOException e) {
       System.err.println("Error accessing folder: " + e.getMessage());
     }
@@ -40,6 +41,7 @@ public class DocumentUtils {
       document.metadata().add(Constants.METADATA_KEY_FULL_PATH, source_url);
       document.metadata().put(Constants.METADATA_KEY_SOURCE, source_url);
       document.metadata().add(Constants.METADATA_KEY_TITLE, title);
+      document.metadata().add(Constants.METADATA_KEY_INGESTION_DATETIME, Utils.getCurrentISO8601Timestamp());
     } catch (IOException e) {
       System.err.println("Error accessing folder: " + e.getMessage());
     }
