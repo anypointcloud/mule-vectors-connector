@@ -1,5 +1,6 @@
 package org.mule.extension.mulechain.vectors.internal.util;
 
+import java.io.File;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
@@ -23,5 +24,16 @@ public class Utils {
     return DateTimeFormatter.ISO_INSTANT
             .withZone(ZoneOffset.UTC)
             .format(Instant.now());
+  }
+
+  /**
+   * Extracts the file name from a given file path.
+   *
+   * @param fullPath the full path of the file as a String
+   * @return the name of the file, including the extension if present, as a String
+   */
+  public static String getFileNameFromPath(String fullPath) {
+    File file = new File(fullPath);
+    return file.getName();
   }
 }
