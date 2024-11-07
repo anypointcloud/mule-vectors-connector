@@ -186,7 +186,7 @@ public class EmbeddingOperations {
                                   @ParameterGroup(name = "Additional Properties") EmbeddingModelNameParameters modelParams) {
     int maximumResults = (int) maxResults;
     if (minScore == null) { //|| minScore == 0) {
-      minScore = 0.7;
+      minScore = Constants.EMBEDDING_SEARCH_REQUEST_DEFAULT_MIN_SCORE;
     }
 
     EmbeddingModel embeddingModel = EmbeddingModelFactory.createModel(configuration, modelParams);
@@ -230,14 +230,18 @@ public class EmbeddingOperations {
       ingestionDateTime = matchMetadata.getString(Constants.METADATA_KEY_INGESTION_DATETIME);
 
       contentObject = new JSONObject();
-      contentObject.put("absoluteDirectoryPath", absoluteDirectoryPath);
-      contentObject.put("full_path", fullPath);
-      contentObject.put("file_name", fileName);
-      contentObject.put("url", url);
-      contentObject.put("individualScore", match.score());
-      contentObject.put("ingestion_datetime", ingestionDateTime);
-      
-      contentObject.put("textSegment", match.embedded().text());
+      contentObject.put("id", match.embeddingId());
+      contentObject.put("text", match.embedded().text());
+      contentObject.put("score", match.score());
+
+      JSONObject metadataObject = new JSONObject();
+      metadataObject.put(Constants.METADATA_KEY_ABSOLUTE_DIRECTORY_PATH, absoluteDirectoryPath);
+      metadataObject.put(Constants.METADATA_KEY_FULL_PATH, fullPath);
+      metadataObject.put(Constants.METADATA_KEY_FILE_NAME, fileName);
+      metadataObject.put(Constants.METADATA_KEY_URL, url);
+      metadataObject.put(Constants.METADATA_KEY_INGESTION_DATETIME, ingestionDateTime);
+      contentObject.put("metadata", metadataObject);
+
       sources.put(contentObject);
     }
 
@@ -265,7 +269,7 @@ public class EmbeddingOperations {
                                         @ParameterGroup(name = "Additional Properties") EmbeddingModelNameParameters modelParams) {
     int maximumResults = (int) maxResults;
     if (minScore == null) { //|| minScore == 0) {
-      minScore = 0.7;
+      minScore = Constants.EMBEDDING_SEARCH_REQUEST_DEFAULT_MIN_SCORE;
     }
 
     EmbeddingModel embeddingModel = EmbeddingModelFactory.createModel(configuration, modelParams);
@@ -319,14 +323,18 @@ public class EmbeddingOperations {
       ingestionDateTime = matchMetadata.getString(Constants.METADATA_KEY_INGESTION_DATETIME);
 
       contentObject = new JSONObject();
-      contentObject.put("absoluteDirectoryPath", absoluteDirectoryPath);
-      contentObject.put("full_path", fullPath);
-      contentObject.put("file_name", fileName);
-      contentObject.put("url", url);
-      contentObject.put("individualScore", match.score());
-      contentObject.put("ingestion_datetime", ingestionDateTime);
+      contentObject.put("id", match.embeddingId());
+      contentObject.put("text", match.embedded().text());
+      contentObject.put("score", match.score());
 
-      contentObject.put("textSegment", match.embedded().text());
+      JSONObject metadataObject = new JSONObject();
+      metadataObject.put(Constants.METADATA_KEY_ABSOLUTE_DIRECTORY_PATH, absoluteDirectoryPath);
+      metadataObject.put(Constants.METADATA_KEY_FULL_PATH, fullPath);
+      metadataObject.put(Constants.METADATA_KEY_FILE_NAME, fileName);
+      metadataObject.put(Constants.METADATA_KEY_URL, url);
+      metadataObject.put(Constants.METADATA_KEY_INGESTION_DATETIME, ingestionDateTime);
+      contentObject.put("metadata", metadataObject);
+
       sources.put(contentObject);
     }
 

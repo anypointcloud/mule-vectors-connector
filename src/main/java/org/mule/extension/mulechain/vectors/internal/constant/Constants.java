@@ -52,4 +52,6 @@ public class Constants {
   public static final String METADATA_FILTER_METHOD_IS_NOT_EQUAL_TO = "isNotEqualTo";
   public static final String METADATA_FILTER_METHOD_IS_GREATER_THAN = "isGreaterThan";
   public static final String METADATA_FILTER_METHOD_IS_LESS_THAN = "isLessThan";
+
+  public static final Double EMBEDDING_SEARCH_REQUEST_DEFAULT_MIN_SCORE = 0.7;
 }
