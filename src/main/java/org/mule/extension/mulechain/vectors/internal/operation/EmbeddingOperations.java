@@ -5,6 +5,7 @@ import static org.mule.extension.mulechain.vectors.internal.util.JsonUtils.readC
 import static org.mule.runtime.extension.api.annotation.param.MediaType.APPLICATION_JSON;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.nio.charset.StandardCharsets;
@@ -367,18 +368,22 @@ public class EmbeddingOperations {
     EmbeddingModel embeddingModel = EmbeddingModelFactory.createModel(configuration, modelParams);
     EmbeddingStore<TextSegment> store = EmbeddingStoreFactory.createStore(configuration, storeName, embeddingModel.dimension());
 
-    Embedding queryEmbedding = embeddingModel.embed(".").content();
+    // Create a general query vector (e.g., zero vector). Zero vector is often used when you need to retrieve all
+    // embeddings without any specific bias.
+    float[] queryVector = new float[embeddingModel.dimension()];
+    for (int i = 0; i < embeddingModel.dimension(); i++) {
+      queryVector[i]=0.0f;  // Zero vector
+    }
+
+    Embedding queryEmbedding = new Embedding(queryVector);
     EmbeddingSearchRequest searchRequest = EmbeddingSearchRequest.builder()
             .queryEmbedding(queryEmbedding)
-            .maxResults(16384)
+            .maxResults(10000)
             .minScore(0.0)
             .build();
 
     EmbeddingSearchResult<TextSegment> searchResult = store.search(searchRequest);
     List<EmbeddingMatch<TextSegment>> embeddingMatches = searchResult.matches();
-    String information = embeddingMatches.stream()
-            .map(match -> match.embedded().text())
-            .collect(joining("\n\n"));
 
     JSONObject jsonObject = new JSONObject();
     jsonObject.put("storeName", storeName);
@@ -421,6 +426,7 @@ public class EmbeddingOperations {
     }
 
     jsonObject.put("sources", JsonUtils.jsonObjectCollectionToJsonArray(sourcesJSONObjectHashMap.values()));
+    jsonObject.put("sourceCount", sourcesJSONObjectHashMap.size());
 
     return toInputStream(jsonObject.toString(), StandardCharsets.UTF_8);
   }
