@@ -74,27 +74,27 @@ public class EmbeddingOperationValidator {
   }
 
   /**
-   * Validates whether a given operation is supported for a specific vector store.
+   * Validates whether a given operationType is supported for a specific vector store.
    *
-   * @param operation the operation to validate (e.g., "STORE_METADATA", "FILTER_BY_METADATA", "REMOVE_EMBEDDINGS")
+   * @param operationType the operationType to validate (e.g., "STORE_METADATA", "FILTER_BY_METADATA", "REMOVE_EMBEDDINGS")
    * @param vectorStore the name of the vector store to validate against
-   * @throws UnsupportedOperationException if the operation is not supported for the given vector store
+   * @throws UnsupportedOperationException if the operationType is not supported for the given vector store
    *
-   * @throws IllegalArgumentException if the operation or vectorStore is null or empty
+   * @throws IllegalArgumentException if the operationType or vectorStore is null or empty
    */
-  public static void isOperationSupported(String operation, String vectorStore) {
+  public static void validateOperationType(String operationType, String vectorStore) {
 
     // Validate inputs
-    if (operation == null || operation.isEmpty() || vectorStore == null || vectorStore.isEmpty()) {
+    if (operationType == null || operationType.isEmpty() || vectorStore == null || vectorStore.isEmpty()) {
       throw new IllegalArgumentException("Operation and vectorStore cannot be null or empty");
     }
 
-    // Retrieve supported vector stores for the operation
-    Set<String> supportedVectorStores = EMBEDDING_OPERATION_TYPE_TO_SUPPORTED_VECTOR_STORES.get(operation);
+    // Retrieve supported vector stores for the operationType
+    Set<String> supportedVectorStores = EMBEDDING_OPERATION_TYPE_TO_SUPPORTED_VECTOR_STORES.get(operationType);
 
-    // Check if the operation is supported for the given vector store
+    // Check if the operationType is supported for the given vector store
     if (supportedVectorStores == null || !supportedVectorStores.contains(vectorStore)) {
-      throw new UnsupportedOperationException("Operation " + operation + " is not supported for " + vectorStore);
+      throw new UnsupportedOperationException("Operation " + operationType + " is not supported for " + vectorStore);
     }
   }
 }

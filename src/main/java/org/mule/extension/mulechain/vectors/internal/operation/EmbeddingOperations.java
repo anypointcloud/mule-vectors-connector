@@ -10,6 +10,7 @@ import java.util.List;
 import java.nio.charset.StandardCharsets;
 
 import org.mule.extension.mulechain.vectors.internal.constant.Constants;
+import org.mule.extension.mulechain.vectors.internal.helper.EmbeddingOperationValidator;
 import org.mule.extension.mulechain.vectors.internal.helper.EmbeddingStoreIngestorHelper;
 import org.mule.extension.mulechain.vectors.internal.helper.factory.EmbeddingModelFactory;
 import org.mule.extension.mulechain.vectors.internal.helper.factory.EmbeddingStoreFactory;
@@ -101,6 +102,9 @@ public class EmbeddingOperations {
                                 int maxSegmentSizeInChars, int maxOverlapSizeInChars,
                                 @ParameterGroup(name = "Additional Properties") EmbeddingModelNameParameters modelParams){
 
+    EmbeddingOperationValidator.validateOperationType(
+            Constants.EMBEDDING_OPERATION_TYPE_STORE_METADATA,configuration.getVectorStore());
+
     EmbeddingModel embeddingModel = EmbeddingModelFactory.createModel(configuration, modelParams);
 
     EmbeddingStore<TextSegment> store = EmbeddingStoreFactory.createStore(configuration, storeName, embeddingModel.dimension());
@@ -142,6 +146,8 @@ public class EmbeddingOperations {
                                  int maxSegmentSizeInChars, int maxOverlapSizeInChars,
                                  @ParameterGroup(name = "Additional Properties") EmbeddingModelNameParameters modelParams) {
 
+    EmbeddingOperationValidator.validateOperationType(
+            Constants.EMBEDDING_OPERATION_TYPE_STORE_METADATA,configuration.getVectorStore());
                                   
     EmbeddingModel embeddingModel = EmbeddingModelFactory.createModel(configuration, modelParams);
 
@@ -258,6 +264,10 @@ public class EmbeddingOperations {
                                         @Config Configuration configuration,
                                         @ParameterGroup(name = "Filter") MetadataFilterParameters.SearchFilterParameters searchFilterParams,
                                         @ParameterGroup(name = "Additional Properties") EmbeddingModelNameParameters modelParams) {
+
+    EmbeddingOperationValidator.validateOperationType(
+            Constants.EMBEDDING_OPERATION_TYPE_FILTER_BY_METADATA,configuration.getVectorStore());
+
     int maximumResults = (int) maxResults;
     if (minScore == null) { //|| minScore == 0) {
       minScore = Constants.EMBEDDING_SEARCH_REQUEST_DEFAULT_MIN_SCORE;
@@ -351,6 +361,9 @@ public class EmbeddingOperations {
                                         @Config Configuration configuration,
                                         @ParameterGroup(name = "Additional Properties") EmbeddingModelNameParameters modelParams) {
 
+    EmbeddingOperationValidator.validateOperationType(
+            Constants.EMBEDDING_OPERATION_TYPE_FILTER_BY_METADATA,configuration.getVectorStore());
+
     EmbeddingModel embeddingModel = EmbeddingModelFactory.createModel(configuration, modelParams);
     EmbeddingStore<TextSegment> store = EmbeddingStoreFactory.createStore(configuration, storeName, embeddingModel.dimension());
 
@@ -422,6 +435,11 @@ public class EmbeddingOperations {
                                             @Config Configuration configuration,
                                              @ParameterGroup(name = "Filter") MetadataFilterParameters.RemoveFilterParameters removeFilterParams,
                                             @ParameterGroup(name = "Additional Properties") EmbeddingModelNameParameters modelParams) {
+
+    EmbeddingOperationValidator.validateOperationType(
+            Constants.EMBEDDING_OPERATION_TYPE_REMOVE_EMBEDDINGS,configuration.getVectorStore());
+    EmbeddingOperationValidator.validateOperationType(
+            Constants.EMBEDDING_OPERATION_TYPE_FILTER_BY_METADATA,configuration.getVectorStore());
 
     EmbeddingModel embeddingModel = EmbeddingModelFactory.createModel(configuration, modelParams);
     EmbeddingStore<TextSegment> store = EmbeddingStoreFactory.createStore(configuration, storeName, embeddingModel.dimension());
