@@ -5,6 +5,7 @@ import static org.mule.extension.mulechain.vectors.internal.util.JsonUtils.readC
 import static org.mule.runtime.extension.api.annotation.param.MediaType.APPLICATION_JSON;
 
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.List;
 import java.nio.charset.StandardCharsets;
 
@@ -20,6 +21,7 @@ import dev.langchain4j.store.embedding.*;
 import dev.langchain4j.store.embedding.filter.Filter;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.mule.extension.mulechain.vectors.internal.util.JsonUtils;
 import org.mule.runtime.extension.api.annotation.Alias;
 import org.mule.runtime.extension.api.annotation.param.MediaType;
 import org.mule.runtime.extension.api.annotation.param.ParameterGroup;
@@ -223,23 +225,12 @@ public class EmbeddingOperations {
     for (EmbeddingMatch<TextSegment> match : embeddingMatches) {
       Metadata matchMetadata = match.embedded().metadata();
 
-      fileName = matchMetadata.getString(Constants.METADATA_KEY_FILE_NAME);
-      url = matchMetadata.getString(Constants.METADATA_KEY_URL);
-      fullPath = matchMetadata.getString(Constants.METADATA_KEY_FULL_PATH);
-      absoluteDirectoryPath = matchMetadata.getString(Constants.METADATA_KEY_ABSOLUTE_DIRECTORY_PATH);
-      ingestionDateTime = matchMetadata.getString(Constants.METADATA_KEY_INGESTION_DATETIME);
-
       contentObject = new JSONObject();
-      contentObject.put("id", match.embeddingId());
+      contentObject.put("embeddingId", match.embeddingId());
       contentObject.put("text", match.embedded().text());
       contentObject.put("score", match.score());
 
-      JSONObject metadataObject = new JSONObject();
-      metadataObject.put(Constants.METADATA_KEY_ABSOLUTE_DIRECTORY_PATH, absoluteDirectoryPath);
-      metadataObject.put(Constants.METADATA_KEY_FULL_PATH, fullPath);
-      metadataObject.put(Constants.METADATA_KEY_FILE_NAME, fileName);
-      metadataObject.put(Constants.METADATA_KEY_URL, url);
-      metadataObject.put(Constants.METADATA_KEY_INGESTION_DATETIME, ingestionDateTime);
+      JSONObject metadataObject = new JSONObject(matchMetadata.toMap());
       contentObject.put("metadata", metadataObject);
 
       sources.put(contentObject);
@@ -248,7 +239,7 @@ public class EmbeddingOperations {
     jsonObject.put("sources", sources);
 
     jsonObject.put("maxResults", maxResults);
-    jsonObject.put("minimumScore", minScore);
+    jsonObject.put("minScore", minScore);
     jsonObject.put("question", question);
     jsonObject.put("storeName", storeName);
     
@@ -316,23 +307,13 @@ public class EmbeddingOperations {
     for (EmbeddingMatch<TextSegment> match : embeddingMatches) {
       Metadata matchMetadata = match.embedded().metadata();
 
-      fileName = matchMetadata.getString(Constants.METADATA_KEY_FILE_NAME);
-      url = matchMetadata.getString(Constants.METADATA_KEY_URL);
-      fullPath = matchMetadata.getString(Constants.METADATA_KEY_FULL_PATH);
-      absoluteDirectoryPath = matchMetadata.getString(Constants.METADATA_KEY_ABSOLUTE_DIRECTORY_PATH);
-      ingestionDateTime = matchMetadata.getString(Constants.METADATA_KEY_INGESTION_DATETIME);
 
       contentObject = new JSONObject();
-      contentObject.put("id", match.embeddingId());
+      contentObject.put("embeddingId", match.embeddingId());
       contentObject.put("text", match.embedded().text());
       contentObject.put("score", match.score());
 
-      JSONObject metadataObject = new JSONObject();
-      metadataObject.put(Constants.METADATA_KEY_ABSOLUTE_DIRECTORY_PATH, absoluteDirectoryPath);
-      metadataObject.put(Constants.METADATA_KEY_FULL_PATH, fullPath);
-      metadataObject.put(Constants.METADATA_KEY_FILE_NAME, fileName);
-      metadataObject.put(Constants.METADATA_KEY_URL, url);
-      metadataObject.put(Constants.METADATA_KEY_INGESTION_DATETIME, ingestionDateTime);
+      JSONObject metadataObject = new JSONObject(matchMetadata.toMap());
       contentObject.put("metadata", metadataObject);
 
       sources.put(contentObject);
@@ -341,7 +322,7 @@ public class EmbeddingOperations {
     jsonObject.put("sources", sources);
 
     jsonObject.put("maxResults", maxResults);
-    jsonObject.put("minimumScore", minScore);
+    jsonObject.put("minScore", minScore);
     jsonObject.put("question", question);
     jsonObject.put("storeName", storeName);
 
@@ -351,11 +332,22 @@ public class EmbeddingOperations {
 
 
   /**
-   * List all documents from a store
+   * Retrieves and lists sources from the specified embedding store.
+   *
+   * This method searches an embedding store for documents (sources) related to a simple query and collects metadata about
+   * each matched document, such as file name, URL, and ingestion datetime. The results are returned as a JSON structure.
+   *
+   * @param storeName      the name of the embedding store to search
+   * @param configuration  the configuration object providing access to connection details and other settings
+   * @param modelParams    the parameter group that specifies additional model properties
+   * @return an {@link InputStream} containing a JSON object with the store name and an array of source metadata.
+   *
+   * @MediaType(value = APPLICATION_JSON, strict = false)
+   * @Alias("EMBEDDING-list-sources")
    */
   @MediaType(value = APPLICATION_JSON, strict = false)
-  @Alias("EMBEDDING-list-documents")
-  public InputStream listDocumentsFromStore(String storeName,
+  @Alias("EMBEDDING-list-sources")
+  public InputStream listSourcesFromStore(String storeName,
                                         @Config Configuration configuration,
                                         @ParameterGroup(name = "Additional Properties") EmbeddingModelNameParameters modelParams) {
 
@@ -365,7 +357,7 @@ public class EmbeddingOperations {
     Embedding queryEmbedding = embeddingModel.embed(".").content();
     EmbeddingSearchRequest searchRequest = EmbeddingSearchRequest.builder()
             .queryEmbedding(queryEmbedding)
-            .maxResults(Integer.MAX_VALUE)
+            .maxResults(16384)
             .minScore(0.0)
             .build();
 
@@ -381,29 +373,41 @@ public class EmbeddingOperations {
     String absoluteDirectoryPath;
     String fileName;
     String url;
+    String ingestionDatetime;
 
     JSONObject contentObject;
     String fullPath;
+
+    HashMap<String, JSONObject> sourcesJSONObjectHashMap = new  HashMap<String, JSONObject>();
     for (EmbeddingMatch<TextSegment> match : embeddingMatches) {
+
       Metadata matchMetadata = match.embedded().metadata();
       fileName = matchMetadata.getString(Constants.METADATA_KEY_FILE_NAME);
       url = matchMetadata.getString(Constants.METADATA_KEY_URL);
       fullPath = matchMetadata.getString(Constants.METADATA_KEY_FULL_PATH);
       absoluteDirectoryPath = matchMetadata.getString(Constants.METADATA_KEY_ABSOLUTE_DIRECTORY_PATH);
+      ingestionDatetime = matchMetadata.getString(Constants.METADATA_KEY_INGESTION_DATETIME);
 
       contentObject = new JSONObject();
-      contentObject.put("absoluteDirectoryPath", absoluteDirectoryPath);
-      contentObject.put("full_path", fullPath);
-      contentObject.put("file_name", fileName);
-      contentObject.put("url", url);
+      contentObject.put(Constants.METADATA_KEY_ABSOLUTE_DIRECTORY_PATH, absoluteDirectoryPath);
+      contentObject.put(Constants.METADATA_KEY_FULL_PATH, fullPath);
+      contentObject.put(Constants.METADATA_KEY_FILE_NAME, fileName);
+      contentObject.put(Constants.METADATA_KEY_URL, url);
+      contentObject.put(Constants.METADATA_KEY_INGESTION_DATETIME, ingestionDatetime);
+
+      String key =
+              ((fullPath != null &&!fullPath.isEmpty()) ? fullPath :
+                      (url != null && !url.isEmpty()) ? url : "") +
+              ((ingestionDatetime != null && !ingestionDatetime.isEmpty()) ? ingestionDatetime : "");
 
       // Add contentObject to sources only if it has at least one key-value pair
-      if (!contentObject.isEmpty()) {
-        sources.put(contentObject);
+      if (!contentObject.isEmpty() && !key.isEmpty()) {
+
+        sourcesJSONObjectHashMap.put(key, contentObject);
       }
     }
 
-    jsonObject.put("documents", sources);
+    jsonObject.put("sources", JsonUtils.jsonObjectCollectionToJsonArray(sourcesJSONObjectHashMap.values()));
 
     return toInputStream(jsonObject.toString(), StandardCharsets.UTF_8);
   }

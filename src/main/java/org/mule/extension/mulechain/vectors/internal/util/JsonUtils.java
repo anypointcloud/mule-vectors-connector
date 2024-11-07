@@ -5,7 +5,10 @@ package org.mule.extension.mulechain.vectors.internal.util;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import org.json.JSONArray;
 import org.json.JSONObject;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,6 +16,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collection;
 
 public final class JsonUtils {
 
@@ -38,5 +42,13 @@ public final class JsonUtils {
   public static JsonNode stringToJsonNode(String content) throws IOException {
     ObjectMapper objectMapper = new ObjectMapper();
     return objectMapper.readTree(content);
+  }
+
+  public static JSONArray jsonObjectCollectionToJsonArray(Collection<JSONObject> jsonObjectList) {
+    JSONArray jsonArray = new JSONArray();
+    for (JSONObject jsonObject : jsonObjectList) {
+      jsonArray.put(jsonObject);
+    }
+    return jsonArray;
   }
 }
