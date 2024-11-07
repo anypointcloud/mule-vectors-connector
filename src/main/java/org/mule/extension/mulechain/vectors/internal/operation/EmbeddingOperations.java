@@ -430,8 +430,8 @@ public class EmbeddingOperations {
    * Remove all documents based on a filter from a store
    */
   @MediaType(value = APPLICATION_JSON, strict = false)
-  @Alias("EMBEDDING-remove-documents-by-filter")
-  public InputStream removeDocumentsByFilter(String storeName,
+  @Alias("EMBEDDING-remove-from-store-by-filter")
+  public InputStream removeEmebeddingsByFilter(String storeName,
                                             @Config Configuration configuration,
                                              @ParameterGroup(name = "Filter") MetadataFilterParameters.RemoveFilterParameters removeFilterParams,
                                             @ParameterGroup(name = "Additional Properties") EmbeddingModelNameParameters modelParams) {
