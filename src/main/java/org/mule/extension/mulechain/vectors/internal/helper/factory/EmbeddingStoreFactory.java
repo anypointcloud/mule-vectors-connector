@@ -32,26 +32,26 @@ public class EmbeddingStoreFactory {
         String vectorUrl;
         switch (configuration.getVectorStore()) {
             case Constants.VECTOR_STORE_AI_SEARCH:
-                vectorType = config.getJSONObject("AI_SEARCH");
+                vectorType = config.getJSONObject(Constants.VECTOR_STORE_AI_SEARCH);
                 vectorApiKey = vectorType.getString("AI_SEARCH_KEY");
                 vectorUrl = vectorType.getString("AI_SEARCH_URL");
                 store = createAISearchStore(vectorUrl, vectorApiKey, indexName, dimension);
                 break;
 
             case Constants.VECTOR_STORE_CHROMA:
-                vectorType = config.getJSONObject("CHROMA");
+                vectorType = config.getJSONObject(Constants.VECTOR_STORE_CHROMA);
                 vectorUrl = vectorType.getString("CHROMA_URL");
                 store = createChromaStore(vectorUrl, indexName);
                 break;
 
             case Constants.VECTOR_STORE_MILVUS:
-                vectorType = config.getJSONObject("MILVUS");
+                vectorType = config.getJSONObject(Constants.VECTOR_STORE_MILVUS);
                 vectorUrl = vectorType.getString("MILVUS_URL");
                 store = createMilvusStore(vectorUrl, indexName, dimension);
                 break;
 
             case Constants.VECTOR_STORE_PINECONE:
-                vectorType = config.getJSONObject("PINECONE");
+                vectorType = config.getJSONObject(Constants.VECTOR_STORE_PINECONE);
                 vectorApiKey = vectorType.getString("PINECONE_APIKEY");
                 String vectorCloud = vectorType.getString("PINECONE_SERVERLESS_CLOUD");
                 String vectorCloudRegion = vectorType.getString("PINECONE_SERVERLESS_REGION");
@@ -59,14 +59,14 @@ public class EmbeddingStoreFactory {
                 break;
 
             case Constants.VECTOR_STORE_ELASTICSEARCH:
-                vectorType = config.getJSONObject("ELASTICSEARCH");
+                vectorType = config.getJSONObject(Constants.VECTOR_STORE_ELASTICSEARCH);
                 vectorUrl = vectorType.getString("ELASTICSEARCH_URL");
                 userName = vectorType.getString("ELASTICSEARCH_USER");
                 password = vectorType.getString("ELASTICSEARCH_PASSWORD");
                 store = createElasticStore(vectorUrl, userName, password, indexName, dimension);
                 break;
             case Constants.VECTOR_STORE_PGVECTOR:
-                vectorType = config.getJSONObject("PGVECTOR");
+                vectorType = config.getJSONObject(Constants.VECTOR_STORE_PGVECTOR);
                 vectorHost = vectorType.getString("POSTGRES_HOST");
                 vectorPort = vectorType.getInt("POSTGRES_PORT");
                 vectorDatabase = vectorType.getString("POSTGRES_DATABASE");
@@ -76,7 +76,7 @@ public class EmbeddingStoreFactory {
                 break;
 
             case Constants.VECTOR_STORE_WEAVIATE:
-                vectorType = config.getJSONObject("WEAVIATE");
+                vectorType = config.getJSONObject(Constants.VECTOR_STORE_WEAVIATE);
                 vectorHost = vectorType.getString("WEAVIATE_HOST");
                 String vectorProtocol = vectorType.getString("WEAVIATE_PROTOCOL");
                 vectorApiKey = vectorType.getString("WEAVIATE_APIKEY");

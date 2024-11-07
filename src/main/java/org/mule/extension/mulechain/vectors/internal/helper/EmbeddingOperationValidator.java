@@ -1,0 +1,100 @@
+package org.mule.extension.mulechain.vectors.internal.helper;
+
+import org.mule.extension.mulechain.vectors.internal.constant.Constants;
+
+import java.util.*;
+
+/**
+ * A utility class to validate if a given operation is supported for a specified vector store.
+ * <p>
+ * This class maintains a mapping between operations (such as "STORE_METADATA", "FILTER_BY_METADATA", "REMOVE_EMBEDDINGS")
+ * and the vector stores that support those operations. It is used to ensure that only supported operations are
+ * performed on a particular vector store.
+ * </p>
+ *
+ * For more details, refer to the LangChain4j documentation:
+ * {@link https://docs.langchain4j.dev/integrations/embedding-stores/}
+ *
+ * <p>
+ * Supported vector stores for each operation are stored in a static map:
+ * <pre>
+ *   EMBEDDING_OPERATION_TYPE_TO_SUPPORTED_VECTOR_STORES.put("STORE_METADATA", new HashSet<>(Arrays.asList(
+ *       Constants.VECTOR_STORE_PGVECTOR,
+ *       Constants.VECTOR_STORE_ELASTICSEARCH,
+ *       Constants.VECTOR_STORE_MILVUS,
+ *       Constants.VECTOR_STORE_CHROMA,
+ *       Constants.VECTOR_STORE_PINECONE,
+ *       Constants.VECTOR_STORE_WEAVIATE,
+ *       Constants.VECTOR_STORE_AI_SEARCH
+ *   )));
+ * </pre>
+ * </p>
+ *
+ * @see Constants
+ */
+public class EmbeddingOperationValidator {
+
+  private static final Map<String, Set<String>> EMBEDDING_OPERATION_TYPE_TO_SUPPORTED_VECTOR_STORES =
+          new HashMap<>();
+
+  static {
+    // Mapping operation types to supported vector stores
+    EMBEDDING_OPERATION_TYPE_TO_SUPPORTED_VECTOR_STORES.put(Constants.EMBEDDING_OPERATION_TYPE_STORE_METADATA,
+            new HashSet<>(Arrays.asList(
+              Constants.VECTOR_STORE_PGVECTOR,
+              Constants.VECTOR_STORE_ELASTICSEARCH,
+              Constants.VECTOR_STORE_MILVUS,
+              Constants.VECTOR_STORE_CHROMA,
+              Constants.VECTOR_STORE_PINECONE,
+              Constants.VECTOR_STORE_WEAVIATE,
+              Constants.VECTOR_STORE_AI_SEARCH
+            )));
+
+    // Weaviate not supported for FILTER_BY_METADATA operation
+    EMBEDDING_OPERATION_TYPE_TO_SUPPORTED_VECTOR_STORES.put(Constants.EMBEDDING_OPERATION_TYPE_FILTER_BY_METADATA,
+            new HashSet<>(Arrays.asList(
+              Constants.VECTOR_STORE_PGVECTOR,
+              Constants.VECTOR_STORE_ELASTICSEARCH,
+              Constants.VECTOR_STORE_MILVUS,
+              Constants.VECTOR_STORE_CHROMA,
+              Constants.VECTOR_STORE_PINECONE,
+              Constants.VECTOR_STORE_AI_SEARCH
+            )));
+
+    EMBEDDING_OPERATION_TYPE_TO_SUPPORTED_VECTOR_STORES.put(Constants.EMBEDDING_OPERATION_TYPE_REMOVE_EMBEDDINGS,
+            new HashSet<>(Arrays.asList(
+              Constants.VECTOR_STORE_PGVECTOR,
+              Constants.VECTOR_STORE_ELASTICSEARCH,
+              Constants.VECTOR_STORE_MILVUS,
+              Constants.VECTOR_STORE_CHROMA,
+              Constants.VECTOR_STORE_PINECONE,
+              Constants.VECTOR_STORE_WEAVIATE,
+              Constants.VECTOR_STORE_AI_SEARCH
+            )));
+  }
+
+  /**
+   * Validates whether a given operation is supported for a specific vector store.
+   *
+   * @param operation the operation to validate (e.g., "STORE_METADATA", "FILTER_BY_METADATA", "REMOVE_EMBEDDINGS")
+   * @param vectorStore the name of the vector store to validate against
+   * @throws UnsupportedOperationException if the operation is not supported for the given vector store
+   *
+   * @throws IllegalArgumentException if the operation or vectorStore is null or empty
+   */
+  public static void isOperationSupported(String operation, String vectorStore) {
+
+    // Validate inputs
+    if (operation == null || operation.isEmpty() || vectorStore == null || vectorStore.isEmpty()) {
+      throw new IllegalArgumentException("Operation and vectorStore cannot be null or empty");
+    }
+
+    // Retrieve supported vector stores for the operation
+    Set<String> supportedVectorStores = EMBEDDING_OPERATION_TYPE_TO_SUPPORTED_VECTOR_STORES.get(operation);
+
+    // Check if the operation is supported for the given vector store
+    if (supportedVectorStores == null || !supportedVectorStores.contains(vectorStore)) {
+      throw new UnsupportedOperationException("Operation " + operation + " is not supported for " + vectorStore);
+    }
+  }
+}
