@@ -54,4 +54,8 @@ public class Constants {
   public static final String METADATA_FILTER_METHOD_IS_LESS_THAN = "isLessThan";
 
   public static final Double EMBEDDING_SEARCH_REQUEST_DEFAULT_MIN_SCORE = 0.7;
+
+  public static final String EMBEDDING_OPERATION_TYPE_STORE_METADATA = "STORE_METADATA";
+  public static final String EMBEDDING_OPERATION_TYPE_FILTER_BY_METADATA = "FILTER_BY_METADATA";
+  public static final String EMBEDDING_OPERATION_TYPE_REMOVE_EMBEDDINGS = "REMOVE_EMBEDDINGS";
 }
