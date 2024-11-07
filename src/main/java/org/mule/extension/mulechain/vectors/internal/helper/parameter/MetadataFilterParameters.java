@@ -71,6 +71,14 @@ public abstract class MetadataFilterParameters {
         filter = metadataKey(getMetadataKey()).isNotEqualTo(getMetadataValue());
         break;
 
+      case Constants.METADATA_FILTER_METHOD_IS_GREATER_THAN:
+        filter = metadataKey(getMetadataKey()).isGreaterThan(getMetadataValue());
+        break;
+
+      case Constants.METADATA_FILTER_METHOD_IS_LESS_THAN:
+        filter = metadataKey(getMetadataKey()).isLessThan(getMetadataValue());
+        break;
+
       default:
         throw new IllegalArgumentException("Filter method is not set or an invalid value has been provided.");
     }
