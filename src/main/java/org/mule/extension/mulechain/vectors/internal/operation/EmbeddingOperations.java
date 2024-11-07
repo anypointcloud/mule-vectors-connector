@@ -431,7 +431,7 @@ public class EmbeddingOperations {
    */
   @MediaType(value = APPLICATION_JSON, strict = false)
   @Alias("EMBEDDING-remove-from-store-by-filter")
-  public InputStream removeEmebeddingsByFilter(String storeName,
+  public InputStream removeEmbeddingsByFilter(String storeName,
                                             @Config Configuration configuration,
                                              @ParameterGroup(name = "Filter") MetadataFilterParameters.RemoveFilterParameters removeFilterParams,
                                             @ParameterGroup(name = "Additional Properties") EmbeddingModelNameParameters modelParams) {
