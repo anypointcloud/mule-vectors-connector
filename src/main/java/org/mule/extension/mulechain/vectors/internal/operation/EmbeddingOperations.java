@@ -387,24 +387,30 @@ public class EmbeddingOperations {
     String previousPageEmbeddingId = "";
     do {
 
+      LOGGER.debug("Embedding page filter: lowerBoundaryIngestionDateTime: " + lowerBoundaryIngestionDateTime + ", lowerBoundaryIndex: " + lowerBoundaryIndex);
+
+      Filter condition1 = metadataKey(Constants.METADATA_KEY_INGESTION_DATETIME).isGreaterThanOrEqualTo(lowerBoundaryIngestionDateTime);
+      Filter condition2 = metadataKey(Constants.METADATA_KEY_INDEX).isGreaterThan(String.valueOf(lowerBoundaryIndex)); // Index must be handled as a String
+      Filter condition3 = metadataKey(Constants.METADATA_KEY_INGESTION_DATETIME).isGreaterThan(lowerBoundaryIngestionDateTime);
+
+      Filter searchFilter = (condition1.and(condition2)).or(condition3);
+
       EmbeddingSearchRequest searchRequest = EmbeddingSearchRequest.builder()
               .queryEmbedding(queryEmbedding)
               .maxResults(queryParams.embeddingPageSize())
               .minScore(0.0)
-              .filter(
-                      metadataKey(Constants.METADATA_KEY_INGESTION_DATETIME).isGreaterThan(lowerBoundaryIngestionDateTime).or(
-                          metadataKey(Constants.METADATA_KEY_INGESTION_DATETIME).isGreaterThanOrEqualTo(lowerBoundaryIngestionDateTime).and(
-                                  metadataKey("index").isGreaterThan(lowerBoundaryIndex))))
+              .filter(searchFilter)
               .build();
 
       EmbeddingSearchResult<TextSegment> searchResult = store.search(searchRequest);
       embeddingMatches = searchResult.matches();
 
       String currentPageEmbeddingId = "";
+      LOGGER.debug("Embedding page matches: " + embeddingMatches.size());
       for (EmbeddingMatch<TextSegment> match : embeddingMatches) {
 
         Metadata matchMetadata = match.embedded().metadata();
-        String index = matchMetadata.getString("index");
+        String index = matchMetadata.getString(Constants.METADATA_KEY_INDEX);
         String fileName = matchMetadata.getString(Constants.METADATA_KEY_FILE_NAME);
         String url = matchMetadata.getString(Constants.METADATA_KEY_URL);
         String fullPath = matchMetadata.getString(Constants.METADATA_KEY_FULL_PATH);
@@ -414,7 +420,7 @@ public class EmbeddingOperations {
         if(lowerBoundaryIngestionDateTime.compareTo(ingestionDatetime) < 0) {
 
           lowerBoundaryIngestionDateTime = ingestionDatetime;
-          lowerBoundaryIndex = -1;
+          lowerBoundaryIndex = Integer.parseInt(index);
         } else if(lowerBoundaryIngestionDateTime.compareTo(ingestionDatetime) == 0) {
 
           if(Integer.parseInt(index) > lowerBoundaryIndex) {
@@ -423,6 +429,7 @@ public class EmbeddingOperations {
         }
 
         JSONObject contentObject = new JSONObject();
+        contentObject.put("segmentCount", Integer.parseInt(index) + 1);
         contentObject.put(Constants.METADATA_KEY_ABSOLUTE_DIRECTORY_PATH, absoluteDirectoryPath);
         contentObject.put(Constants.METADATA_KEY_FULL_PATH, fullPath);
         contentObject.put(Constants.METADATA_KEY_FILE_NAME, fileName);
@@ -434,15 +441,27 @@ public class EmbeddingOperations {
                         (url != null && !url.isEmpty()) ? url : "") +
                         ((ingestionDatetime != null && !ingestionDatetime.isEmpty()) ? ingestionDatetime : "");
 
-        // Add contentObject to sources only if it has at least one key-value pair
+        // Add contentObject to sources only if it has at least one key-value pair and it's possible to generate a key
         if (!contentObject.isEmpty() && !key.isEmpty()) {
 
-          sourcesJSONObjectHashMap.put(key, contentObject);
+          // Overwrite contentObject if current one has a greater index (greatest index represents the number of segments)
+          if(sourcesJSONObjectHashMap.containsKey(key)){
+
+            int currentSegmentCount = Integer.parseInt(index) + 1;
+            int storedSegmentCount = (int) sourcesJSONObjectHashMap.get(key).get("segmentCount");
+            if(currentSegmentCount > storedSegmentCount) {
+
+              sourcesJSONObjectHashMap.put(key, contentObject);
+            }
+
+          } else {
+
+            sourcesJSONObjectHashMap.put(key, contentObject);
+          }
         }
         currentPageEmbeddingId = match.embeddingId();
       }
 
-      LOGGER.debug("previousPageEmbeddingId: " + previousPageEmbeddingId + ", currentPageEmbeddingId: " + currentPageEmbeddingId);
       if(previousPageEmbeddingId.compareTo(currentPageEmbeddingId) == 0) {
         break;
       } else {
