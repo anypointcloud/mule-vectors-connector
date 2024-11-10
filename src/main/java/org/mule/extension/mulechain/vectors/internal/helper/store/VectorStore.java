@@ -17,6 +17,7 @@ import org.mule.extension.mulechain.vectors.internal.helper.factory.EmbeddingSto
 import org.mule.extension.mulechain.vectors.internal.helper.parameter.EmbeddingModelNameParameters;
 import org.mule.extension.mulechain.vectors.internal.helper.parameter.QueryParameters;
 import org.mule.extension.mulechain.vectors.internal.helper.store.milvus.MilvusVectorStore;
+import org.mule.extension.mulechain.vectors.internal.helper.store.milvus.PGVectorVectorStore;
 import org.mule.extension.mulechain.vectors.internal.util.JsonUtils;
 import org.mule.runtime.module.extension.internal.runtime.operation.IllegalOperationException;
 import org.slf4j.Logger;
@@ -203,7 +204,30 @@ public class VectorStore {
     return !sourceId.isEmpty() ? sourceId : alternativeKey;
   }
 
+  protected JSONObject getSourceObject(JSONObject metadataObject) {
+
+    String sourceId = metadataObject.has(Constants.METADATA_KEY_SOURCE_ID) ?  metadataObject.getString(Constants.METADATA_KEY_SOURCE_ID) : null;
+    String index = metadataObject.has(Constants.METADATA_KEY_INDEX) ? metadataObject.getString(Constants.METADATA_KEY_INDEX) : null;
+    String fileName = metadataObject.has(Constants.METADATA_KEY_FILE_NAME) ?  metadataObject.getString(Constants.METADATA_KEY_FILE_NAME) : null;
+    String url = metadataObject.has(Constants.METADATA_KEY_URL) ?  metadataObject.getString(Constants.METADATA_KEY_URL) : null;
+    String fullPath = metadataObject.has(Constants.METADATA_KEY_FULL_PATH) ?  metadataObject.getString(Constants.METADATA_KEY_FULL_PATH) : null;
+    String absoluteDirectoryPath = metadataObject.has(Constants.METADATA_KEY_ABSOLUTE_DIRECTORY_PATH) ?  metadataObject.getString(Constants.METADATA_KEY_ABSOLUTE_DIRECTORY_PATH) : null;
+    String ingestionDatetime = metadataObject.has(Constants.METADATA_KEY_INGESTION_DATETIME) ?  metadataObject.getString(Constants.METADATA_KEY_INGESTION_DATETIME) : null;
+
+    JSONObject sourceObject = new JSONObject();
+    sourceObject.put("segmentCount", Integer.parseInt(index) + 1);
+    sourceObject.put(Constants.METADATA_KEY_SOURCE_ID, sourceId);
+    sourceObject.put(Constants.METADATA_KEY_ABSOLUTE_DIRECTORY_PATH, absoluteDirectoryPath);
+    sourceObject.put(Constants.METADATA_KEY_FULL_PATH, fullPath);
+    sourceObject.put(Constants.METADATA_KEY_FILE_NAME, fileName);
+    sourceObject.put(Constants.METADATA_KEY_URL, url);
+    sourceObject.put(Constants.METADATA_KEY_INGESTION_DATETIME, ingestionDatetime);
+
+    return sourceObject;
+  }
+
   public static Builder builder() {
+
     return new Builder();
   }
 
@@ -255,6 +279,11 @@ public class VectorStore {
           embeddingStore = new MilvusVectorStore(storeName, configuration, queryParams, modelParams);
           break;
 
+        case Constants.VECTOR_STORE_PGVECTOR:
+
+          embeddingStore = new PGVectorVectorStore(storeName, configuration, queryParams, modelParams);
+          break;
+
         case Constants.VECTOR_STORE_AI_SEARCH:
 
         case Constants.VECTOR_STORE_CHROMA:
@@ -262,8 +291,6 @@ public class VectorStore {
         case Constants.VECTOR_STORE_PINECONE:
 
         case Constants.VECTOR_STORE_ELASTICSEARCH:
-
-        case Constants.VECTOR_STORE_PGVECTOR:
 
         case Constants.VECTOR_STORE_WEAVIATE:
 
