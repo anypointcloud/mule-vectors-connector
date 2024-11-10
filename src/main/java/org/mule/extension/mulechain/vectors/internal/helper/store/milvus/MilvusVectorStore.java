@@ -84,29 +84,13 @@ public class MilvusVectorStore extends VectorStore {
           hasMore = false;
         } else {
 
-          LOGGER.debug("Number of segments in current batch: " + batchResults.size());
           for (QueryResultsWrapper.RowRecord rowRecord : batchResults) {
 
             JsonObject gsonObject = (JsonObject)rowRecord.getFieldValues().get("metadata");
-            LOGGER.debug(gsonObject.toString());
-            JSONObject metadata = new JSONObject(gsonObject.toString());
+            JSONObject metadataObject = new JSONObject(gsonObject.toString());
 
-            String sourceId = metadata.has(Constants.METADATA_KEY_SOURCE_ID) ?  metadata.getString(Constants.METADATA_KEY_SOURCE_ID) : null;
-            String index = metadata.has(Constants.METADATA_KEY_INDEX) ? metadata.getString(Constants.METADATA_KEY_INDEX) : null;
-            String fileName = metadata.has(Constants.METADATA_KEY_FILE_NAME) ?  metadata.getString(Constants.METADATA_KEY_FILE_NAME) : null;
-            String url = metadata.has(Constants.METADATA_KEY_URL) ?  metadata.getString(Constants.METADATA_KEY_URL) : null;
-            String fullPath = metadata.has(Constants.METADATA_KEY_FULL_PATH) ?  metadata.getString(Constants.METADATA_KEY_FULL_PATH) : null;
-            String absoluteDirectoryPath = metadata.has(Constants.METADATA_KEY_ABSOLUTE_DIRECTORY_PATH) ?  metadata.getString(Constants.METADATA_KEY_ABSOLUTE_DIRECTORY_PATH) : null;
-            String ingestionDatetime = metadata.has(Constants.METADATA_KEY_INGESTION_DATETIME) ?  metadata.getString(Constants.METADATA_KEY_INGESTION_DATETIME) : null;
-
-            JSONObject sourceObject = new JSONObject();
-            sourceObject.put("segmentCount", Integer.parseInt(index) + 1);
-            sourceObject.put(Constants.METADATA_KEY_SOURCE_ID, sourceId);
-            sourceObject.put(Constants.METADATA_KEY_ABSOLUTE_DIRECTORY_PATH, absoluteDirectoryPath);
-            sourceObject.put(Constants.METADATA_KEY_FULL_PATH, fullPath);
-            sourceObject.put(Constants.METADATA_KEY_FILE_NAME, fileName);
-            sourceObject.put(Constants.METADATA_KEY_URL, url);
-            sourceObject.put(Constants.METADATA_KEY_INGESTION_DATETIME, ingestionDatetime);
+            String index = metadataObject.has(Constants.METADATA_KEY_INDEX) ? metadataObject.getString(Constants.METADATA_KEY_INDEX) : null;
+            JSONObject sourceObject = getSourceObject(metadataObject);
 
             String sourceUniqueKey = getSourceUniqueKey(sourceObject);
 
