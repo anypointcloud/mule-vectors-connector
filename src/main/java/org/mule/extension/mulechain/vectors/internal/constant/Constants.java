@@ -39,6 +39,7 @@ public class Constants {
   public static final String VECTOR_STORE_AI_SEARCH = "AI_SEARCH";
   public static final String VECTOR_STORE_NEO4J = "NEO4J";
 
+  public static final String METADATA_KEY_SOURCE_ID = "source_id";
   public static final String METADATA_KEY_INDEX = "index";
   public static final String METADATA_KEY_FILE_NAME = "file_name";
   public static final String METADATA_KEY_FILE_TYPE = "file_type";
@@ -59,4 +60,5 @@ public class Constants {
   public static final String EMBEDDING_OPERATION_TYPE_STORE_METADATA = "STORE_METADATA";
   public static final String EMBEDDING_OPERATION_TYPE_FILTER_BY_METADATA = "FILTER_BY_METADATA";
   public static final String EMBEDDING_OPERATION_TYPE_REMOVE_EMBEDDINGS = "REMOVE_EMBEDDINGS";
+  public static final String EMBEDDING_OPERATION_TYPE_QUERY_ALL = "QUERY_ALL";
 }

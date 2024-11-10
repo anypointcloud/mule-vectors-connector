@@ -23,6 +23,7 @@ public class DocumentUtils {
    */
   public static void addMetadataToDocument(Document document, String fileType, String fileName, String filePath) {
 
+    document.metadata().add(Constants.METADATA_KEY_SOURCE_ID, dev.langchain4j.internal.Utils.randomUUID());
     document.metadata().add(Constants.METADATA_KEY_FILE_TYPE, fileType);
     document.metadata().add(Constants.METADATA_KEY_FILE_NAME, fileName);
     document.metadata().add(Constants.METADATA_KEY_FULL_PATH, filePath);
