@@ -173,6 +173,12 @@
             <version>${langchain4jVersion}</version>
         </dependency>
 
+		<dependency>
+			<groupId>dev.langchain4j</groupId>
+			<artifactId>langchain4j-opensearch</artifactId>
+			<version>${langchain4jVersion}</version>
+		</dependency>
+
         <dependency>
             <groupId>dev.langchain4j</groupId>
             <artifactId>langchain4j-pgvector</artifactId>

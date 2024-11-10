@@ -5,6 +5,7 @@ import dev.langchain4j.store.embedding.EmbeddingStore;
 import dev.langchain4j.store.embedding.azure.search.AzureAiSearchEmbeddingStore;
 import dev.langchain4j.store.embedding.chroma.ChromaEmbeddingStore;
 import dev.langchain4j.store.embedding.elasticsearch.ElasticsearchEmbeddingStore;
+import dev.langchain4j.store.embedding.opensearch.OpenSearchEmbeddingStore;
 import dev.langchain4j.store.embedding.milvus.MilvusEmbeddingStore;
 import dev.langchain4j.store.embedding.pgvector.PgVectorEmbeddingStore;
 import dev.langchain4j.store.embedding.pinecone.PineconeEmbeddingStore;
@@ -65,6 +66,15 @@ public class EmbeddingStoreFactory {
                 password = vectorType.getString("ELASTICSEARCH_PASSWORD");
                 store = createElasticStore(vectorUrl, userName, password, indexName, dimension);
                 break;
+
+            case Constants.VECTOR_STORE_OPENSEARCH:
+                vectorType = config.getJSONObject(Constants.VECTOR_STORE_OPENSEARCH);
+                vectorUrl = vectorType.getString("OPENSEARCH_URL");
+                userName = vectorType.getString("OPENSEARCH_USER");
+                password = vectorType.getString("OPENSEARCH_PASSWORD");
+                store = createOpenSrchStore(vectorUrl, userName, password, indexName, dimension);
+                break;
+
             case Constants.VECTOR_STORE_PGVECTOR:
                 vectorType = config.getJSONObject(Constants.VECTOR_STORE_PGVECTOR);
                 vectorHost = vectorType.getString("POSTGRES_HOST");
@@ -122,6 +132,15 @@ public class EmbeddingStoreFactory {
                 .password(password)
                 .indexName(collectionName)
                 .dimension(dimension)
+                .build();
+    }
+
+    private static EmbeddingStore<TextSegment> createOpenSrchStore(String baseUrl, String userName, String password, String collectionName, Integer dimension) {
+        return OpenSearchEmbeddingStore.builder()
+                .serverUrl(baseUrl)
+                .userName(userName)
+                .password(password)
+                .indexName(collectionName)
                 .build();
     }
 
