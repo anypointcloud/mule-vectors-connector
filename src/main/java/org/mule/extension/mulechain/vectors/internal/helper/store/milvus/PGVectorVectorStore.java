@@ -22,6 +22,10 @@ import java.util.NoSuchElementException;
 
 import static org.mule.extension.mulechain.vectors.internal.util.JsonUtils.readConfigFile;
 
+/**
+ * Represents a store for vector data using PostgreSQL with PGVector extension.
+ * This class is responsible for interacting with a PostgreSQL database to store and retrieve vector metadata.
+ */
 public class PGVectorVectorStore extends VectorStore {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PGVectorVectorStore.class);
@@ -31,8 +35,15 @@ public class PGVectorVectorStore extends VectorStore {
   private String host;
   private int port;
   private String database;
-  private int pageSize;
 
+  /**
+   * Constructs a PGVectorVectorStore instance using configuration and query parameters.
+   *
+   * @param storeName The name of the store.
+   * @param configuration The configuration for connecting to the store.
+   * @param queryParams Parameters related to query configurations.
+   * @param modelParams Parameters related to embedding model.
+   */
   public PGVectorVectorStore(String storeName, Configuration configuration, QueryParameters queryParams, EmbeddingModelNameParameters modelParams) {
 
     super(storeName, configuration, queryParams, modelParams);
@@ -46,9 +57,14 @@ public class PGVectorVectorStore extends VectorStore {
     this.password = vectorStoreConfig.getString("POSTGRES_PASSWORD");
   }
 
+  /**
+   * Lists the sources stored in the PostgreSQL database.
+   *
+   * @return A {@link JSONObject} containing the sources and their metadata.
+   */
   public JSONObject listSources() {
 
-    HashMap<String, JSONObject> sourcesJSONObjectHashMap = new HashMap<String, JSONObject>();
+    HashMap<String, JSONObject> sourcesJSONObjectHashMap = new HashMap<>();
 
     JSONObject jsonObject = new JSONObject();
     jsonObject.put("storeName", storeName);
@@ -81,7 +97,7 @@ public class PGVectorVectorStore extends VectorStore {
         }
       }
     } catch (SQLException e) {
-      e.printStackTrace();
+      LOGGER.error("Error while listing sources", e);
     }
 
     jsonObject.put("sources", JsonUtils.jsonObjectCollectionToJsonArray(sourcesJSONObjectHashMap.values()));
@@ -90,6 +106,9 @@ public class PGVectorVectorStore extends VectorStore {
     return jsonObject;
   }
 
+  /**
+   * Iterator to handle metadata pagination from the PostgreSQL database.
+   */
   public class PgVectorMetadataIterator implements Iterator<String>, AutoCloseable {
 
     private int offset = 0; // Current offset for pagination
@@ -99,6 +118,18 @@ public class PGVectorVectorStore extends VectorStore {
     private String table;
     int pageSize;
 
+    /**
+     * Constructs a PgVectorMetadataIterator for fetching metadata from the database in pages.
+     *
+     * @param userName The username for database access.
+     * @param password The password for database access.
+     * @param host The PostgreSQL host.
+     * @param port The PostgreSQL port.
+     * @param database The name of the database.
+     * @param table The table to fetch metadata from.
+     * @param pageSize The number of rows per page for pagination.
+     * @throws SQLException If a database error occurs.
+     */
     public PgVectorMetadataIterator(String userName, String password, String host, int port, String database, String table, int pageSize) throws SQLException {
 
       // Initialize the connection and the first page of data
@@ -117,7 +148,11 @@ public class PGVectorVectorStore extends VectorStore {
       fetchNextPage();
     }
 
-    // Fetch the next page of data
+    /**
+     * Fetches the next page of metadata from the database.
+     *
+     * @throws SQLException If a database error occurs.
+     */
     private void fetchNextPage() throws SQLException {
       if (pstmt != null) {
         pstmt.close();
@@ -131,6 +166,11 @@ public class PGVectorVectorStore extends VectorStore {
       offset += pageSize;
     }
 
+    /**
+     * Checks if there are more elements in the result set.
+     *
+     * @return {@code true} if there are more elements, {@code false} otherwise.
+     */
     @Override
     public boolean hasNext() {
       try {
@@ -142,11 +182,17 @@ public class PGVectorVectorStore extends VectorStore {
           return resultSet != null && resultSet.next();
         }
       } catch (SQLException e) {
-        e.printStackTrace();
+        LOGGER.error("Error checking for next element", e);
         return false;
       }
     }
 
+    /**
+     * Returns the next metadata element in the result set.
+     *
+     * @return The next metadata element as a {@code String}.
+     * @throws NoSuchElementException If no more elements are available.
+     */
     @Override
     public String next() {
       try {
@@ -155,12 +201,14 @@ public class PGVectorVectorStore extends VectorStore {
         }
         return resultSet.getString("metadata");
       } catch (SQLException e) {
-        e.printStackTrace();
+        LOGGER.error("Error retrieving next element", e);
         throw new NoSuchElementException("Error retrieving next element");
       }
     }
 
-    // Clean up resources after iteration
+    /**
+     * Closes the iterator and releases the resources.
+     */
     public void close() {
       try {
         if (resultSet != null)
@@ -170,7 +218,7 @@ public class PGVectorVectorStore extends VectorStore {
         if (connection != null)
           connection.close();
       } catch (SQLException e) {
-        e.printStackTrace();
+        LOGGER.error("Error closing resources", e);
       }
     }
   }
