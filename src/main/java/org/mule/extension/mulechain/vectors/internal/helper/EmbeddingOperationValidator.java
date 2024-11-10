@@ -71,6 +71,17 @@ public class EmbeddingOperationValidator {
               Constants.VECTOR_STORE_WEAVIATE,
               Constants.VECTOR_STORE_AI_SEARCH
             )));
+
+    EMBEDDING_OPERATION_TYPE_TO_SUPPORTED_VECTOR_STORES.put(Constants.EMBEDDING_OPERATION_TYPE_QUERY_ALL,
+            new HashSet<>(Arrays.asList(
+                // Constants.VECTOR_STORE_PGVECTOR,  // Needs to be tested
+                // Constants.VECTOR_STORE_ELASTICSEARCH,  // Needs to be tested
+                Constants.VECTOR_STORE_MILVUS
+                // Constants.VECTOR_STORE_CHROMA,  // Needs to be tested
+                // Constants.VECTOR_STORE_PINECONE, // Do not support GTE with strings.
+                // Constants.VECTOR_STORE_AI_SEARCH  // Needs to be tested
+            )));
+
   }
 
   /**
@@ -94,7 +105,7 @@ public class EmbeddingOperationValidator {
 
     // Check if the operationType is supported for the given vector store
     if (supportedVectorStores == null || !supportedVectorStores.contains(vectorStore)) {
-      throw new UnsupportedOperationException("Operation " + operationType + " is not supported for " + vectorStore);
+      throw new UnsupportedOperationException("Operation " + operationType + " is not supported by " + vectorStore);
     }
   }
 }

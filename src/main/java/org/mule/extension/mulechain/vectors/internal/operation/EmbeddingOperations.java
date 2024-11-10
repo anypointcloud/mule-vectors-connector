@@ -1,12 +1,10 @@
 package org.mule.extension.mulechain.vectors.internal.operation;
 
-import static dev.langchain4j.store.embedding.filter.MetadataFilterBuilder.metadataKey;
 import static org.apache.commons.io.IOUtils.toInputStream;
 import static org.mule.extension.mulechain.vectors.internal.util.JsonUtils.readConfigFile;
 import static org.mule.runtime.extension.api.annotation.param.MediaType.APPLICATION_JSON;
 
 import java.io.InputStream;
-import java.util.HashMap;
 import java.util.List;
 import java.nio.charset.StandardCharsets;
 
@@ -21,7 +19,7 @@ import dev.langchain4j.store.embedding.*;
 import dev.langchain4j.store.embedding.filter.Filter;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.mule.extension.mulechain.vectors.internal.util.JsonUtils;
+import org.mule.extension.mulechain.vectors.internal.helper.store.VectorStore;
 import org.mule.runtime.extension.api.annotation.Alias;
 import org.mule.runtime.extension.api.annotation.param.*;
 
@@ -303,10 +301,6 @@ public class EmbeddingOperations {
     jsonObject.put("question", question);
 
     JSONArray sources = new JSONArray();
-    String absoluteDirectoryPath;
-    String fileName;
-    String url;
-    String ingestionDateTime;
 
     JSONObject contentObject;
     String fullPath;
@@ -361,117 +355,17 @@ public class EmbeddingOperations {
 
     EmbeddingOperationValidator.validateOperationType(
             Constants.EMBEDDING_OPERATION_TYPE_FILTER_BY_METADATA,configuration.getVectorStore());
+    EmbeddingOperationValidator.validateOperationType(
+            Constants.EMBEDDING_OPERATION_TYPE_QUERY_ALL,configuration.getVectorStore());
 
-    EmbeddingModel embeddingModel = EmbeddingModelFactory.createModel(configuration, modelParams);
-    EmbeddingStore<TextSegment> store = EmbeddingStoreFactory.createStore(configuration, storeName, embeddingModel.dimension());
+    VectorStore vectorStore = VectorStore.builder()
+        .storeName(storeName)
+        .configuration(configuration)
+        .queryParams(queryParams)
+        .modelParams(modelParams)
+        .build();
 
-    // Create a general query vector (e.g., zero vector). Zero vector is often used when you need to retrieve all
-    // embeddings without any specific bias.
-    float[] queryVector = new float[embeddingModel.dimension()];
-    for (int i = 0; i < embeddingModel.dimension(); i++) {
-      queryVector[i]=0.0f;  // Zero vector
-    }
-
-    Embedding queryEmbedding = new Embedding(queryVector);
-
-    JSONObject jsonObject = new JSONObject();
-    jsonObject.put("storeName", storeName);
-    JSONArray sources = new JSONArray();
-
-    List<EmbeddingMatch<TextSegment>> embeddingMatches = null;
-    HashMap<String, JSONObject> sourcesJSONObjectHashMap = new HashMap<String, JSONObject>();
-    String lowerBoundaryIngestionDateTime = "0000-00-00T00:00:00.000Z";
-    int lowerBoundaryIndex = -1;
-
-    LOGGER.debug("Embedding page size: " + queryParams.embeddingPageSize());
-    String previousPageEmbeddingId = "";
-    do {
-
-      LOGGER.debug("Embedding page filter: lowerBoundaryIngestionDateTime: " + lowerBoundaryIngestionDateTime + ", lowerBoundaryIndex: " + lowerBoundaryIndex);
-
-      Filter condition1 = metadataKey(Constants.METADATA_KEY_INGESTION_DATETIME).isGreaterThanOrEqualTo(lowerBoundaryIngestionDateTime);
-      Filter condition2 = metadataKey(Constants.METADATA_KEY_INDEX).isGreaterThan(String.valueOf(lowerBoundaryIndex)); // Index must be handled as a String
-      Filter condition3 = metadataKey(Constants.METADATA_KEY_INGESTION_DATETIME).isGreaterThan(lowerBoundaryIngestionDateTime);
-
-      Filter searchFilter = (condition1.and(condition2)).or(condition3);
-
-      EmbeddingSearchRequest searchRequest = EmbeddingSearchRequest.builder()
-              .queryEmbedding(queryEmbedding)
-              .maxResults(queryParams.embeddingPageSize())
-              .minScore(0.0)
-              .filter(searchFilter)
-              .build();
-
-      EmbeddingSearchResult<TextSegment> searchResult = store.search(searchRequest);
-      embeddingMatches = searchResult.matches();
-
-      String currentPageEmbeddingId = "";
-      LOGGER.debug("Embedding page matches: " + embeddingMatches.size());
-      for (EmbeddingMatch<TextSegment> match : embeddingMatches) {
-
-        Metadata matchMetadata = match.embedded().metadata();
-        String index = matchMetadata.getString(Constants.METADATA_KEY_INDEX);
-        String fileName = matchMetadata.getString(Constants.METADATA_KEY_FILE_NAME);
-        String url = matchMetadata.getString(Constants.METADATA_KEY_URL);
-        String fullPath = matchMetadata.getString(Constants.METADATA_KEY_FULL_PATH);
-        String absoluteDirectoryPath = matchMetadata.getString(Constants.METADATA_KEY_ABSOLUTE_DIRECTORY_PATH);
-        String ingestionDatetime = matchMetadata.getString(Constants.METADATA_KEY_INGESTION_DATETIME);
-
-        if(lowerBoundaryIngestionDateTime.compareTo(ingestionDatetime) < 0) {
-
-          lowerBoundaryIngestionDateTime = ingestionDatetime;
-          lowerBoundaryIndex = Integer.parseInt(index);
-        } else if(lowerBoundaryIngestionDateTime.compareTo(ingestionDatetime) == 0) {
-
-          if(Integer.parseInt(index) > lowerBoundaryIndex) {
-            lowerBoundaryIndex = Integer.parseInt(index);
-          }
-        }
-
-        JSONObject contentObject = new JSONObject();
-        contentObject.put("segmentCount", Integer.parseInt(index) + 1);
-        contentObject.put(Constants.METADATA_KEY_ABSOLUTE_DIRECTORY_PATH, absoluteDirectoryPath);
-        contentObject.put(Constants.METADATA_KEY_FULL_PATH, fullPath);
-        contentObject.put(Constants.METADATA_KEY_FILE_NAME, fileName);
-        contentObject.put(Constants.METADATA_KEY_URL, url);
-        contentObject.put(Constants.METADATA_KEY_INGESTION_DATETIME, ingestionDatetime);
-
-        String key =
-                ((fullPath != null && !fullPath.isEmpty()) ? fullPath :
-                        (url != null && !url.isEmpty()) ? url : "") +
-                        ((ingestionDatetime != null && !ingestionDatetime.isEmpty()) ? ingestionDatetime : "");
-
-        // Add contentObject to sources only if it has at least one key-value pair and it's possible to generate a key
-        if (!contentObject.isEmpty() && !key.isEmpty()) {
-
-          // Overwrite contentObject if current one has a greater index (greatest index represents the number of segments)
-          if(sourcesJSONObjectHashMap.containsKey(key)){
-
-            int currentSegmentCount = Integer.parseInt(index) + 1;
-            int storedSegmentCount = (int) sourcesJSONObjectHashMap.get(key).get("segmentCount");
-            if(currentSegmentCount > storedSegmentCount) {
-
-              sourcesJSONObjectHashMap.put(key, contentObject);
-            }
-
-          } else {
-
-            sourcesJSONObjectHashMap.put(key, contentObject);
-          }
-        }
-        currentPageEmbeddingId = match.embeddingId();
-      }
-
-      if(previousPageEmbeddingId.compareTo(currentPageEmbeddingId) == 0) {
-        break;
-      } else {
-        previousPageEmbeddingId = currentPageEmbeddingId;
-      }
-
-    } while(embeddingMatches.size() == queryParams.embeddingPageSize());
-
-    jsonObject.put("sources", JsonUtils.jsonObjectCollectionToJsonArray(sourcesJSONObjectHashMap.values()));
-    jsonObject.put("sourceCount", sourcesJSONObjectHashMap.size());
+    JSONObject jsonObject = vectorStore.listSources();
 
     return toInputStream(jsonObject.toString(), StandardCharsets.UTF_8);
   }
