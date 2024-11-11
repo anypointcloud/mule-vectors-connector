@@ -1,4 +1,4 @@
-package org.mule.extension.mulechain.vectors.internal.helper.store.milvus;
+package org.mule.extension.mulechain.vectors.internal.helper.store.pgvector;
 
 import org.json.JSONObject;
 import org.mule.extension.mulechain.vectors.internal.config.Configuration;

@@ -1,7 +1,5 @@
-package org.mule.extension.mulechain.vectors.internal.helper.store.milvus;
+package org.mule.extension.mulechain.vectors.internal.helper.store.aisearch;
 
-import opennlp.tools.parser.Cons;
-import org.checkerframework.checker.i18n.qual.LocalizableKey;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.mule.extension.mulechain.vectors.internal.config.Configuration;
@@ -14,11 +12,7 @@ import org.mule.extension.mulechain.vectors.internal.util.JsonUtils;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.URI;
 import java.net.URL;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.util.HashMap;
 
 import static org.mule.extension.mulechain.vectors.internal.util.JsonUtils.readConfigFile;

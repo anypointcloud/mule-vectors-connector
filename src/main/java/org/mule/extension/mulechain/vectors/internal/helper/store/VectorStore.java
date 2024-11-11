@@ -16,9 +16,9 @@ import org.mule.extension.mulechain.vectors.internal.helper.factory.EmbeddingMod
 import org.mule.extension.mulechain.vectors.internal.helper.factory.EmbeddingStoreFactory;
 import org.mule.extension.mulechain.vectors.internal.helper.parameter.EmbeddingModelNameParameters;
 import org.mule.extension.mulechain.vectors.internal.helper.parameter.QueryParameters;
-import org.mule.extension.mulechain.vectors.internal.helper.store.milvus.AISearchStore;
+import org.mule.extension.mulechain.vectors.internal.helper.store.aisearch.AISearchStore;
 import org.mule.extension.mulechain.vectors.internal.helper.store.milvus.MilvusStore;
-import org.mule.extension.mulechain.vectors.internal.helper.store.milvus.PGVectorStore;
+import org.mule.extension.mulechain.vectors.internal.helper.store.pgvector.PGVectorStore;
 import org.mule.extension.mulechain.vectors.internal.util.JsonUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
