@@ -1,6 +1,5 @@
 package org.mule.extension.mulechain.vectors.internal.helper.store.milvus;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.mule.extension.mulechain.vectors.internal.config.Configuration;
 import org.mule.extension.mulechain.vectors.internal.constant.Constants;
@@ -26,9 +25,9 @@ import static org.mule.extension.mulechain.vectors.internal.util.JsonUtils.readC
  * Represents a store for vector data using PostgreSQL with PGVector extension.
  * This class is responsible for interacting with a PostgreSQL database to store and retrieve vector metadata.
  */
-public class PGVectorVectorStore extends VectorStore {
+public class PGVectorStore extends VectorStore {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(PGVectorVectorStore.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(PGVectorStore.class);
 
   private String userName;
   private String password;
@@ -44,7 +43,7 @@ public class PGVectorVectorStore extends VectorStore {
    * @param queryParams Parameters related to query configurations.
    * @param modelParams Parameters related to embedding model.
    */
-  public PGVectorVectorStore(String storeName, Configuration configuration, QueryParameters queryParams, EmbeddingModelNameParameters modelParams) {
+  public PGVectorStore(String storeName, Configuration configuration, QueryParameters queryParams, EmbeddingModelNameParameters modelParams) {
 
     super(storeName, configuration, queryParams, modelParams);
 

@@ -14,6 +14,7 @@ public class MetadataKeyProvider implements ValueProvider {
   public Set<Value> resolve() throws ValueResolvingException {
 
     return ValueBuilder.getValuesFor(
+            Constants.METADATA_KEY_SOURCE_ID,
             Constants.METADATA_KEY_FILE_NAME,
             Constants.METADATA_KEY_FILE_TYPE,
             Constants.METADATA_KEY_URL,

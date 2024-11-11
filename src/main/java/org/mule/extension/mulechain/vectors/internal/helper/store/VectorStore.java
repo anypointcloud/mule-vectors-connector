@@ -16,10 +16,10 @@ import org.mule.extension.mulechain.vectors.internal.helper.factory.EmbeddingMod
 import org.mule.extension.mulechain.vectors.internal.helper.factory.EmbeddingStoreFactory;
 import org.mule.extension.mulechain.vectors.internal.helper.parameter.EmbeddingModelNameParameters;
 import org.mule.extension.mulechain.vectors.internal.helper.parameter.QueryParameters;
-import org.mule.extension.mulechain.vectors.internal.helper.store.milvus.MilvusVectorStore;
-import org.mule.extension.mulechain.vectors.internal.helper.store.milvus.PGVectorVectorStore;
+import org.mule.extension.mulechain.vectors.internal.helper.store.milvus.AISearchStore;
+import org.mule.extension.mulechain.vectors.internal.helper.store.milvus.MilvusStore;
+import org.mule.extension.mulechain.vectors.internal.helper.store.milvus.PGVectorStore;
 import org.mule.extension.mulechain.vectors.internal.util.JsonUtils;
-import org.mule.runtime.module.extension.internal.runtime.operation.IllegalOperationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -194,11 +194,13 @@ public class VectorStore {
 
     String url = sourceObject.has(Constants.METADATA_KEY_URL) ? sourceObject.getString(Constants.METADATA_KEY_URL) : "";
     String fullPath = sourceObject.has(Constants.METADATA_KEY_FULL_PATH) ? sourceObject.getString(Constants.METADATA_KEY_FULL_PATH) : "";
+    String source = sourceObject.has(Constants.METADATA_KEY_SOURCE) ? sourceObject.getString(Constants.METADATA_KEY_SOURCE) : "";
     String ingestionDatetime = sourceObject.has(Constants.METADATA_KEY_INGESTION_DATETIME) ? sourceObject.getString(Constants.METADATA_KEY_INGESTION_DATETIME) : "";
 
     String alternativeKey =
         ((fullPath != null && !fullPath.isEmpty()) ? fullPath :
-              (url != null && !url.isEmpty()) ? url : "") +
+            ((url != null && !url.isEmpty()) ? url :
+                  (source != null && !source.isEmpty()) ? source : "")) +
               ((ingestionDatetime != null && !ingestionDatetime.isEmpty()) ? ingestionDatetime : "");
 
     return !sourceId.isEmpty() ? sourceId : alternativeKey;
@@ -211,6 +213,7 @@ public class VectorStore {
     String fileName = metadataObject.has(Constants.METADATA_KEY_FILE_NAME) ?  metadataObject.getString(Constants.METADATA_KEY_FILE_NAME) : null;
     String url = metadataObject.has(Constants.METADATA_KEY_URL) ?  metadataObject.getString(Constants.METADATA_KEY_URL) : null;
     String fullPath = metadataObject.has(Constants.METADATA_KEY_FULL_PATH) ?  metadataObject.getString(Constants.METADATA_KEY_FULL_PATH) : null;
+    String source = metadataObject.has(Constants.METADATA_KEY_SOURCE) ?  metadataObject.getString(Constants.METADATA_KEY_SOURCE) : null;
     String absoluteDirectoryPath = metadataObject.has(Constants.METADATA_KEY_ABSOLUTE_DIRECTORY_PATH) ?  metadataObject.getString(Constants.METADATA_KEY_ABSOLUTE_DIRECTORY_PATH) : null;
     String ingestionDatetime = metadataObject.has(Constants.METADATA_KEY_INGESTION_DATETIME) ?  metadataObject.getString(Constants.METADATA_KEY_INGESTION_DATETIME) : null;
 
@@ -218,6 +221,7 @@ public class VectorStore {
     sourceObject.put("segmentCount", Integer.parseInt(index) + 1);
     sourceObject.put(Constants.METADATA_KEY_SOURCE_ID, sourceId);
     sourceObject.put(Constants.METADATA_KEY_ABSOLUTE_DIRECTORY_PATH, absoluteDirectoryPath);
+    sourceObject.put(Constants.METADATA_KEY_SOURCE, source);
     sourceObject.put(Constants.METADATA_KEY_FULL_PATH, fullPath);
     sourceObject.put(Constants.METADATA_KEY_FILE_NAME, fileName);
     sourceObject.put(Constants.METADATA_KEY_URL, url);
@@ -276,15 +280,18 @@ public class VectorStore {
 
         case Constants.VECTOR_STORE_MILVUS:
 
-          embeddingStore = new MilvusVectorStore(storeName, configuration, queryParams, modelParams);
+          embeddingStore = new MilvusStore(storeName, configuration, queryParams, modelParams);
           break;
 
         case Constants.VECTOR_STORE_PGVECTOR:
 
-          embeddingStore = new PGVectorVectorStore(storeName, configuration, queryParams, modelParams);
+          embeddingStore = new PGVectorStore(storeName, configuration, queryParams, modelParams);
           break;
 
         case Constants.VECTOR_STORE_AI_SEARCH:
+
+          embeddingStore = new AISearchStore(storeName, configuration, queryParams, modelParams);
+          break;
 
         case Constants.VECTOR_STORE_CHROMA:
 
