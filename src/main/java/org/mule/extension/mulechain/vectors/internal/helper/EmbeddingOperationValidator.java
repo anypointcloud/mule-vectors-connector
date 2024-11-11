@@ -43,6 +43,7 @@ public class EmbeddingOperationValidator {
             new HashSet<>(Arrays.asList(
               Constants.VECTOR_STORE_PGVECTOR,
               Constants.VECTOR_STORE_ELASTICSEARCH,
+                    Constants.VECTOR_STORE_OPENSEARCH,
               Constants.VECTOR_STORE_MILVUS,
               Constants.VECTOR_STORE_CHROMA,
               Constants.VECTOR_STORE_PINECONE,
@@ -55,6 +56,7 @@ public class EmbeddingOperationValidator {
             new HashSet<>(Arrays.asList(
               Constants.VECTOR_STORE_PGVECTOR,
               Constants.VECTOR_STORE_ELASTICSEARCH,
+                    Constants.VECTOR_STORE_OPENSEARCH,
               Constants.VECTOR_STORE_MILVUS,
               Constants.VECTOR_STORE_CHROMA,
               Constants.VECTOR_STORE_PINECONE,
@@ -65,6 +67,7 @@ public class EmbeddingOperationValidator {
             new HashSet<>(Arrays.asList(
               Constants.VECTOR_STORE_PGVECTOR,
               Constants.VECTOR_STORE_ELASTICSEARCH,
+                    Constants.VECTOR_STORE_OPENSEARCH,
               Constants.VECTOR_STORE_MILVUS,
               Constants.VECTOR_STORE_CHROMA,
               Constants.VECTOR_STORE_PINECONE,
