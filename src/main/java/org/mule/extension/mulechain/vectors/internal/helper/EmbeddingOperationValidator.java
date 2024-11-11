@@ -43,7 +43,7 @@ public class EmbeddingOperationValidator {
             new HashSet<>(Arrays.asList(
               Constants.VECTOR_STORE_PGVECTOR,
               Constants.VECTOR_STORE_ELASTICSEARCH,
-                    Constants.VECTOR_STORE_OPENSEARCH,
+              Constants.VECTOR_STORE_OPENSEARCH,
               Constants.VECTOR_STORE_MILVUS,
               Constants.VECTOR_STORE_CHROMA,
               Constants.VECTOR_STORE_PINECONE,
@@ -56,7 +56,7 @@ public class EmbeddingOperationValidator {
             new HashSet<>(Arrays.asList(
               Constants.VECTOR_STORE_PGVECTOR,
               Constants.VECTOR_STORE_ELASTICSEARCH,
-                    Constants.VECTOR_STORE_OPENSEARCH,
+              Constants.VECTOR_STORE_OPENSEARCH,
               Constants.VECTOR_STORE_MILVUS,
               Constants.VECTOR_STORE_CHROMA,
               Constants.VECTOR_STORE_PINECONE,
@@ -67,7 +67,7 @@ public class EmbeddingOperationValidator {
             new HashSet<>(Arrays.asList(
               Constants.VECTOR_STORE_PGVECTOR,
               Constants.VECTOR_STORE_ELASTICSEARCH,
-                    Constants.VECTOR_STORE_OPENSEARCH,
+              // Constants.VECTOR_STORE_OPENSEARCH, // Not supported yet.
               Constants.VECTOR_STORE_MILVUS,
               Constants.VECTOR_STORE_CHROMA,
               Constants.VECTOR_STORE_PINECONE,
@@ -79,10 +79,11 @@ public class EmbeddingOperationValidator {
             new HashSet<>(Arrays.asList(
                 Constants.VECTOR_STORE_PGVECTOR,
                 // Constants.VECTOR_STORE_ELASTICSEARCH,  // Needs to be tested
-                Constants.VECTOR_STORE_MILVUS
+                // Constants.VECTOR_STORE_OPENSEARCH,  // Needs to be tested
+                Constants.VECTOR_STORE_MILVUS,
                 // Constants.VECTOR_STORE_CHROMA,  // Needs to be tested
                 // Constants.VECTOR_STORE_PINECONE, // Do not support GTE with strings.
-                // Constants.VECTOR_STORE_AI_SEARCH  // Needs to be tested
+                Constants.VECTOR_STORE_AI_SEARCH  // Needs to be tested
             )));
 
   }

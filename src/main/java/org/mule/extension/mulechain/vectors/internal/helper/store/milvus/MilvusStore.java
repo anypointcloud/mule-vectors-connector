@@ -2,13 +2,10 @@ package org.mule.extension.mulechain.vectors.internal.helper.store.milvus;
 
 import com.google.gson.JsonObject;
 import io.milvus.client.MilvusServiceClient;
-import io.milvus.grpc.QueryResults;
 import io.milvus.orm.iterator.QueryIterator;
 import io.milvus.param.ConnectParam;
 import io.milvus.param.dml.QueryIteratorParam;
-import io.milvus.param.dml.QueryParam;
 import io.milvus.param.R;
-import io.milvus.param.collection.LoadCollectionParam;
 import io.milvus.response.QueryResultsWrapper;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -26,11 +23,11 @@ import java.util.List;
 
 import static org.mule.extension.mulechain.vectors.internal.util.JsonUtils.readConfigFile;
 
-public class MilvusVectorStore extends VectorStore {
+public class MilvusStore extends VectorStore {
 
   private String uri;
 
-  public MilvusVectorStore(String storeName, Configuration configuration, QueryParameters queryParams, EmbeddingModelNameParameters modelParams) {
+  public MilvusStore(String storeName, Configuration configuration, QueryParameters queryParams, EmbeddingModelNameParameters modelParams) {
 
     super(storeName, configuration, queryParams, modelParams);
 
@@ -45,7 +42,6 @@ public class MilvusVectorStore extends VectorStore {
     
     JSONObject jsonObject = new JSONObject();
     jsonObject.put("storeName", storeName);
-    JSONArray sources = new JSONArray();
 
     // Specify the host and port for the Milvus server
     ConnectParam connectParam = ConnectParam.newBuilder()
