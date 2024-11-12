@@ -1,0 +1,177 @@
+package org.mule.extension.mulechain.vectors.internal.store.chroma;
+
+import org.json.JSONObject;
+import org.mule.extension.mulechain.vectors.internal.config.Configuration;
+import org.mule.extension.mulechain.vectors.internal.constant.Constants;
+import org.mule.extension.mulechain.vectors.internal.helper.parameter.EmbeddingModelNameParameters;
+import org.mule.extension.mulechain.vectors.internal.helper.parameter.QueryParameters;
+import org.mule.extension.mulechain.vectors.internal.store.VectorStore;
+import org.mule.extension.mulechain.vectors.internal.util.JsonUtils;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.HashMap;
+
+/**
+ * ChromaStore is a specialized implementation of {@link VectorStore} designed to interact with
+ * the Chroma database for managing vector data and sources.
+ */
+public class ChromaStore extends VectorStore {
+
+  private String url;
+
+
+  /**
+   * Initializes a new instance of ChromaStore.
+   *
+   * @param storeName     the name of the vector store.
+   * @param configuration the configuration object containing necessary settings.
+   * @param queryParams   parameters related to query configurations.
+   * @param modelParams   parameters for embedding model configurations.
+   */
+  public ChromaStore(String storeName, Configuration configuration, QueryParameters queryParams, EmbeddingModelNameParameters modelParams) {
+
+    super(storeName, configuration, queryParams, modelParams);
+
+    JSONObject config = JsonUtils.readConfigFile(configuration.getConfigFilePath());
+    JSONObject vectorStoreConfig = config.getJSONObject(Constants.VECTOR_STORE_ELASTICSEARCH);
+    this.url = vectorStoreConfig.getString("CHROMA_URL");
+  }
+
+  /**
+   * Retrieves a JSON object listing all sources associated with the store.
+   *
+   * @return a {@link JSONObject} containing details of all sources.
+   */
+  public JSONObject listSources() {
+
+    HashMap<String, JSONObject> sourceObjectMap = new HashMap<String, JSONObject>();
+
+    JSONObject jsonObject = new JSONObject();
+    jsonObject.put(JSON_KEY_STORE_NAME, storeName);
+
+    long segmentCount = 0; // Counter to track the number of segments processed
+    long offset = 0; // Initialize offset for pagination
+
+    try {
+
+      String collectionId = getCollectionId(storeName);
+      segmentCount = getSegmentCount(collectionId);
+
+      while(offset < segmentCount) {
+
+      }
+
+    } catch (Exception e) {
+
+      // Handle any exceptions that occur during the process
+      LOGGER.error("Error while listing sources", e);
+    }
+
+    jsonObject.put(JSON_KEY_SOURCES, JsonUtils.jsonObjectCollectionToJsonArray(sourceObjectMap.values()));
+    jsonObject.put(JSON_KEY_SOURCE_COUNT, sourceObjectMap.size());
+
+    return jsonObject;
+  }
+
+  /**
+   * Retrieves the total number of segments in the specified collection.
+   *
+   * @param collectionId the ID of the collection.
+   * @return the segment count as a {@code long}.
+   */
+  private long getSegmentCount(String collectionId) {
+
+    long segmentCount = 0;
+    try {
+
+      String urlString = url + "/api/v1/collections/" + collectionId + "/count";
+      URL url = new URL(urlString);
+
+      // Open connection and configure HTTP request
+      HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+      connection.setRequestMethod("GET");
+      connection.setRequestProperty("Content-Type", "application/json");
+
+      // Check the response code and handle accordingly
+      if (connection.getResponseCode() == 200) {
+
+        BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+        StringBuilder responseBuilder = new StringBuilder();
+        String line;
+
+        // Read response line by line
+        while ((line = in.readLine()) != null) {
+          responseBuilder.append(line);
+        }
+        in.close();
+        segmentCount = Long.parseLong(responseBuilder.toString());
+
+      } else {
+
+        // Log any error responses from the server
+        LOGGER.error("Error: " + connection.getResponseCode() + " " + connection.getResponseMessage());
+      }
+
+    } catch (Exception e) {
+
+      // Handle any exceptions that occur during the process
+      LOGGER.error("Error getting collection count", e);
+    }
+    LOGGER.debug("segmentCount: " + segmentCount);
+    return segmentCount;
+  }
+
+  /**
+   * Retrieves the collection ID for a given store name.
+   *
+   * @param storeName the name of the store.
+   * @return the collection ID as a {@code String}.
+   */
+  private String getCollectionId(String storeName) {
+
+    String collectionId = "";
+    try {
+
+      String urlString = url + "/api/v1/collections/" + storeName;
+      URL url = new URL(urlString);
+
+      // Open connection and configure HTTP request
+      HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+      connection.setRequestMethod("GET");
+      connection.setRequestProperty("Content-Type", "application/json");
+
+      // Check the response code and handle accordingly
+      if (connection.getResponseCode() == 200) {
+
+        BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+        StringBuilder responseBuilder = new StringBuilder();
+        String line;
+
+        // Read response line by line
+        while ((line = in.readLine()) != null) {
+          responseBuilder.append(line);
+        }
+        in.close();
+
+        // Parse JSON response
+        JSONObject jsonResponse = new JSONObject(responseBuilder.toString());
+        collectionId = jsonResponse.getString("id");
+
+      } else {
+
+        // Log any error responses from the server
+        LOGGER.error("Error: " + connection.getResponseCode() + " " + connection.getResponseMessage());
+    }
+
+    } catch (Exception e) {
+
+      // Handle any exceptions that occur during the process
+      LOGGER.error("Error getting collection id", e);
+    }
+    LOGGER.debug("collectionId: " + collectionId);
+    return collectionId;
+  }
+}

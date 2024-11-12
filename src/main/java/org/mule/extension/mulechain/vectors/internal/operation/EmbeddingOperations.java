@@ -19,7 +19,7 @@ import dev.langchain4j.store.embedding.*;
 import dev.langchain4j.store.embedding.filter.Filter;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.mule.extension.mulechain.vectors.internal.helper.store.VectorStore;
+import org.mule.extension.mulechain.vectors.internal.store.VectorStore;
 import org.mule.runtime.extension.api.annotation.Alias;
 import org.mule.runtime.extension.api.annotation.param.*;
 
@@ -354,9 +354,9 @@ public class EmbeddingOperations {
   ) {
 
     EmbeddingOperationValidator.validateOperationType(
-            Constants.EMBEDDING_OPERATION_TYPE_FILTER_BY_METADATA,configuration.getVectorStore());
+        Constants.EMBEDDING_OPERATION_TYPE_QUERY_ALL,configuration.getVectorStore());
     EmbeddingOperationValidator.validateOperationType(
-            Constants.EMBEDDING_OPERATION_TYPE_QUERY_ALL,configuration.getVectorStore());
+            Constants.EMBEDDING_OPERATION_TYPE_FILTER_BY_METADATA,configuration.getVectorStore());
 
     VectorStore vectorStore = VectorStore.builder()
         .storeName(storeName)
