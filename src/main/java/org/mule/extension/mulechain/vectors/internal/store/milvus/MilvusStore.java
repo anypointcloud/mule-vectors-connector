@@ -83,12 +83,8 @@ public class MilvusStore extends VectorStore {
 
             JsonObject gsonObject = (JsonObject)rowRecord.getFieldValues().get(Constants.STORE_SCHEMA_METADATA_FIELD_NAME);
             JSONObject metadataObject = new JSONObject(gsonObject.toString());
-
-            String index = metadataObject.has(Constants.METADATA_KEY_INDEX) ? metadataObject.getString(Constants.METADATA_KEY_INDEX) : null;
             JSONObject sourceObject = getSourceObject(metadataObject);
-
             addOrUpdateSourceObjectIntoSourceObjectMap(sourceObjectMap, sourceObject);
-
           }
         }
       }

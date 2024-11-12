@@ -94,19 +94,14 @@ public class AISearchStore extends VectorStore {
                 JSONArray attributes = metadata.optJSONArray("attributes");
 
                 JSONObject metadataObject = new JSONObject(); // Object to store key-value pairs from attributes
-
-                int index =0;
                 // Iterate over attributes array to populate sourceObject
                 for (int j = 0; j < attributes.length(); j++) {
+
                   JSONObject attribute = attributes.getJSONObject(j);
                   metadataObject.put(attribute.getString("key"), attribute.get("value"));
-                  if(attribute.getString("key").compareTo(Constants.METADATA_KEY_INDEX) == 0) {
-                    index = Integer.parseInt(metadataObject.getString("index"));
-                  }
                 }
 
                 JSONObject sourceObject = getSourceObject(metadataObject);
-
                 addOrUpdateSourceObjectIntoSourceObjectMap(sourceObjectMap, sourceObject);
 
                 LOGGER.debug("sourceObject: " + sourceObject);

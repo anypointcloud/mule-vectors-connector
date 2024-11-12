@@ -72,10 +72,7 @@ public class PGVectorStore extends VectorStore {
       while (iterator.hasNext()) {
 
         JSONObject metadataObject = new JSONObject(iterator.next());
-
-        String index = metadataObject.has(Constants.METADATA_KEY_INDEX) ? metadataObject.getString(Constants.METADATA_KEY_INDEX) : null;
         JSONObject sourceObject = getSourceObject(metadataObject);
-
         addOrUpdateSourceObjectIntoSourceObjectMap(sourceObjectMap, sourceObject);
       }
     } catch (SQLException e) {
