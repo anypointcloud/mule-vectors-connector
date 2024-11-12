@@ -1,4 +1,4 @@
-package org.mule.extension.mulechain.vectors.internal.helper.store.milvus;
+package org.mule.extension.mulechain.vectors.internal.store.milvus;
 
 import com.google.gson.JsonObject;
 import io.milvus.client.MilvusServiceClient;
@@ -7,13 +7,12 @@ import io.milvus.param.ConnectParam;
 import io.milvus.param.dml.QueryIteratorParam;
 import io.milvus.param.R;
 import io.milvus.response.QueryResultsWrapper;
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.mule.extension.mulechain.vectors.internal.config.Configuration;
 import org.mule.extension.mulechain.vectors.internal.constant.Constants;
 import org.mule.extension.mulechain.vectors.internal.helper.parameter.EmbeddingModelNameParameters;
 import org.mule.extension.mulechain.vectors.internal.helper.parameter.QueryParameters;
-import org.mule.extension.mulechain.vectors.internal.helper.store.VectorStore;
+import org.mule.extension.mulechain.vectors.internal.store.VectorStore;
 import org.mule.extension.mulechain.vectors.internal.util.JsonUtils;
 
 import java.util.ArrayList;
@@ -38,10 +37,10 @@ public class MilvusStore extends VectorStore {
 
   public JSONObject listSources() {
 
-    HashMap<String, JSONObject> sourcesJSONObjectHashMap = new HashMap<String, JSONObject>();
+    HashMap<String, JSONObject> sourceObjectMap = new HashMap<String, JSONObject>();
     
     JSONObject jsonObject = new JSONObject();
-    jsonObject.put("storeName", storeName);
+    jsonObject.put(JSON_KEY_STORE_NAME, storeName);
 
     // Specify the host and port for the Milvus server
     ConnectParam connectParam = ConnectParam.newBuilder()
@@ -58,7 +57,7 @@ public class MilvusStore extends VectorStore {
       QueryIteratorParam iteratorParam = QueryIteratorParam.newBuilder()
           .withCollectionName(storeName)
           .withBatchSize((long)queryParams.embeddingPageSize())
-          .withOutFields(Arrays.asList("metadata"))
+          .withOutFields(Arrays.asList(Constants.STORE_SCHEMA_METADATA_FIELD_NAME))
           .build();
 
       R<QueryIterator> queryIteratorRes = client.queryIterator(iteratorParam);
@@ -82,30 +81,13 @@ public class MilvusStore extends VectorStore {
 
           for (QueryResultsWrapper.RowRecord rowRecord : batchResults) {
 
-            JsonObject gsonObject = (JsonObject)rowRecord.getFieldValues().get("metadata");
+            JsonObject gsonObject = (JsonObject)rowRecord.getFieldValues().get(Constants.STORE_SCHEMA_METADATA_FIELD_NAME);
             JSONObject metadataObject = new JSONObject(gsonObject.toString());
 
             String index = metadataObject.has(Constants.METADATA_KEY_INDEX) ? metadataObject.getString(Constants.METADATA_KEY_INDEX) : null;
             JSONObject sourceObject = getSourceObject(metadataObject);
 
-            String sourceUniqueKey = getSourceUniqueKey(sourceObject);
-
-            // Add sourceObject to sources only if it has at least one key-value pair and it's possible to generate a key
-            if (!sourceObject.isEmpty() && sourceUniqueKey != null && !sourceUniqueKey.isEmpty()) {
-              // Overwrite sourceObject if current one has a greater index (greatest index represents the number of segments)
-              if(sourcesJSONObjectHashMap.containsKey(sourceUniqueKey)){
-                // Get current index
-                int currentSegmentCount = Integer.parseInt(index) + 1;
-                // Get previously stored index
-                int storedSegmentCount = (int) sourcesJSONObjectHashMap.get(sourceUniqueKey).get("segmentCount");
-                // Check if object need to be updated
-                if(currentSegmentCount > storedSegmentCount) {
-                  sourcesJSONObjectHashMap.put(sourceUniqueKey, sourceObject);
-                }
-              } else {
-                sourcesJSONObjectHashMap.put(sourceUniqueKey, sourceObject);
-              }
-            }
+            addOrUpdateSourceObjectIntoSourceObjectMap(sourceObjectMap, sourceObject);
 
           }
         }
@@ -114,8 +96,8 @@ public class MilvusStore extends VectorStore {
       client.close();
     }
 
-    jsonObject.put("sources", JsonUtils.jsonObjectCollectionToJsonArray(sourcesJSONObjectHashMap.values()));
-    jsonObject.put("sourceCount", sourcesJSONObjectHashMap.size());
+    jsonObject.put(JSON_KEY_SOURCES, JsonUtils.jsonObjectCollectionToJsonArray(sourceObjectMap.values()));
+    jsonObject.put(JSON_KEY_SOURCE_COUNT, sourceObjectMap.size());
 
     return jsonObject;
   }

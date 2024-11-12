@@ -1,4 +1,4 @@
-package org.mule.extension.mulechain.vectors.internal.helper.store;
+package org.mule.extension.mulechain.vectors.internal.store;
 
 import dev.langchain4j.data.document.Metadata;
 import dev.langchain4j.data.embedding.Embedding;
@@ -16,9 +16,9 @@ import org.mule.extension.mulechain.vectors.internal.helper.factory.EmbeddingMod
 import org.mule.extension.mulechain.vectors.internal.helper.factory.EmbeddingStoreFactory;
 import org.mule.extension.mulechain.vectors.internal.helper.parameter.EmbeddingModelNameParameters;
 import org.mule.extension.mulechain.vectors.internal.helper.parameter.QueryParameters;
-import org.mule.extension.mulechain.vectors.internal.helper.store.aisearch.AISearchStore;
-import org.mule.extension.mulechain.vectors.internal.helper.store.milvus.MilvusStore;
-import org.mule.extension.mulechain.vectors.internal.helper.store.pgvector.PGVectorStore;
+import org.mule.extension.mulechain.vectors.internal.store.aisearch.AISearchStore;
+import org.mule.extension.mulechain.vectors.internal.store.milvus.MilvusStore;
+import org.mule.extension.mulechain.vectors.internal.store.pgvector.PGVectorStore;
 import org.mule.extension.mulechain.vectors.internal.util.JsonUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +31,11 @@ import static dev.langchain4j.store.embedding.filter.MetadataFilterBuilder.metad
 public class VectorStore {
 
   protected static final Logger LOGGER = LoggerFactory.getLogger(VectorStore.class);
+
+  protected static final String JSON_KEY_SOURCES = "sources";
+  protected static final String JSON_KEY_SEGMENT_COUNT = "segmentCount";
+  protected static final String JSON_KEY_SOURCE_COUNT = "sourceCount";
+  protected static final String JSON_KEY_STORE_NAME = "storeName";
 
   protected String storeName;
   protected Configuration configuration;
@@ -58,8 +63,8 @@ public class VectorStore {
 
     // Create a general query vector (e.g., zero vector). Zero vector is often used when you need to retrieve all
     // embeddings without any specific bias.
-    float[] queryVector = new float[embeddingModel.dimension()];
-    for (int i = 0; i < embeddingModel.dimension(); i++) {
+    float[] queryVector = new float[embeddingModel().dimension()];
+    for (int i = 0; i < embeddingModel().dimension(); i++) {
       queryVector[i]=0.0f;  // Zero vector
     }
     return new Embedding(queryVector);
@@ -73,11 +78,11 @@ public class VectorStore {
     Embedding queryEmbedding = getZeroVectorEmbedding();
 
     JSONObject jsonObject = new JSONObject();
-    jsonObject.put("storeName", storeName);
+    jsonObject.put(JSON_KEY_STORE_NAME, storeName);
     JSONArray sources = new JSONArray();
 
     List<EmbeddingMatch<TextSegment>> embeddingMatches = null;
-    HashMap<String, JSONObject> sourcesJSONObjectHashMap = new HashMap<String, JSONObject>();
+    HashMap<String, JSONObject> sourceObjectMap = new HashMap<String, JSONObject>();
     String lowerBoundaryIngestionDateTime = "0000-00-00T00:00:00.000Z";
     int lowerBoundaryIndex = -1;
 
@@ -87,8 +92,7 @@ public class VectorStore {
 
       LOGGER.debug("Embedding page filter: lowerBoundaryIngestionDateTime: " + lowerBoundaryIngestionDateTime + ", lowerBoundaryIndex: " + lowerBoundaryIndex);
 
-      Filter
-          condition1 = metadataKey(Constants.METADATA_KEY_INGESTION_DATETIME).isGreaterThanOrEqualTo(lowerBoundaryIngestionDateTime);
+      Filter condition1 = metadataKey(Constants.METADATA_KEY_INGESTION_DATETIME).isGreaterThanOrEqualTo(lowerBoundaryIngestionDateTime);
       Filter condition2 = metadataKey(Constants.METADATA_KEY_INDEX).isGreaterThan(String.valueOf(lowerBoundaryIndex)); // Index must be handled as a String
       Filter condition3 = metadataKey(Constants.METADATA_KEY_INGESTION_DATETIME).isGreaterThan(lowerBoundaryIngestionDateTime);
 
@@ -129,7 +133,7 @@ public class VectorStore {
         }
 
         JSONObject sourceObject = new JSONObject();
-        sourceObject.put("segmentCount", Integer.parseInt(index) + 1);
+        sourceObject.put(JSON_KEY_SEGMENT_COUNT, Integer.parseInt(index) + 1);
         sourceObject.put(Constants.METADATA_KEY_SOURCE_ID, sourceId);
         sourceObject.put(Constants.METADATA_KEY_ABSOLUTE_DIRECTORY_PATH, absoluteDirectoryPath);
         sourceObject.put(Constants.METADATA_KEY_FULL_PATH, fullPath);
@@ -137,26 +141,8 @@ public class VectorStore {
         sourceObject.put(Constants.METADATA_KEY_URL, url);
         sourceObject.put(Constants.METADATA_KEY_INGESTION_DATETIME, ingestionDatetime);
 
-        String sourceUniqueKey = getSourceUniqueKey(sourceObject);
+        addOrUpdateSourceObjectIntoSourceObjectMap(sourceObjectMap, sourceObject);
 
-        // Add sourceObject to sources only if it has at least one key-value pair and it's possible to generate a key
-        if (!sourceObject.isEmpty() && sourceUniqueKey != null && !sourceUniqueKey.isEmpty()) {
-
-          // Overwrite sourceObject if current one has a greater index (greatest index represents the number of segments)
-          if(sourcesJSONObjectHashMap.containsKey(sourceUniqueKey)){
-
-            int currentSegmentCount = Integer.parseInt(index) + 1;
-            int storedSegmentCount = (int) sourcesJSONObjectHashMap.get(sourceUniqueKey).get("segmentCount");
-            if(currentSegmentCount > storedSegmentCount) {
-
-              sourcesJSONObjectHashMap.put(sourceUniqueKey, sourceObject);
-            }
-
-          } else {
-
-            sourcesJSONObjectHashMap.put(sourceUniqueKey, sourceObject);
-          }
-        }
         currentPageEmbeddingId = match.embeddingId();
       }
 
@@ -168,8 +154,8 @@ public class VectorStore {
 
     } while(embeddingMatches.size() == queryParams.embeddingPageSize());
 
-    jsonObject.put("sources", JsonUtils.jsonObjectCollectionToJsonArray(sourcesJSONObjectHashMap.values()));
-    jsonObject.put("sourceCount", sourcesJSONObjectHashMap.size());
+    jsonObject.put(JSON_KEY_SOURCES, JsonUtils.jsonObjectCollectionToJsonArray(sourceObjectMap.values()));
+    jsonObject.put(JSON_KEY_SOURCE_COUNT, sourceObjectMap.size());
     return jsonObject;
   }
 
@@ -206,6 +192,28 @@ public class VectorStore {
     return !sourceId.isEmpty() ? sourceId : alternativeKey;
   }
 
+  protected void addOrUpdateSourceObjectIntoSourceObjectMap(HashMap<String, JSONObject> sourceObjectMap, JSONObject sourceObject) {
+
+    String sourceUniqueKey = getSourceUniqueKey(sourceObject);
+
+    // Add sourceObject to sources only if it has at least one key-value pair and it's possible to generate a key
+    if (!sourceObject.isEmpty() && sourceUniqueKey != null && !sourceUniqueKey.isEmpty()) {
+      // Overwrite sourceObject if current one has a greater index (greatest index represents the number of segments)
+      if(sourceObjectMap.containsKey(sourceUniqueKey)){
+        // Get current index
+        int currentSegmentCount = sourceObject.getInt(JSON_KEY_SEGMENT_COUNT);
+        // Get previously stored index
+        int storedSegmentCount = (int) sourceObjectMap.get(sourceUniqueKey).get(JSON_KEY_SEGMENT_COUNT);
+        // Check if object need to be updated
+        if(currentSegmentCount > storedSegmentCount) {
+          sourceObjectMap.put(sourceUniqueKey, sourceObject);
+        }
+      } else {
+        sourceObjectMap.put(sourceUniqueKey, sourceObject);
+      }
+    }
+  }
+
   protected JSONObject getSourceObject(JSONObject metadataObject) {
 
     String sourceId = metadataObject.has(Constants.METADATA_KEY_SOURCE_ID) ?  metadataObject.getString(Constants.METADATA_KEY_SOURCE_ID) : null;
@@ -218,7 +226,7 @@ public class VectorStore {
     String ingestionDatetime = metadataObject.has(Constants.METADATA_KEY_INGESTION_DATETIME) ?  metadataObject.getString(Constants.METADATA_KEY_INGESTION_DATETIME) : null;
 
     JSONObject sourceObject = new JSONObject();
-    sourceObject.put("segmentCount", Integer.parseInt(index) + 1);
+    sourceObject.put(JSON_KEY_SEGMENT_COUNT, Integer.parseInt(index) + 1);
     sourceObject.put(Constants.METADATA_KEY_SOURCE_ID, sourceId);
     sourceObject.put(Constants.METADATA_KEY_ABSOLUTE_DIRECTORY_PATH, absoluteDirectoryPath);
     sourceObject.put(Constants.METADATA_KEY_SOURCE, source);

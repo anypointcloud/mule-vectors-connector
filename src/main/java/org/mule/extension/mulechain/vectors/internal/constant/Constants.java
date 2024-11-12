@@ -41,6 +41,9 @@ public class Constants {
   public static final String VECTOR_STORE_AI_SEARCH = "AI_SEARCH";
   public static final String VECTOR_STORE_NEO4J = "NEO4J";
 
+  public static final String STORE_SCHEMA_METADATA_FIELD_NAME = "metadata";
+  public static final String STORE_SCHEMA_VECTOR_FIELD_NAME = "vector";
+
   public static final String METADATA_KEY_SOURCE_ID = "source_id";
   public static final String METADATA_KEY_INDEX = "index";
   public static final String METADATA_KEY_FILE_NAME = "file_name";

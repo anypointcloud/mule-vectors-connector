@@ -1,4 +1,4 @@
-package org.mule.extension.mulechain.vectors.internal.helper.store.aisearch;
+package org.mule.extension.mulechain.vectors.internal.store.aisearch;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -6,7 +6,7 @@ import org.mule.extension.mulechain.vectors.internal.config.Configuration;
 import org.mule.extension.mulechain.vectors.internal.constant.Constants;
 import org.mule.extension.mulechain.vectors.internal.helper.parameter.EmbeddingModelNameParameters;
 import org.mule.extension.mulechain.vectors.internal.helper.parameter.QueryParameters;
-import org.mule.extension.mulechain.vectors.internal.helper.store.VectorStore;
+import org.mule.extension.mulechain.vectors.internal.store.VectorStore;
 import org.mule.extension.mulechain.vectors.internal.util.JsonUtils;
 
 import java.io.BufferedReader;
@@ -36,12 +36,12 @@ public class AISearchStore extends VectorStore {
 
   public JSONObject listSources() {
 
-    HashMap<String, JSONObject> sourcesJSONObjectHashMap = new HashMap<String, JSONObject>();
+    HashMap<String, JSONObject> sourceObjectMap = new HashMap<String, JSONObject>();
 
     JSONObject jsonObject = new JSONObject();
-    jsonObject.put("storeName", storeName);
+    jsonObject.put(JSON_KEY_STORE_NAME, storeName);
 
-    int segmentCount = 0; // Counter to track the number of documents processed
+    int segmentCount = 0; // Counter to track the number of segments processed
     int offset = 0; // Initialize offset for pagination
 
     try {
@@ -52,7 +52,7 @@ public class AISearchStore extends VectorStore {
       do {
         // Construct the URL with $top and $skip for pagination
         String urlString = this.url + "/indexes/" + storeName + "/docs?search=*&$top=" + queryParams.embeddingPageSize() +
-            "&$skip=" + offset + "&$select=id,metadata&api-version=" + API_VERSION;
+            "&$skip=" + offset + "&$select=id," + Constants.STORE_SCHEMA_METADATA_FIELD_NAME + "&api-version=" + API_VERSION;
 
         // Nested loop to handle each page of results
         while (urlString != null) {
@@ -86,7 +86,7 @@ public class AISearchStore extends VectorStore {
 
               JSONObject document = documents.getJSONObject(i);
               String id = document.getString("id"); // Document ID
-              JSONObject metadata = document.optJSONObject("metadata"); // Metadata of the document
+              JSONObject metadata = document.optJSONObject(Constants.STORE_SCHEMA_METADATA_FIELD_NAME); // Metadata of the document
 
               if (metadata != null) {
 
@@ -106,24 +106,8 @@ public class AISearchStore extends VectorStore {
                 }
 
                 JSONObject sourceObject = getSourceObject(metadataObject);
-                String sourceUniqueKey = getSourceUniqueKey(sourceObject);
 
-                // Add sourceObject to sources only if it has at least one key-value pair and it's possible to generate a key
-                if (!sourceObject.isEmpty() && sourceUniqueKey != null && !sourceUniqueKey.isEmpty()) {
-                  // Overwrite sourceObject if current one has a greater index (greatest index represents the number of segments)
-                  if(sourcesJSONObjectHashMap.containsKey(sourceUniqueKey)){
-                    // Get current index
-                    int currentSegmentCount = index + 1;
-                    // Get previously stored index
-                    int storedSegmentCount = (int) sourcesJSONObjectHashMap.get(sourceUniqueKey).get("segmentCount");
-                    // Check if object need to be updated
-                    if(currentSegmentCount > storedSegmentCount) {
-                      sourcesJSONObjectHashMap.put(sourceUniqueKey, sourceObject);
-                    }
-                  } else {
-                    sourcesJSONObjectHashMap.put(sourceUniqueKey, sourceObject);
-                  }
-                }
+                addOrUpdateSourceObjectIntoSourceObjectMap(sourceObjectMap, sourceObject);
 
                 LOGGER.debug("sourceObject: " + sourceObject);
                 segmentCount++; // Increment document count
@@ -153,7 +137,7 @@ public class AISearchStore extends VectorStore {
       } while (hasMore); // Continue if more pages are available
 
       // Output total count of processed documents
-      LOGGER.debug("segmentCount: " + segmentCount);
+      LOGGER.debug(JSON_KEY_SEGMENT_COUNT + ": " + segmentCount);
 
     } catch (Exception e) {
 
@@ -161,8 +145,8 @@ public class AISearchStore extends VectorStore {
       LOGGER.error("Error while listing sources", e);
     }
 
-    jsonObject.put("sources", JsonUtils.jsonObjectCollectionToJsonArray(sourcesJSONObjectHashMap.values()));
-    jsonObject.put("sourceCount", sourcesJSONObjectHashMap.size());
+    jsonObject.put(JSON_KEY_SOURCES, JsonUtils.jsonObjectCollectionToJsonArray(sourceObjectMap.values()));
+    jsonObject.put(JSON_KEY_SOURCE_COUNT, sourceObjectMap.size());
 
     return jsonObject;
   }

@@ -1,11 +1,11 @@
-package org.mule.extension.mulechain.vectors.internal.helper.store.pgvector;
+package org.mule.extension.mulechain.vectors.internal.store.pgvector;
 
 import org.json.JSONObject;
 import org.mule.extension.mulechain.vectors.internal.config.Configuration;
 import org.mule.extension.mulechain.vectors.internal.constant.Constants;
 import org.mule.extension.mulechain.vectors.internal.helper.parameter.EmbeddingModelNameParameters;
 import org.mule.extension.mulechain.vectors.internal.helper.parameter.QueryParameters;
-import org.mule.extension.mulechain.vectors.internal.helper.store.VectorStore;
+import org.mule.extension.mulechain.vectors.internal.store.VectorStore;
 import org.mule.extension.mulechain.vectors.internal.util.JsonUtils;
 import org.postgresql.ds.PGSimpleDataSource;
 import org.slf4j.Logger;
@@ -63,10 +63,10 @@ public class PGVectorStore extends VectorStore {
    */
   public JSONObject listSources() {
 
-    HashMap<String, JSONObject> sourcesJSONObjectHashMap = new HashMap<>();
+    HashMap<String, JSONObject> sourceObjectMap = new HashMap<>();
 
     JSONObject jsonObject = new JSONObject();
-    jsonObject.put("storeName", storeName);
+    jsonObject.put(JSON_KEY_STORE_NAME, storeName);
 
     try (PgVectorMetadataIterator iterator = new PgVectorMetadataIterator(userName, password, host, port, database, storeName, (int)queryParams.embeddingPageSize())) {
       while (iterator.hasNext()) {
@@ -76,31 +76,14 @@ public class PGVectorStore extends VectorStore {
         String index = metadataObject.has(Constants.METADATA_KEY_INDEX) ? metadataObject.getString(Constants.METADATA_KEY_INDEX) : null;
         JSONObject sourceObject = getSourceObject(metadataObject);
 
-        String sourceUniqueKey = getSourceUniqueKey(sourceObject);
-
-        // Add sourceObject to sources only if it has at least one key-value pair and it's possible to generate a key
-        if (!sourceObject.isEmpty() && sourceUniqueKey != null && !sourceUniqueKey.isEmpty()) {
-          // Overwrite sourceObject if current one has a greater index (greatest index represents the number of segments)
-          if(sourcesJSONObjectHashMap.containsKey(sourceUniqueKey)){
-            // Get current index
-            int currentSegmentCount = Integer.parseInt(index) + 1;
-            // Get previously stored index
-            int storedSegmentCount = (int) sourcesJSONObjectHashMap.get(sourceUniqueKey).get("segmentCount");
-            // Check if object need to be updated
-            if(currentSegmentCount > storedSegmentCount) {
-              sourcesJSONObjectHashMap.put(sourceUniqueKey, sourceObject);
-            }
-          } else {
-            sourcesJSONObjectHashMap.put(sourceUniqueKey, sourceObject);
-          }
-        }
+        addOrUpdateSourceObjectIntoSourceObjectMap(sourceObjectMap, sourceObject);
       }
     } catch (SQLException e) {
       LOGGER.error("Error while listing sources", e);
     }
 
-    jsonObject.put("sources", JsonUtils.jsonObjectCollectionToJsonArray(sourcesJSONObjectHashMap.values()));
-    jsonObject.put("sourceCount", sourcesJSONObjectHashMap.size());
+    jsonObject.put(JSON_KEY_SOURCES, JsonUtils.jsonObjectCollectionToJsonArray(sourceObjectMap.values()));
+    jsonObject.put(JSON_KEY_SOURCE_COUNT, sourceObjectMap.size());
 
     return jsonObject;
   }
@@ -157,7 +140,7 @@ public class PGVectorStore extends VectorStore {
         pstmt.close();
       }
 
-      String query = "SELECT metadata FROM " + table + " LIMIT ? OFFSET ?";
+      String query = "SELECT " + Constants.STORE_SCHEMA_METADATA_FIELD_NAME  + " FROM " + table + " LIMIT ? OFFSET ?";
       pstmt = connection.prepareStatement(query);
       pstmt.setInt(1, this.pageSize);
       pstmt.setInt(2, offset);
@@ -198,7 +181,7 @@ public class PGVectorStore extends VectorStore {
         if (resultSet == null) {
           throw new NoSuchElementException("No more elements available");
         }
-        return resultSet.getString("metadata");
+        return resultSet.getString(Constants.STORE_SCHEMA_METADATA_FIELD_NAME);
       } catch (SQLException e) {
         LOGGER.error("Error retrieving next element", e);
         throw new NoSuchElementException("Error retrieving next element");
