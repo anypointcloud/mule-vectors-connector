@@ -81,7 +81,7 @@ public class EmbeddingOperationValidator {
                 // Constants.VECTOR_STORE_ELASTICSEARCH,  // Needs to be tested
                 // Constants.VECTOR_STORE_OPENSEARCH,  // Needs to be tested
                 Constants.VECTOR_STORE_MILVUS,
-                // Constants.VECTOR_STORE_CHROMA,  // Needs to be tested
+                Constants.VECTOR_STORE_CHROMA,
                 // Constants.VECTOR_STORE_PINECONE, // Do not support GTE with strings.
                 Constants.VECTOR_STORE_AI_SEARCH  // Needs to be tested
             )));

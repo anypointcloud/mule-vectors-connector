@@ -1,5 +1,6 @@
 package org.mule.extension.mulechain.vectors.internal.store.chroma;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.mule.extension.mulechain.vectors.internal.config.Configuration;
 import org.mule.extension.mulechain.vectors.internal.constant.Constants;
@@ -10,6 +11,7 @@ import org.mule.extension.mulechain.vectors.internal.util.JsonUtils;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.HashMap;
@@ -36,7 +38,7 @@ public class ChromaStore extends VectorStore {
     super(storeName, configuration, queryParams, modelParams);
 
     JSONObject config = JsonUtils.readConfigFile(configuration.getConfigFilePath());
-    JSONObject vectorStoreConfig = config.getJSONObject(Constants.VECTOR_STORE_ELASTICSEARCH);
+    JSONObject vectorStoreConfig = config.getJSONObject(Constants.VECTOR_STORE_CHROMA);
     this.url = vectorStoreConfig.getString("CHROMA_URL");
   }
 
@@ -62,6 +64,14 @@ public class ChromaStore extends VectorStore {
 
       while(offset < segmentCount) {
 
+        JSONArray metadataObjects = getMetadataObjects(collectionId, offset, queryParams.embeddingPageSize());
+        for(int i = 0; i< metadataObjects.length(); i++) {
+
+          JSONObject metadataObject = metadataObjects.getJSONObject(i);
+          JSONObject sourceObject = getSourceObject(metadataObject);
+          addOrUpdateSourceObjectIntoSourceObjectMap(sourceObjectMap, sourceObject);
+        }
+        offset = offset + metadataObjects.length();
       }
 
     } catch (Exception e) {
@@ -74,6 +84,66 @@ public class ChromaStore extends VectorStore {
     jsonObject.put(JSON_KEY_SOURCE_COUNT, sourceObjectMap.size());
 
     return jsonObject;
+  }
+
+  private JSONArray getMetadataObjects(String collectionId, long offset, long limit) {
+
+    JSONArray metadataObjects = new JSONArray();
+    try {
+
+      String urlString = url + "/api/v1/collections/" + collectionId + "/get";
+      URL url = new URL(urlString);
+
+      // Open connection and configure HTTP request
+      HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+      connection.setRequestMethod("POST");
+      connection.setRequestProperty("Content-Type", "application/json");
+      connection.setDoOutput(true); // Enable output for the connection
+
+      JSONObject jsonRequest = new JSONObject();
+      jsonRequest.put("limit", limit);
+      jsonRequest.put("offset", offset);
+
+      JSONArray jsonInclude = new JSONArray();
+      jsonInclude.put("metadatas");
+
+      jsonRequest.put("include", jsonInclude);
+
+      // Write JSON body to the request output stream
+      try (OutputStream os = connection.getOutputStream()) {
+        byte[] input = jsonRequest.toString().getBytes("utf-8");
+        os.write(input, 0, input.length);
+      }
+
+      // Check the response code and handle accordingly
+      if (connection.getResponseCode() == 200) {
+
+        BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+        StringBuilder responseBuilder = new StringBuilder();
+        String line;
+
+        // Read response line by line
+        while ((line = in.readLine()) != null) {
+          responseBuilder.append(line);
+        }
+        in.close();
+
+        // Parse JSON response
+        JSONObject jsonResponse = new JSONObject(responseBuilder.toString());
+        metadataObjects = jsonResponse.getJSONArray("metadatas");
+
+      } else {
+
+        // Log any error responses from the server
+        LOGGER.error("Error: " + connection.getResponseCode() + " " + connection.getResponseMessage());
+      }
+
+    } catch (Exception e) {
+
+      // Handle any exceptions that occur during the process
+      LOGGER.error("Error getting collection segments", e);
+    }
+    return metadataObjects;
   }
 
   /**
