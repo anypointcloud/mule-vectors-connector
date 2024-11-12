@@ -183,13 +183,4 @@ public class EmbeddingStoreFactory {
                 .apiKey(apiKey)
                 .build();
     }
-
-  /*private static EmbeddingStore<TextSegment> createNeo4JStore(String boltURL, String userName, String password, String collectionName, Integer dimension) {
-    return Neo4jEmbeddingStore.builder()
-      .withBasicAuth(boltURL, userName, password)
-      .dimension(dimension)
-      .databaseName(collectionName)
-      .build();
-  }*/
-
 }

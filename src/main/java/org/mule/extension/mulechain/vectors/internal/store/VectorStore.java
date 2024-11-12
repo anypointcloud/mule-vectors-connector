@@ -17,8 +17,13 @@ import org.mule.extension.mulechain.vectors.internal.helper.factory.EmbeddingSto
 import org.mule.extension.mulechain.vectors.internal.helper.parameter.EmbeddingModelNameParameters;
 import org.mule.extension.mulechain.vectors.internal.helper.parameter.QueryParameters;
 import org.mule.extension.mulechain.vectors.internal.store.aisearch.AISearchStore;
+import org.mule.extension.mulechain.vectors.internal.store.chroma.ChromaStore;
+import org.mule.extension.mulechain.vectors.internal.store.elasticsearch.ElasticsearchStore;
 import org.mule.extension.mulechain.vectors.internal.store.milvus.MilvusStore;
+import org.mule.extension.mulechain.vectors.internal.store.opensearch.OpenSearchStore;
 import org.mule.extension.mulechain.vectors.internal.store.pgvector.PGVectorStore;
+import org.mule.extension.mulechain.vectors.internal.store.pinecone.PineconeStore;
+import org.mule.extension.mulechain.vectors.internal.store.weviate.WeaviateStore;
 import org.mule.extension.mulechain.vectors.internal.util.JsonUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -398,15 +403,29 @@ public class VectorStore {
           embeddingStore = new AISearchStore(storeName, configuration, queryParams, modelParams);
           break;
 
+        case Constants.VECTOR_STORE_WEAVIATE:
+
+          embeddingStore = new WeaviateStore(storeName, configuration, queryParams, modelParams);
+          break;
+
         case Constants.VECTOR_STORE_CHROMA:
+
+          embeddingStore = new ChromaStore(storeName, configuration, queryParams, modelParams);
+          break;
 
         case Constants.VECTOR_STORE_PINECONE:
 
+          embeddingStore = new PineconeStore(storeName, configuration, queryParams, modelParams);
+          break;
+
         case Constants.VECTOR_STORE_ELASTICSEARCH:
 
-        case Constants.VECTOR_STORE_WEAVIATE:
+          embeddingStore = new ElasticsearchStore(storeName, configuration, queryParams, modelParams);
+          break;
 
-          embeddingStore = new VectorStore(storeName, configuration, queryParams, modelParams);
+        case Constants.VECTOR_STORE_OPENSEARCH:
+
+          embeddingStore = new OpenSearchStore(storeName, configuration, queryParams, modelParams);
           break;
 
         default:

@@ -354,9 +354,9 @@ public class EmbeddingOperations {
   ) {
 
     EmbeddingOperationValidator.validateOperationType(
-            Constants.EMBEDDING_OPERATION_TYPE_FILTER_BY_METADATA,configuration.getVectorStore());
+        Constants.EMBEDDING_OPERATION_TYPE_QUERY_ALL,configuration.getVectorStore());
     EmbeddingOperationValidator.validateOperationType(
-            Constants.EMBEDDING_OPERATION_TYPE_QUERY_ALL,configuration.getVectorStore());
+            Constants.EMBEDDING_OPERATION_TYPE_FILTER_BY_METADATA,configuration.getVectorStore());
 
     VectorStore vectorStore = VectorStore.builder()
         .storeName(storeName)
