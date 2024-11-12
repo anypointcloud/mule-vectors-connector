@@ -88,7 +88,7 @@ public class PGVectorStore extends VectorStore {
   /**
    * Iterator to handle metadata pagination from the PostgreSQL database.
    */
-  public class PgVectorMetadataIterator implements Iterator<String>, AutoCloseable {
+  private class PgVectorMetadataIterator implements Iterator<String>, AutoCloseable {
 
     private int offset = 0; // Current offset for pagination
     private ResultSet resultSet;
@@ -109,7 +109,7 @@ public class PGVectorStore extends VectorStore {
      * @param pageSize The number of rows per page for pagination.
      * @throws SQLException If a database error occurs.
      */
-    public PgVectorMetadataIterator(String userName, String password, String host, int port, String database, String table, int pageSize) throws SQLException {
+    private PgVectorMetadataIterator(String userName, String password, String host, int port, String database, String table, int pageSize) throws SQLException {
 
       // Initialize the connection and the first page of data
       PGSimpleDataSource dataSource = new PGSimpleDataSource();
