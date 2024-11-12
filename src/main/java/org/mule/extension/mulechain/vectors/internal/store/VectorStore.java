@@ -28,6 +28,11 @@ import java.util.List;
 
 import static dev.langchain4j.store.embedding.filter.MetadataFilterBuilder.metadataKey;
 
+/**
+ * The {@code VectorStore} class provides a framework for interacting with various types of vector stores,
+ * enabling storage and retrieval of vector embeddings for data analysis and retrieval purposes. It serves as
+ * an abstract base for specific implementations such as Milvus, PGVector, and AI Search stores.
+ */
 public class VectorStore {
 
   protected static final Logger LOGGER = LoggerFactory.getLogger(VectorStore.class);
@@ -43,6 +48,14 @@ public class VectorStore {
   protected EmbeddingModelNameParameters modelParams;
   protected EmbeddingModel embeddingModel;
 
+  /**
+   * Constructs a new {@code VectorStore} instance with specified configurations.
+   *
+   * @param storeName    the name of the vector store
+   * @param configuration the configuration object containing settings for the vector store
+   * @param queryParams  parameters for querying the vector store
+   * @param modelParams  parameters for selecting and configuring the embedding model
+   */
   public VectorStore(String storeName, Configuration configuration, QueryParameters queryParams, EmbeddingModelNameParameters modelParams) {
 
     this.storeName = storeName;
@@ -59,6 +72,11 @@ public class VectorStore {
     return this.embeddingModel;
   }
 
+  /**
+   * Retrieves the embedding model used by this vector store. Initializes the model if it is not already set.
+   *
+   * @return the embedding model used by the vector store
+   */
   public Embedding getZeroVectorEmbedding() {
 
     // Create a general query vector (e.g., zero vector). Zero vector is often used when you need to retrieve all
@@ -70,6 +88,11 @@ public class VectorStore {
     return new Embedding(queryVector);
   }
 
+  /**
+   * Retrieves a JSON object listing sources available in the vector store, including metadata for each source.
+   *
+   * @return a JSON object containing a list of sources and their metadata
+   */
   public JSONObject listSources() {
 
     dev.langchain4j.store.embedding.EmbeddingStore<TextSegment>
@@ -192,6 +215,12 @@ public class VectorStore {
     return !sourceId.isEmpty() ? sourceId : alternativeKey;
   }
 
+  /**
+   * Adds or updates a source object into the source object map.
+   *
+   * @param sourceObjectMap The map of source objects keyed by their unique keys.
+   * @param sourceObject    The source object to add or update.
+   */
   protected void addOrUpdateSourceObjectIntoSourceObjectMap(HashMap<String, JSONObject> sourceObjectMap, JSONObject sourceObject) {
 
     String sourceUniqueKey = getSourceUniqueKey(sourceObject);
@@ -214,6 +243,16 @@ public class VectorStore {
     }
   }
 
+  /**
+   * Extracts and organizes metadata fields from a given JSON object to create a structured source object.
+   * <p>
+   * The generated source object includes keys such as source ID, file name, URL, full path, and ingestion
+   * datetime, among others.
+   * </p>
+   *
+   * @param metadataObject a {@code JSONObject} containing metadata fields.
+   * @return a {@code JSONObject} with organized metadata for a source.
+   */
   protected JSONObject getSourceObject(JSONObject metadataObject) {
 
     String sourceId = metadataObject.has(Constants.METADATA_KEY_SOURCE_ID) ?  metadataObject.getString(Constants.METADATA_KEY_SOURCE_ID) : null;
@@ -238,11 +277,28 @@ public class VectorStore {
     return sourceObject;
   }
 
+  /**
+   * Provides a {@link Builder} instance for configuring and creating {@code VectorStore} objects.
+   * <p>
+   * The builder pattern allows for more flexible and readable configuration of a {@code VectorStore}.
+   * Use this to set parameters such as the store name, configuration, query parameters, and embedding model.
+   * </p>
+   *
+   * @return a new {@code Builder} instance.
+   */
   public static Builder builder() {
 
     return new Builder();
   }
 
+  /**
+   * Builder class for creating instances of {@link VectorStore}.
+   * <p>
+   * The {@code Builder} class allows you to set various configuration parameters before
+   * creating a {@code VectorStore} instance. These parameters include the store name,
+   * configuration settings, query parameters, and embedding model details.
+   * </p>
+   */
   public static class Builder {
 
     private String storeName;
@@ -255,31 +311,72 @@ public class VectorStore {
 
     }
 
+    /**
+     * Sets the store name for the {@code VectorStore}.
+     *
+     * @param storeName the name of the vector store.
+     * @return the {@code Builder} instance, for method chaining.
+     */
     public Builder storeName(String storeName) {
       this.storeName = storeName;
       return this;
     }
 
+    /**
+     * Sets the configuration for the {@code VectorStore}.
+     *
+     * @param configuration the configuration parameters.
+     * @return the {@code Builder} instance, for method chaining.
+     */
     public Builder configuration(Configuration configuration) {
       this.configuration = configuration;
       return this;
     }
 
+    /**
+     * Sets the query parameters for embedding searches.
+     *
+     * @param queryParams the query parameters to use.
+     * @return the {@code Builder} instance, for method chaining.
+     */
     public Builder queryParams(QueryParameters queryParams) {
       this.queryParams = queryParams;
       return this;
     }
 
+    /**
+     * Sets the parameters for the embedding model.
+     *
+     * @param modelParams parameters for selecting and configuring the embedding model.
+     * @return the {@code Builder} instance, for method chaining.
+     */
     public Builder modelParams(EmbeddingModelNameParameters modelParams) {
       this.modelParams = modelParams;
       return this;
     }
 
+    /**
+     * Sets a pre-configured embedding model for the {@code VectorStore}.
+     *
+     * @param embeddingModel the embedding model to use.
+     * @return the {@code Builder} instance, for method chaining.
+     */
     public Builder embeddingModel(EmbeddingModel embeddingModel) {
       this.embeddingModel = embeddingModel;
       return this;
     }
 
+    /**
+     * Builds and returns a new {@link VectorStore} instance based on the builder's configuration.
+     * <p>
+     * Depending on the specified configuration, it returns an instance of the appropriate
+     * store class (e.g., {@link MilvusStore}, {@link PGVectorStore}, or {@link AISearchStore}).
+     * If no matching store configuration is found, it returns a default {@code VectorStore} instance.
+     * </p>
+     *
+     * @return a {@code VectorStore} instance.
+     * @throws IllegalArgumentException if the configured vector store is unsupported.
+     */
     public VectorStore build() {
 
       VectorStore embeddingStore;
