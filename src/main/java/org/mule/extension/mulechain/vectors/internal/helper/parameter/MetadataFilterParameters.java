@@ -1,10 +1,12 @@
 package org.mule.extension.mulechain.vectors.internal.helper.parameter;
 
+import dev.langchain4j.store.embedding.filter.MetadataFilterBuilder;
 import org.json.JSONObject;
 
 import org.mule.extension.mulechain.vectors.internal.constant.Constants;
 import org.mule.extension.mulechain.vectors.internal.helper.provider.MetadataFilterMethodProvider;
 import org.mule.extension.mulechain.vectors.internal.helper.provider.MetadataKeyProvider;
+import org.mule.extension.mulechain.vectors.internal.util.Utils;
 import org.mule.runtime.api.meta.ExpressionSupport;
 
 import org.mule.runtime.extension.api.annotation.Expression;
@@ -15,12 +17,20 @@ import org.mule.runtime.extension.api.annotation.values.OfValues;
 
 import static dev.langchain4j.store.embedding.filter.MetadataFilterBuilder.metadataKey;
 import dev.langchain4j.store.embedding.filter.Filter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.UUID;
 
 /**
  * Abstract class that defines filter parameters for MuleChain Vectors.
  * Provides methods to validate parameters and build a metadata filter.
  */
 public abstract class MetadataFilterParameters {
+
+  protected static final Logger LOGGER = LoggerFactory.getLogger(MetadataFilterParameters.class);
 
   /**
    * @return The metadata key to be used for filtering.
@@ -35,7 +45,13 @@ public abstract class MetadataFilterParameters {
   /**
    * @return The metadata value to be used in the filtering operation.
    */
-  public abstract String getMetadataValue();
+  public abstract Object getMetadataValue();
+
+  public abstract boolean isMetadataKeyEmpty();
+
+  public abstract boolean isFilterMethodEmpty();
+
+  public abstract boolean isMetadataValueEmpty();
 
   /**
    * Validates if all filter parameters (metadata key, filter method, metadata value) are set.
@@ -43,9 +59,7 @@ public abstract class MetadataFilterParameters {
    * @return {@code true} if all filter parameters are set; {@code false} otherwise.
    */
   public boolean areFilterParamsSet() {
-    return getMetadataKey() != null && !getMetadataKey().isEmpty() &&
-            getFilterMethod() != null && !getFilterMethod().isEmpty() &&
-            getMetadataValue() != null && !getMetadataValue().isEmpty();
+    return !isMetadataKeyEmpty() && !isFilterMethodEmpty() && !isMetadataValueEmpty();
   }
 
   /**
@@ -56,32 +70,50 @@ public abstract class MetadataFilterParameters {
    * @throws IllegalArgumentException if any filter parameter is missing.
    */
   public Filter buildMetadataFilter() {
+
     if (!areFilterParamsSet()) {
       throw new IllegalArgumentException("Filter parameters are not set. Please provide metadataKey, filterMethod, and metadataValue.");
     }
 
     Filter filter;
-    switch(getFilterMethod()) {
 
-      case Constants.METADATA_FILTER_METHOD_IS_EQUAL_TO:
-        filter = metadataKey(getMetadataKey()).isEqualTo(getMetadataValue());
-        break;
+    try {
+      // Initialize the filter builder with metadataKey
+      MetadataFilterBuilder filterBuilder = metadataKey(getMetadataKey());
 
-      case Constants.METADATA_FILTER_METHOD_IS_NOT_EQUAL_TO:
-        filter = metadataKey(getMetadataKey()).isNotEqualTo(getMetadataValue());
-        break;
+      // Get the method name to call (e.g., "isGreaterThan")
+      String methodName = getFilterMethod();
 
-      case Constants.METADATA_FILTER_METHOD_IS_GREATER_THAN:
-        filter = metadataKey(getMetadataKey()).isGreaterThan(getMetadataValue());
-        break;
+      // Get the value and determine its type
+      Object metadataValue = getMetadataValue();
+      Class<?> parameterType = metadataValue.getClass();
 
-      case Constants.METADATA_FILTER_METHOD_IS_LESS_THAN:
-        filter = metadataKey(getMetadataKey()).isLessThan(getMetadataValue());
-        break;
+      // Log the metadata value type for debugging
+      LOGGER.debug("Metadata value type: " + parameterType.getName());
 
-      default:
-        throw new IllegalArgumentException("Filter method is not set or an invalid value has been provided.");
+      // Get the method with the correct name and parameter type
+      Method method = filterBuilder.getClass().getMethod(methodName, Utils.getPrimitiveTypeClass(metadataValue));
+
+      // Dynamically invoke the method with the metadata value as an argument
+      filter = (Filter) method.invoke(filterBuilder, metadataValue);
+
+    } catch (NoSuchMethodException nsme) {
+
+      LOGGER.error(nsme.getMessage() + " " + Arrays.toString(nsme.getStackTrace()));
+      throw new IllegalArgumentException("Filter method doesn't exist.");
+
+    } catch (IllegalArgumentException iae) {
+
+      LOGGER.error(iae.getMessage() + " " + Arrays.toString(iae.getStackTrace()));
+      throw iae;
+
+    } catch (Exception e) {
+
+      LOGGER.error(e.getMessage() + " " + Arrays.toString(e.getStackTrace()));
+      throw new IllegalArgumentException("IllegalArgumentException. Impossible to define the filter");
     }
+
+
     return filter;
   }
 
@@ -154,9 +186,16 @@ public abstract class MetadataFilterParameters {
     }
 
     @Override
-    public String getMetadataValue() {
-      return metadataValue;
-    }
+    public Object getMetadataValue() { return Utils.convertStringToType(metadataValue);}
+
+    @Override
+    public boolean isMetadataKeyEmpty() { return metadataKey == null || metadataKey.isEmpty(); }
+
+    @Override
+    public boolean isFilterMethodEmpty() { return filterMethod == null || filterMethod.isEmpty(); }
+
+    @Override
+    public boolean isMetadataValueEmpty() { return metadataValue == null || metadataValue.isEmpty(); }
   }
 
   /**
@@ -201,8 +240,15 @@ public abstract class MetadataFilterParameters {
     }
 
     @Override
-    public String getMetadataValue() {
-      return metadataValue;
-    }
+    public Object getMetadataValue() { return Utils.convertStringToType(metadataValue);}
+
+    @Override
+    public boolean isMetadataKeyEmpty() { return metadataKey == null || metadataKey.isEmpty(); }
+
+    @Override
+    public boolean isFilterMethodEmpty() { return filterMethod == null || filterMethod.isEmpty(); }
+
+    @Override
+    public boolean isMetadataValueEmpty() { return metadataValue == null || metadataValue.isEmpty(); }
   }
 }
