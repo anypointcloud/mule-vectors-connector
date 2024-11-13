@@ -1,12 +1,16 @@
 package org.mule.extension.mulechain.vectors.internal.store.chroma;
 
+import dev.langchain4j.data.segment.TextSegment;
+import dev.langchain4j.store.embedding.EmbeddingStore;
+import dev.langchain4j.model.embedding.EmbeddingModel;
+import dev.langchain4j.store.embedding.chroma.ChromaEmbeddingStore;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.mule.extension.mulechain.vectors.internal.config.Configuration;
 import org.mule.extension.mulechain.vectors.internal.constant.Constants;
 import org.mule.extension.mulechain.vectors.internal.helper.parameter.EmbeddingModelNameParameters;
 import org.mule.extension.mulechain.vectors.internal.helper.parameter.QueryParameters;
-import org.mule.extension.mulechain.vectors.internal.store.VectorStore;
+import org.mule.extension.mulechain.vectors.internal.store.BaseStore;
 import org.mule.extension.mulechain.vectors.internal.util.JsonUtils;
 
 import java.io.BufferedReader;
@@ -17,10 +21,10 @@ import java.net.URL;
 import java.util.HashMap;
 
 /**
- * ChromaStore is a specialized implementation of {@link VectorStore} designed to interact with
+ * ChromaStore is a specialized implementation of {@link BaseStore} designed to interact with
  * the Chroma database for managing vector data and sources.
  */
-public class ChromaStore extends VectorStore {
+public class ChromaStore extends BaseStore {
 
   private String url;
 
@@ -31,15 +35,23 @@ public class ChromaStore extends VectorStore {
    * @param storeName     the name of the vector store.
    * @param configuration the configuration object containing necessary settings.
    * @param queryParams   parameters related to query configurations.
-   * @param modelParams   parameters for embedding model configurations.
+   * @param embeddingModel embedding model.
    */
-  public ChromaStore(String storeName, Configuration configuration, QueryParameters queryParams, EmbeddingModelNameParameters modelParams) {
+  public ChromaStore(String storeName, Configuration configuration, QueryParameters queryParams, EmbeddingModel embeddingModel, int dimension) {
 
-    super(storeName, configuration, queryParams, modelParams);
+    super(storeName, configuration, queryParams, embeddingModel, dimension);
 
     JSONObject config = JsonUtils.readConfigFile(configuration.getConfigFilePath());
     JSONObject vectorStoreConfig = config.getJSONObject(Constants.VECTOR_STORE_CHROMA);
     this.url = vectorStoreConfig.getString("CHROMA_URL");
+  }
+
+  public EmbeddingStore<TextSegment> buildEmbeddingStore() {
+
+    return ChromaEmbeddingStore.builder()
+        .baseUrl(this.url)
+        .collectionName(storeName)
+        .build();
   }
 
   /**

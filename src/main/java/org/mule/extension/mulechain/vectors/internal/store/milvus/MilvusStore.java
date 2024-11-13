@@ -1,6 +1,10 @@
 package org.mule.extension.mulechain.vectors.internal.store.milvus;
 
 import com.google.gson.JsonObject;
+import dev.langchain4j.data.segment.TextSegment;
+import dev.langchain4j.model.embedding.EmbeddingModel;
+import dev.langchain4j.store.embedding.EmbeddingStore;
+import dev.langchain4j.store.embedding.milvus.MilvusEmbeddingStore;
 import io.milvus.client.MilvusServiceClient;
 import io.milvus.orm.iterator.QueryIterator;
 import io.milvus.param.ConnectParam;
@@ -12,7 +16,7 @@ import org.mule.extension.mulechain.vectors.internal.config.Configuration;
 import org.mule.extension.mulechain.vectors.internal.constant.Constants;
 import org.mule.extension.mulechain.vectors.internal.helper.parameter.EmbeddingModelNameParameters;
 import org.mule.extension.mulechain.vectors.internal.helper.parameter.QueryParameters;
-import org.mule.extension.mulechain.vectors.internal.store.VectorStore;
+import org.mule.extension.mulechain.vectors.internal.store.BaseStore;
 import org.mule.extension.mulechain.vectors.internal.util.JsonUtils;
 
 import java.util.ArrayList;
@@ -22,17 +26,26 @@ import java.util.List;
 
 import static org.mule.extension.mulechain.vectors.internal.util.JsonUtils.readConfigFile;
 
-public class MilvusStore extends VectorStore {
+public class MilvusStore extends BaseStore {
 
   private String uri;
 
-  public MilvusStore(String storeName, Configuration configuration, QueryParameters queryParams, EmbeddingModelNameParameters modelParams) {
+  public MilvusStore(String storeName, Configuration configuration, QueryParameters queryParams, EmbeddingModel embeddingModel, int dimension) {
 
-    super(storeName, configuration, queryParams, modelParams);
+    super(storeName, configuration, queryParams, embeddingModel, dimension);
 
     JSONObject config = readConfigFile(configuration.getConfigFilePath());
     JSONObject vectorStoreConfig = config.getJSONObject(Constants.VECTOR_STORE_MILVUS);
     this.uri = vectorStoreConfig.getString("MILVUS_URL");
+  }
+
+  public EmbeddingStore<TextSegment> buildEmbeddingStore() {
+
+    return MilvusEmbeddingStore.builder()
+        .uri(uri)
+        .collectionName(storeName)
+        .dimension(dimension)
+        .build();
   }
 
   public JSONObject listSources() {

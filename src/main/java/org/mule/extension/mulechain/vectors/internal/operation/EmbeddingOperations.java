@@ -12,14 +12,13 @@ import org.mule.extension.mulechain.vectors.internal.constant.Constants;
 import org.mule.extension.mulechain.vectors.internal.helper.EmbeddingOperationValidator;
 import org.mule.extension.mulechain.vectors.internal.helper.EmbeddingStoreIngestorHelper;
 import org.mule.extension.mulechain.vectors.internal.helper.factory.EmbeddingModelFactory;
-import org.mule.extension.mulechain.vectors.internal.helper.factory.EmbeddingStoreFactory;
 import org.mule.extension.mulechain.vectors.internal.helper.parameter.*;
 import org.mule.extension.mulechain.vectors.internal.config.Configuration;
 import dev.langchain4j.store.embedding.*;
 import dev.langchain4j.store.embedding.filter.Filter;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.mule.extension.mulechain.vectors.internal.store.VectorStore;
+import org.mule.extension.mulechain.vectors.internal.store.BaseStore;
 import org.mule.runtime.extension.api.annotation.Alias;
 import org.mule.runtime.extension.api.annotation.param.*;
 
@@ -49,11 +48,18 @@ public class EmbeddingOperations {
 
     EmbeddingModel embeddingModel = EmbeddingModelFactory.createModel(configuration, modelParams);
 
-    EmbeddingStore<TextSegment> store = EmbeddingStoreFactory.createStore(configuration, storeName, embeddingModel.dimension());
+    BaseStore baseStore = BaseStore.builder()
+        .storeName(storeName)
+        .configuration(configuration)
+        .embeddingModel(embeddingModel)
+        .dimension(embeddingModel.dimension())
+        .build();
+
+    EmbeddingStore<TextSegment> embeddingStore = baseStore.buildEmbeddingStore();
 
     TextSegment textSegment = TextSegment.from(textToAdd);
     Embedding textEmbedding = embeddingModel.embed(textSegment).content();
-    store.add(textEmbedding, textSegment); 
+    embeddingStore.add(textEmbedding, textSegment);
     
     JSONObject jsonObject = new JSONObject();
     jsonObject.put("status", "added");
@@ -101,12 +107,19 @@ public class EmbeddingOperations {
 
     EmbeddingModel embeddingModel = EmbeddingModelFactory.createModel(configuration, modelParams);
 
-    EmbeddingStore<TextSegment> store = EmbeddingStoreFactory.createStore(configuration, storeName, embeddingModel.dimension());
+    BaseStore baseStore = BaseStore.builder()
+        .storeName(storeName)
+        .configuration(configuration)
+        .embeddingModel(embeddingModel)
+        .dimension(embeddingModel.dimension())
+        .build();
+
+    EmbeddingStore<TextSegment> embeddingStore = baseStore.buildEmbeddingStore();
 
     EmbeddingStoreIngestor ingestor = EmbeddingStoreIngestor.builder()
         .documentSplitter(DocumentSplitters.recursive(maxSegmentSizeInChars, maxOverlapSizeInChars))
         .embeddingModel(embeddingModel)
-        .embeddingStore(store)
+        .embeddingStore(embeddingStore)
         .build();
 
     EmbeddingStoreIngestorHelper embeddingStoreIngestorHelper = new EmbeddingStoreIngestorHelper(ingestor, storeName);
@@ -145,12 +158,19 @@ public class EmbeddingOperations {
                                   
     EmbeddingModel embeddingModel = EmbeddingModelFactory.createModel(configuration, modelParams);
 
-    EmbeddingStore<TextSegment> store = EmbeddingStoreFactory.createStore(configuration, storeName, embeddingModel.dimension());
+    BaseStore baseStore = BaseStore.builder()
+        .storeName(storeName)
+        .configuration(configuration)
+        .embeddingModel(embeddingModel)
+        .dimension(embeddingModel.dimension())
+        .build();
+
+    EmbeddingStore<TextSegment> embeddingStore = baseStore.buildEmbeddingStore();
 
     EmbeddingStoreIngestor ingestor = EmbeddingStoreIngestor.builder()
         .documentSplitter(DocumentSplitters.recursive(maxSegmentSizeInChars, maxOverlapSizeInChars))
         .embeddingModel(embeddingModel)
-        .embeddingStore(store)
+        .embeddingStore(embeddingStore)
         .build();
 
     EmbeddingStoreIngestorHelper embeddingStoreIngestorHelper = new EmbeddingStoreIngestorHelper(ingestor, storeName);
@@ -193,7 +213,14 @@ public class EmbeddingOperations {
 
     EmbeddingModel embeddingModel = EmbeddingModelFactory.createModel(configuration, modelParams);
 
-    EmbeddingStore<TextSegment> store = EmbeddingStoreFactory.createStore(configuration, storeName, embeddingModel.dimension());
+    BaseStore baseStore = BaseStore.builder()
+        .storeName(storeName)
+        .configuration(configuration)
+        .embeddingModel(embeddingModel)
+        .dimension(embeddingModel.dimension())
+        .build();
+
+    EmbeddingStore<TextSegment> embeddingStore = baseStore.buildEmbeddingStore();
 
     Embedding questionEmbedding = embeddingModel.embed(question).content();
 
@@ -203,7 +230,7 @@ public class EmbeddingOperations {
             .minScore(minScore)
             .build();
 
-    EmbeddingSearchResult<TextSegment> searchResult = store.search(searchRequest);
+    EmbeddingSearchResult<TextSegment> searchResult = embeddingStore.search(searchRequest);
     List<EmbeddingMatch<TextSegment>> embeddingMatches = searchResult.matches();
 
     String information = embeddingMatches.stream()
@@ -215,10 +242,6 @@ public class EmbeddingOperations {
     jsonObject.put("storeName", storeName);
     jsonObject.put("question", question);
     JSONArray sources = new JSONArray();
-    String absoluteDirectoryPath;
-    String fileName;
-    String url;
-    String ingestionDateTime;
 
     JSONObject contentObject;
     String fullPath;
@@ -269,7 +292,14 @@ public class EmbeddingOperations {
 
     EmbeddingModel embeddingModel = EmbeddingModelFactory.createModel(configuration, modelParams);
 
-    EmbeddingStore<TextSegment> store = EmbeddingStoreFactory.createStore(configuration, storeName, embeddingModel.dimension());
+    BaseStore baseStore = BaseStore.builder()
+        .storeName(storeName)
+        .configuration(configuration)
+        .embeddingModel(embeddingModel)
+        .dimension(embeddingModel.dimension())
+        .build();
+
+    EmbeddingStore<TextSegment> embeddingStore = baseStore.buildEmbeddingStore();
 
     Embedding questionEmbedding = embeddingModel.embed(question).content();
 
@@ -289,7 +319,7 @@ public class EmbeddingOperations {
 
     EmbeddingSearchRequest searchRequest = searchRequestBuilder.build();
 
-    EmbeddingSearchResult<TextSegment> searchResult = store.search(searchRequest);
+    EmbeddingSearchResult<TextSegment> searchResult = embeddingStore.search(searchRequest);
     List<EmbeddingMatch<TextSegment>> embeddingMatches = searchResult.matches();
 
     String information = embeddingMatches.stream()
@@ -358,14 +388,13 @@ public class EmbeddingOperations {
     EmbeddingOperationValidator.validateOperationType(
             Constants.EMBEDDING_OPERATION_TYPE_FILTER_BY_METADATA,configuration.getVectorStore());
 
-    VectorStore vectorStore = VectorStore.builder()
+    BaseStore baseStore = BaseStore.builder()
         .storeName(storeName)
         .configuration(configuration)
         .queryParams(queryParams)
-        .modelParams(modelParams)
         .build();
 
-    JSONObject jsonObject = vectorStore.listSources();
+    JSONObject jsonObject = baseStore.listSources();
 
     return toInputStream(jsonObject.toString(), StandardCharsets.UTF_8);
   }
@@ -387,11 +416,19 @@ public class EmbeddingOperations {
             Constants.EMBEDDING_OPERATION_TYPE_FILTER_BY_METADATA,configuration.getVectorStore());
 
     EmbeddingModel embeddingModel = EmbeddingModelFactory.createModel(configuration, modelParams);
-    EmbeddingStore<TextSegment> store = EmbeddingStoreFactory.createStore(configuration, storeName, embeddingModel.dimension());
+
+    BaseStore baseStore = BaseStore.builder()
+        .storeName(storeName)
+        .configuration(configuration)
+        .embeddingModel(embeddingModel)
+        .dimension(embeddingModel.dimension())
+        .build();
+
+    EmbeddingStore<TextSegment> embeddingStore = baseStore.buildEmbeddingStore();
 
     Filter filter = removeFilterParams.buildMetadataFilter();
 
-    store.removeAll(filter);
+    embeddingStore.removeAll(filter);
     JSONObject jsonObject = new JSONObject();
     jsonObject.put("storeName", storeName);
     jsonObject.put("filter", removeFilterParams.getFilterJSONObject());

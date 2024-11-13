@@ -1,11 +1,15 @@
 package org.mule.extension.mulechain.vectors.internal.store.pgvector;
 
+import dev.langchain4j.data.segment.TextSegment;
+import dev.langchain4j.store.embedding.EmbeddingStore;
+import dev.langchain4j.model.embedding.EmbeddingModel;
+import dev.langchain4j.store.embedding.pgvector.PgVectorEmbeddingStore;
 import org.json.JSONObject;
 import org.mule.extension.mulechain.vectors.internal.config.Configuration;
 import org.mule.extension.mulechain.vectors.internal.constant.Constants;
 import org.mule.extension.mulechain.vectors.internal.helper.parameter.EmbeddingModelNameParameters;
 import org.mule.extension.mulechain.vectors.internal.helper.parameter.QueryParameters;
-import org.mule.extension.mulechain.vectors.internal.store.VectorStore;
+import org.mule.extension.mulechain.vectors.internal.store.BaseStore;
 import org.mule.extension.mulechain.vectors.internal.util.JsonUtils;
 import org.postgresql.ds.PGSimpleDataSource;
 import org.slf4j.Logger;
@@ -25,7 +29,7 @@ import static org.mule.extension.mulechain.vectors.internal.util.JsonUtils.readC
  * Represents a store for vector data using PostgreSQL with PGVector extension.
  * This class is responsible for interacting with a PostgreSQL database to store and retrieve vector metadata.
  */
-public class PGVectorStore extends VectorStore {
+public class PGVectorStore extends BaseStore {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PGVectorStore.class);
 
@@ -41,11 +45,11 @@ public class PGVectorStore extends VectorStore {
    * @param storeName The name of the store.
    * @param configuration The configuration for connecting to the store.
    * @param queryParams Parameters related to query configurations.
-   * @param modelParams Parameters related to embedding model.
+   * @param embeddingModel Embedding model.
    */
-  public PGVectorStore(String storeName, Configuration configuration, QueryParameters queryParams, EmbeddingModelNameParameters modelParams) {
+  public PGVectorStore(String storeName, Configuration configuration, QueryParameters queryParams, EmbeddingModel embeddingModel, int dimension) {
 
-    super(storeName, configuration, queryParams, modelParams);
+    super(storeName, configuration, queryParams, embeddingModel, dimension);
 
     JSONObject config = readConfigFile(configuration.getConfigFilePath());
     JSONObject vectorStoreConfig = config.getJSONObject(Constants.VECTOR_STORE_PGVECTOR);
@@ -54,6 +58,19 @@ public class PGVectorStore extends VectorStore {
     this.database = vectorStoreConfig.getString("POSTGRES_DATABASE");
     this.userName = vectorStoreConfig.getString("POSTGRES_USER");
     this.password = vectorStoreConfig.getString("POSTGRES_PASSWORD");
+  }
+
+  public EmbeddingStore<TextSegment> buildEmbeddingStore() {
+
+    return PgVectorEmbeddingStore.builder()
+        .host(host)
+        .port(port)
+        .database(database)
+        .user(userName)
+        .password(password)
+        .table(storeName)
+        .dimension(dimension)
+        .build();
   }
 
   /**
