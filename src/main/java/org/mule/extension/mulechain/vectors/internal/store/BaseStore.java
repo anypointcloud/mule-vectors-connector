@@ -1,20 +1,12 @@
 package org.mule.extension.mulechain.vectors.internal.store;
 
-import dev.langchain4j.data.document.Metadata;
 import dev.langchain4j.data.embedding.Embedding;
 import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.model.embedding.EmbeddingModel;
-import dev.langchain4j.store.embedding.EmbeddingMatch;
-import dev.langchain4j.store.embedding.EmbeddingSearchRequest;
-import dev.langchain4j.store.embedding.EmbeddingSearchResult;
-import dev.langchain4j.store.embedding.filter.Filter;
-import org.json.JSONArray;
+import dev.langchain4j.store.embedding.EmbeddingStore;
 import org.json.JSONObject;
 import org.mule.extension.mulechain.vectors.internal.config.Configuration;
 import org.mule.extension.mulechain.vectors.internal.constant.Constants;
-import org.mule.extension.mulechain.vectors.internal.helper.factory.EmbeddingModelFactory;
-import org.mule.extension.mulechain.vectors.internal.helper.factory.EmbeddingStoreFactory;
-import org.mule.extension.mulechain.vectors.internal.helper.parameter.EmbeddingModelNameParameters;
 import org.mule.extension.mulechain.vectors.internal.helper.parameter.QueryParameters;
 import org.mule.extension.mulechain.vectors.internal.store.aisearch.AISearchStore;
 import org.mule.extension.mulechain.vectors.internal.store.chroma.ChromaStore;
@@ -24,23 +16,19 @@ import org.mule.extension.mulechain.vectors.internal.store.opensearch.OpenSearch
 import org.mule.extension.mulechain.vectors.internal.store.pgvector.PGVectorStore;
 import org.mule.extension.mulechain.vectors.internal.store.pinecone.PineconeStore;
 import org.mule.extension.mulechain.vectors.internal.store.weviate.WeaviateStore;
-import org.mule.extension.mulechain.vectors.internal.util.JsonUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
-import java.util.List;
-
-import static dev.langchain4j.store.embedding.filter.MetadataFilterBuilder.metadataKey;
 
 /**
  * The {@code VectorStore} class provides a framework for interacting with various types of vector stores,
  * enabling storage and retrieval of vector embeddings for data analysis and retrieval purposes. It serves as
  * an abstract base for specific implementations such as Milvus, PGVector, and AI Search stores.
  */
-public class VectorStore {
+public class BaseStore {
 
-  protected static final Logger LOGGER = LoggerFactory.getLogger(VectorStore.class);
+  protected static final Logger LOGGER = LoggerFactory.getLogger(BaseStore.class);
 
   protected static final String JSON_KEY_SOURCES = "sources";
   protected static final String JSON_KEY_SEGMENT_COUNT = "segmentCount";
@@ -50,31 +38,21 @@ public class VectorStore {
   protected String storeName;
   protected Configuration configuration;
   protected QueryParameters queryParams;
-  protected EmbeddingModelNameParameters modelParams;
   protected EmbeddingModel embeddingModel;
+  protected int dimension;
 
-  /**
-   * Constructs a new {@code VectorStore} instance with specified configurations.
-   *
-   * @param storeName    the name of the vector store
-   * @param configuration the configuration object containing settings for the vector store
-   * @param queryParams  parameters for querying the vector store
-   * @param modelParams  parameters for selecting and configuring the embedding model
-   */
-  public VectorStore(String storeName, Configuration configuration, QueryParameters queryParams, EmbeddingModelNameParameters modelParams) {
+  public BaseStore(String storeName, Configuration configuration, QueryParameters queryParams, EmbeddingModel embeddingModel, int dimension) {
 
     this.storeName = storeName;
     this.configuration = configuration;
     this.queryParams = queryParams;
-    this.modelParams = modelParams;
+    this.embeddingModel = embeddingModel;
+    this.dimension = dimension;
   }
 
-  public EmbeddingModel embeddingModel() {
+  public EmbeddingStore<TextSegment> buildEmbeddingStore() {
 
-    if(this.embeddingModel == null) {
-      this.embeddingModel = EmbeddingModelFactory.createModel(configuration, modelParams);
-    }
-    return this.embeddingModel;
+    throw new UnsupportedOperationException("This method should be overridden by subclasses");
   }
 
   /**
@@ -86,8 +64,8 @@ public class VectorStore {
 
     // Create a general query vector (e.g., zero vector). Zero vector is often used when you need to retrieve all
     // embeddings without any specific bias.
-    float[] queryVector = new float[embeddingModel().dimension()];
-    for (int i = 0; i < embeddingModel().dimension(); i++) {
+    float[] queryVector = new float[dimension];
+    for (int i = 0; i < dimension; i++) {
       queryVector[i]=0.0f;  // Zero vector
     }
     return new Embedding(queryVector);
@@ -100,91 +78,7 @@ public class VectorStore {
    */
   public JSONObject listSources() {
 
-    dev.langchain4j.store.embedding.EmbeddingStore<TextSegment>
-        store = EmbeddingStoreFactory.createStore(configuration, storeName, embeddingModel.dimension());
-
-    Embedding queryEmbedding = getZeroVectorEmbedding();
-
-    JSONObject jsonObject = new JSONObject();
-    jsonObject.put(JSON_KEY_STORE_NAME, storeName);
-    JSONArray sources = new JSONArray();
-
-    List<EmbeddingMatch<TextSegment>> embeddingMatches = null;
-    HashMap<String, JSONObject> sourceObjectMap = new HashMap<String, JSONObject>();
-    String lowerBoundaryIngestionDateTime = "0000-00-00T00:00:00.000Z";
-    int lowerBoundaryIndex = -1;
-
-    LOGGER.debug("Embedding page size: " + queryParams.embeddingPageSize());
-    String previousPageEmbeddingId = "";
-    do {
-
-      LOGGER.debug("Embedding page filter: lowerBoundaryIngestionDateTime: " + lowerBoundaryIngestionDateTime + ", lowerBoundaryIndex: " + lowerBoundaryIndex);
-
-      Filter condition1 = metadataKey(Constants.METADATA_KEY_INGESTION_DATETIME).isGreaterThanOrEqualTo(lowerBoundaryIngestionDateTime);
-      Filter condition2 = metadataKey(Constants.METADATA_KEY_INDEX).isGreaterThan(String.valueOf(lowerBoundaryIndex)); // Index must be handled as a String
-      Filter condition3 = metadataKey(Constants.METADATA_KEY_INGESTION_DATETIME).isGreaterThan(lowerBoundaryIngestionDateTime);
-
-      Filter searchFilter = (condition1.and(condition2)).or(condition3);
-
-      EmbeddingSearchRequest searchRequest = EmbeddingSearchRequest.builder()
-          .queryEmbedding(queryEmbedding)
-          .maxResults(queryParams.embeddingPageSize())
-          .minScore(0.0)
-          .filter(searchFilter)
-          .build();
-
-      EmbeddingSearchResult<TextSegment> searchResult = store.search(searchRequest);
-      embeddingMatches = searchResult.matches();
-
-      String currentPageEmbeddingId = "";
-      LOGGER.debug("Embedding page matches: " + embeddingMatches.size());
-      for (EmbeddingMatch<TextSegment> match : embeddingMatches) {
-
-        Metadata matchMetadata = match.embedded().metadata();
-        String sourceId = matchMetadata.getString(Constants.METADATA_KEY_SOURCE_ID);
-        String index = matchMetadata.getString(Constants.METADATA_KEY_INDEX);
-        String fileName = matchMetadata.getString(Constants.METADATA_KEY_FILE_NAME);
-        String url = matchMetadata.getString(Constants.METADATA_KEY_URL);
-        String fullPath = matchMetadata.getString(Constants.METADATA_KEY_FULL_PATH);
-        String absoluteDirectoryPath = matchMetadata.getString(Constants.METADATA_KEY_ABSOLUTE_DIRECTORY_PATH);
-        String ingestionDatetime = matchMetadata.getString(Constants.METADATA_KEY_INGESTION_DATETIME);
-
-        if(lowerBoundaryIngestionDateTime.compareTo(ingestionDatetime) < 0) {
-
-          lowerBoundaryIngestionDateTime = ingestionDatetime;
-          lowerBoundaryIndex = Integer.parseInt(index);
-        } else if(lowerBoundaryIngestionDateTime.compareTo(ingestionDatetime) == 0) {
-
-          if(Integer.parseInt(index) > lowerBoundaryIndex) {
-            lowerBoundaryIndex = Integer.parseInt(index);
-          }
-        }
-
-        JSONObject sourceObject = new JSONObject();
-        sourceObject.put(JSON_KEY_SEGMENT_COUNT, Integer.parseInt(index) + 1);
-        sourceObject.put(Constants.METADATA_KEY_SOURCE_ID, sourceId);
-        sourceObject.put(Constants.METADATA_KEY_ABSOLUTE_DIRECTORY_PATH, absoluteDirectoryPath);
-        sourceObject.put(Constants.METADATA_KEY_FULL_PATH, fullPath);
-        sourceObject.put(Constants.METADATA_KEY_FILE_NAME, fileName);
-        sourceObject.put(Constants.METADATA_KEY_URL, url);
-        sourceObject.put(Constants.METADATA_KEY_INGESTION_DATETIME, ingestionDatetime);
-
-        addOrUpdateSourceObjectIntoSourceObjectMap(sourceObjectMap, sourceObject);
-
-        currentPageEmbeddingId = match.embeddingId();
-      }
-
-      if(previousPageEmbeddingId.compareTo(currentPageEmbeddingId) == 0) {
-        break;
-      } else {
-        previousPageEmbeddingId = currentPageEmbeddingId;
-      }
-
-    } while(embeddingMatches.size() == queryParams.embeddingPageSize());
-
-    jsonObject.put(JSON_KEY_SOURCES, JsonUtils.jsonObjectCollectionToJsonArray(sourceObjectMap.values()));
-    jsonObject.put(JSON_KEY_SOURCE_COUNT, sourceObjectMap.size());
-    return jsonObject;
+    throw new UnsupportedOperationException("This method should be overridden by subclasses");
   }
 
   /**
@@ -285,9 +179,9 @@ public class VectorStore {
   }
 
   /**
-   * Provides a {@link Builder} instance for configuring and creating {@code VectorStore} objects.
+   * Provides a {@link Builder} instance for configuring and creating {@code BaseStore} objects.
    * <p>
-   * The builder pattern allows for more flexible and readable configuration of a {@code VectorStore}.
+   * The builder pattern allows for more flexible and readable configuration of a {@code BaseStore}.
    * Use this to set parameters such as the store name, configuration, query parameters, and embedding model.
    * </p>
    *
@@ -299,10 +193,10 @@ public class VectorStore {
   }
 
   /**
-   * Builder class for creating instances of {@link VectorStore}.
+   * Builder class for creating instances of {@link BaseStore}.
    * <p>
    * The {@code Builder} class allows you to set various configuration parameters before
-   * creating a {@code VectorStore} instance. These parameters include the store name,
+   * creating a {@code BaseStore} instance. These parameters include the store name,
    * configuration settings, query parameters, and embedding model details.
    * </p>
    */
@@ -311,15 +205,15 @@ public class VectorStore {
     private String storeName;
     private Configuration configuration;
     private QueryParameters queryParams;
-    private EmbeddingModelNameParameters modelParams;
     private EmbeddingModel embeddingModel;
+    private int dimension;
 
     public Builder() {
 
     }
 
     /**
-     * Sets the store name for the {@code VectorStore}.
+     * Sets the store name for the {@code BaseStore}.
      *
      * @param storeName the name of the vector store.
      * @return the {@code Builder} instance, for method chaining.
@@ -330,7 +224,7 @@ public class VectorStore {
     }
 
     /**
-     * Sets the configuration for the {@code VectorStore}.
+     * Sets the configuration for the {@code BaseStore}.
      *
      * @param configuration the configuration parameters.
      * @return the {@code Builder} instance, for method chaining.
@@ -352,18 +246,7 @@ public class VectorStore {
     }
 
     /**
-     * Sets the parameters for the embedding model.
-     *
-     * @param modelParams parameters for selecting and configuring the embedding model.
-     * @return the {@code Builder} instance, for method chaining.
-     */
-    public Builder modelParams(EmbeddingModelNameParameters modelParams) {
-      this.modelParams = modelParams;
-      return this;
-    }
-
-    /**
-     * Sets a pre-configured embedding model for the {@code VectorStore}.
+     * Sets a pre-configured embedding model for the {@code BaseStore}.
      *
      * @param embeddingModel the embedding model to use.
      * @return the {@code Builder} instance, for method chaining.
@@ -373,61 +256,66 @@ public class VectorStore {
       return this;
     }
 
+    public Builder dimension(int dimension) {
+      this.dimension = dimension;
+      return this;
+    }
+
     /**
-     * Builds and returns a new {@link VectorStore} instance based on the builder's configuration.
+     * Builds and returns a new {@link BaseStore} instance based on the builder's configuration.
      * <p>
      * Depending on the specified configuration, it returns an instance of the appropriate
      * store class (e.g., {@link MilvusStore}, {@link PGVectorStore}, or {@link AISearchStore}).
-     * If no matching store configuration is found, it returns a default {@code VectorStore} instance.
+     * If no matching store configuration is found, it returns a default {@code BaseStore} instance.
      * </p>
      *
-     * @return a {@code VectorStore} instance.
+     * @return a {@code BaseStore} instance.
      * @throws IllegalArgumentException if the configured vector store is unsupported.
      */
-    public VectorStore build() {
+    public BaseStore build() {
 
-      VectorStore embeddingStore;
+      BaseStore embeddingStore;
 
       switch (configuration.getVectorStore()) {
 
         case Constants.VECTOR_STORE_MILVUS:
 
-          embeddingStore = new MilvusStore(storeName, configuration, queryParams, modelParams);
+          embeddingStore = new MilvusStore(storeName, configuration, queryParams, embeddingModel, dimension);
           break;
 
         case Constants.VECTOR_STORE_PGVECTOR:
 
-          embeddingStore = new PGVectorStore(storeName, configuration, queryParams, modelParams);
+          embeddingStore = new PGVectorStore(storeName, configuration, queryParams, embeddingModel, dimension);
           break;
 
         case Constants.VECTOR_STORE_AI_SEARCH:
 
-          embeddingStore = new AISearchStore(storeName, configuration, queryParams, modelParams);
+          embeddingStore = new AISearchStore(storeName, configuration, queryParams, embeddingModel, dimension);
           break;
 
         case Constants.VECTOR_STORE_WEAVIATE:
 
-          embeddingStore = new WeaviateStore(storeName, configuration, queryParams, modelParams);
+          embeddingStore = new WeaviateStore(storeName, configuration, queryParams, embeddingModel, dimension);
           break;
 
         case Constants.VECTOR_STORE_CHROMA:
 
-          embeddingStore = new ChromaStore(storeName, configuration, queryParams, modelParams);
+          embeddingStore = new ChromaStore(storeName, configuration, queryParams, embeddingModel, dimension);
           break;
 
         case Constants.VECTOR_STORE_PINECONE:
 
-          embeddingStore = new PineconeStore(storeName, configuration, queryParams, modelParams);
+          embeddingStore = new PineconeStore(storeName, configuration, queryParams, embeddingModel, dimension);
           break;
 
         case Constants.VECTOR_STORE_ELASTICSEARCH:
 
-          embeddingStore = new ElasticsearchStore(storeName, configuration, queryParams, modelParams);
+          embeddingStore = new ElasticsearchStore(storeName, configuration, queryParams, embeddingModel, dimension);
           break;
 
         case Constants.VECTOR_STORE_OPENSEARCH:
 
-          embeddingStore = new OpenSearchStore(storeName, configuration, queryParams, modelParams);
+          embeddingStore = new OpenSearchStore(storeName, configuration, queryParams, embeddingModel, dimension);
           break;
 
         default:
