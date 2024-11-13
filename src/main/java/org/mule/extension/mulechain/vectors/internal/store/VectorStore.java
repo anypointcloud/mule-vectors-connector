@@ -268,6 +268,7 @@ public class VectorStore {
     String source = metadataObject.has(Constants.METADATA_KEY_SOURCE) ?  metadataObject.getString(Constants.METADATA_KEY_SOURCE) : null;
     String absoluteDirectoryPath = metadataObject.has(Constants.METADATA_KEY_ABSOLUTE_DIRECTORY_PATH) ?  metadataObject.getString(Constants.METADATA_KEY_ABSOLUTE_DIRECTORY_PATH) : null;
     String ingestionDatetime = metadataObject.has(Constants.METADATA_KEY_INGESTION_DATETIME) ?  metadataObject.getString(Constants.METADATA_KEY_INGESTION_DATETIME) : null;
+    Long ingestionTimestamp = metadataObject.has(Constants.METADATA_KEY_INGESTION_TIMESTAMP) ?  metadataObject.getLong(Constants.METADATA_KEY_INGESTION_TIMESTAMP) : null;
 
     JSONObject sourceObject = new JSONObject();
     sourceObject.put(JSON_KEY_SEGMENT_COUNT, Integer.parseInt(index) + 1);
@@ -278,6 +279,7 @@ public class VectorStore {
     sourceObject.put(Constants.METADATA_KEY_FILE_NAME, fileName);
     sourceObject.put(Constants.METADATA_KEY_URL, url);
     sourceObject.put(Constants.METADATA_KEY_INGESTION_DATETIME, ingestionDatetime);
+    sourceObject.put(Constants.METADATA_KEY_INGESTION_TIMESTAMP, ingestionTimestamp);
 
     return sourceObject;
   }

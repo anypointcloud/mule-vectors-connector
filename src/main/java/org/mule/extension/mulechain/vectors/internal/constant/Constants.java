@@ -54,6 +54,7 @@ public class Constants {
   public static final String METADATA_KEY_SOURCE = "source";
   public static final String METADATA_KEY_TITLE = "title";
   public static final String METADATA_KEY_INGESTION_DATETIME = "ingestion_datetime";
+  public static final String METADATA_KEY_INGESTION_TIMESTAMP = "ingestion_timestamp";
 
   public static final String METADATA_FILTER_METHOD_IS_EQUAL_TO = "isEqualTo";
   public static final String METADATA_FILTER_METHOD_IS_NOT_EQUAL_TO = "isNotEqualTo";

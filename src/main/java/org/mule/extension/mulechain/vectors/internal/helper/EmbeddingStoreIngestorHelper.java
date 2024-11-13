@@ -221,7 +221,7 @@ public class EmbeddingStoreIngestorHelper {
       Document htmlDocument = UrlDocumentLoader.load(url, new TextDocumentParser());
       HtmlToTextDocumentTransformer transformer = new HtmlToTextDocumentTransformer(null, null, true);
       document = transformer.transform(htmlDocument);
-      document.metadata().add(Constants.METADATA_KEY_URL, contextPath);
+      document.metadata().put(Constants.METADATA_KEY_URL, contextPath);
     } catch (MalformedURLException e) {
       throw new RuntimeException("Invalid URL: " + contextPath, e);
     }

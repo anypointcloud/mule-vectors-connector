@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.List;
 
 import static dev.langchain4j.data.document.loader.FileSystemDocumentLoader.loadDocument;
@@ -58,13 +59,13 @@ public class DocumentOperations {
                 try {
                     url = new URL(contextPath);
                 } catch (MalformedURLException e) {
-                    e.printStackTrace();
+                    LOGGER.error(e.getMessage() + " " + Arrays.toString(e.getStackTrace()));
                 }
 
                 Document htmlDocument = UrlDocumentLoader.load(url, new TextDocumentParser());
                 HtmlToTextDocumentTransformer transformer = new HtmlToTextDocumentTransformer(null, null, true);
                 document = transformer.transform(htmlDocument);
-                document.metadata().add(Constants.METADATA_KEY_URL, contextPath);
+                document.metadata().put(Constants.METADATA_KEY_URL, contextPath);
                 splitter = DocumentSplitters.recursive(maxSegmentSizeInChars, maxOverlapSizeInChars);
                 segments = splitter.split(document);
                 break;
@@ -100,13 +101,13 @@ public class DocumentOperations {
                 try {
                     url = new URL(contextPath);
                 } catch (MalformedURLException e) {
-                    e.printStackTrace();
+                    LOGGER.error(e.getMessage() + " " + Arrays.toString(e.getStackTrace()));
                 }
 
                 Document htmlDocument = UrlDocumentLoader.load(url, new TextDocumentParser());
                 HtmlToTextDocumentTransformer transformer = new HtmlToTextDocumentTransformer(null, null, true);
                 document = transformer.transform(htmlDocument);
-                document.metadata().add(Constants.METADATA_KEY_URL, contextPath);
+                document.metadata().put(Constants.METADATA_KEY_URL, contextPath);
 
                 break;
             default:

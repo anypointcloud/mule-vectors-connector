@@ -23,11 +23,12 @@ public class DocumentUtils {
    */
   public static void addMetadataToDocument(Document document, String fileType, String fileName, String filePath) {
 
-    document.metadata().add(Constants.METADATA_KEY_SOURCE_ID, dev.langchain4j.internal.Utils.randomUUID());
-    document.metadata().add(Constants.METADATA_KEY_FILE_TYPE, fileType);
-    document.metadata().add(Constants.METADATA_KEY_FILE_NAME, fileName);
-    document.metadata().add(Constants.METADATA_KEY_FULL_PATH, filePath);
-    document.metadata().add(Constants.METADATA_KEY_INGESTION_DATETIME, Utils.getCurrentISO8601Timestamp());
+    document.metadata().put(Constants.METADATA_KEY_SOURCE_ID, dev.langchain4j.internal.Utils.randomUUID());
+    document.metadata().put(Constants.METADATA_KEY_FILE_TYPE, fileType);
+    document.metadata().put(Constants.METADATA_KEY_FILE_NAME, fileName);
+    document.metadata().put(Constants.METADATA_KEY_FULL_PATH, filePath);
+    document.metadata().put(Constants.METADATA_KEY_INGESTION_DATETIME, Utils.getCurrentISO8601Timestamp());
+    document.metadata().put(Constants.METADATA_KEY_INGESTION_TIMESTAMP, Utils.getCurrentTimeMillis());
   }
 
   /**
@@ -46,7 +47,7 @@ public class DocumentUtils {
       String title = jsonNode.path("title").asText();
       addMetadataToDocument(document, fileType, title, source_url);
       document.metadata().put(Constants.METADATA_KEY_SOURCE, source_url);
-      document.metadata().add(Constants.METADATA_KEY_TITLE, title);
+      document.metadata().put(Constants.METADATA_KEY_TITLE, title);
     } catch (IOException e) {
       System.err.println("Error accessing folder: " + e.getMessage());
     }
@@ -67,7 +68,7 @@ public class DocumentUtils {
       String title = jsonNode.path("title").asText();
       addMetadataToDocument(document, Constants.FILE_TYPE_TEXT, title, source_url);
       document.metadata().put(Constants.METADATA_KEY_SOURCE, source_url);
-      document.metadata().add(Constants.METADATA_KEY_TITLE, title);
+      document.metadata().put(Constants.METADATA_KEY_TITLE, title);
     } catch (IOException e) {
       System.err.println("Error accessing folder: " + e.getMessage());
     }
