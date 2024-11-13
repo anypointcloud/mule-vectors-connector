@@ -1,4 +1,4 @@
-package org.mule.extension.mulechain.vectors.internal.storage;
+package org.mule.extension.mulechain.vectors.internal.storage.s3;
 
 import dev.langchain4j.store.embedding.EmbeddingStoreIngestor;
 import dev.langchain4j.data.document.loader.amazon.s3.AmazonS3DocumentLoader;
@@ -17,14 +17,14 @@ import org.slf4j.LoggerFactory;
 
 import static dev.langchain4j.data.document.loader.FileSystemDocumentLoader.loadDocument;
 
-public class S3FileReader {
+public class AWSS3Storage {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(S3FileReader.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AWSS3Storage.class);
 
     private final String bucketName;
     private final AmazonS3DocumentLoader loader;
 
-    public S3FileReader(String bucketName, String awsKey, String awsSecret, String awsRegion) {
+    public AWSS3Storage(String bucketName, String awsKey, String awsSecret, String awsRegion) {
         this.bucketName = bucketName;
         AwsCredentials creds = new AwsCredentials(awsKey, awsSecret);
         this.loader = AmazonS3DocumentLoader.builder()

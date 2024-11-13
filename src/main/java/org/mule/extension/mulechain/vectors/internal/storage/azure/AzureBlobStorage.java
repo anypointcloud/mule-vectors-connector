@@ -1,4 +1,4 @@
-package org.mule.extension.mulechain.vectors.internal.storage;
+package org.mule.extension.mulechain.vectors.internal.storage.azure;
 
 import com.azure.storage.blob.BlobServiceClient;
 import com.azure.storage.blob.BlobServiceClientBuilder;
@@ -14,18 +14,17 @@ import org.mule.extension.mulechain.vectors.internal.helper.parameter.FileTypePa
 import dev.langchain4j.data.document.parser.TextDocumentParser;
 import dev.langchain4j.data.document.parser.apache.tika.ApacheTikaDocumentParser;
 import dev.langchain4j.data.document.Document;
-import org.mule.extension.mulechain.vectors.internal.operation.EmbeddingOperations;
 import org.mule.extension.mulechain.vectors.internal.util.DocumentUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class AzureFileReader {
+public class AzureBlobStorage {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AzureFileReader.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AzureBlobStorage.class);
 
     private final AzureBlobStorageDocumentLoader loader;
 
-    public AzureFileReader(String azureName, String azureKey) {
+    public AzureBlobStorage(String azureName, String azureKey) {
         StorageSharedKeyCredential credential = new StorageSharedKeyCredential(azureName, azureKey);
 
         // Azure SDK client builders accept the credential as a parameter

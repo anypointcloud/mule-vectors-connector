@@ -9,8 +9,8 @@ import dev.langchain4j.store.embedding.EmbeddingStoreIngestor;
 import org.json.JSONObject;
 import org.mule.extension.mulechain.vectors.internal.constant.Constants;
 import org.mule.extension.mulechain.vectors.internal.helper.parameter.FileTypeParameters;
-import org.mule.extension.mulechain.vectors.internal.storage.AzureFileReader;
-import org.mule.extension.mulechain.vectors.internal.storage.S3FileReader;
+import org.mule.extension.mulechain.vectors.internal.storage.azure.AzureBlobStorage;
+import org.mule.extension.mulechain.vectors.internal.storage.s3.AWSS3Storage;
 import org.mule.extension.mulechain.vectors.internal.util.DocumentUtils;
 
 import org.mule.extension.mulechain.vectors.internal.util.Utils;
@@ -151,8 +151,8 @@ public class EmbeddingStoreIngestorHelper {
    */
   public JSONObject ingestFromS3Folder(String folderPath, FileTypeParameters fileTypeParameters, String awsKey, String awsSecret, String awsRegion, String s3Bucket) {
 
-    S3FileReader s3FileReader = new S3FileReader(s3Bucket, awsKey, awsSecret, awsRegion);
-    long totalFiles = s3FileReader.readAllFiles(folderPath, ingestor, fileTypeParameters);
+    AWSS3Storage awsS3Storage = new AWSS3Storage(s3Bucket, awsKey, awsSecret, awsRegion);
+    long totalFiles = awsS3Storage.readAllFiles(folderPath, ingestor, fileTypeParameters);
     return createFolderIngestionStatusObject(totalFiles, folderPath);
   }
 
@@ -169,8 +169,8 @@ public class EmbeddingStoreIngestorHelper {
    */
   public JSONObject ingestFromS3File(String filePath, FileTypeParameters fileTypeParameters, String awsKey, String awsSecret, String awsRegion, String s3Bucket) {
 
-    S3FileReader s3FileReader = new S3FileReader(s3Bucket, awsKey, awsSecret, awsRegion);
-    s3FileReader.readFile(filePath, fileTypeParameters, ingestor);
+    AWSS3Storage awsS3Storage = new AWSS3Storage(s3Bucket, awsKey, awsSecret, awsRegion);
+    awsS3Storage.readFile(filePath, fileTypeParameters, ingestor);
     return createFileIngestionStatusObject(fileTypeParameters.getFileType(), filePath);
   }
 
@@ -185,8 +185,8 @@ public class EmbeddingStoreIngestorHelper {
    */
   public JSONObject ingestFromAZContainer(String containerName, FileTypeParameters fileType, String azureName, String azureKey) {
 
-    AzureFileReader azFileReader = new AzureFileReader(azureName, azureKey);
-    long totalFiles = azFileReader.readAllFiles(containerName, ingestor, fileType);
+    AzureBlobStorage azureBlobStorage = new AzureBlobStorage(azureName, azureKey);
+    long totalFiles = azureBlobStorage.readAllFiles(containerName, ingestor, fileType);
     return createFolderIngestionStatusObject(totalFiles, containerName);
   }
 
@@ -202,8 +202,8 @@ public class EmbeddingStoreIngestorHelper {
    */
   public JSONObject ingestFromAZFile(String containerName, String blobName, FileTypeParameters fileType, String azureName, String azureKey) {
 
-    AzureFileReader azFileReader = new AzureFileReader(azureName, azureKey);
-    azFileReader.readFile(containerName, blobName, fileType, ingestor);
+    AzureBlobStorage azureBlobStorage = new AzureBlobStorage(azureName, azureKey);
+    azureBlobStorage.readFile(containerName, blobName, fileType, ingestor);
     return createFileIngestionStatusObject(fileType.getFileType(), containerName);
   }
 
