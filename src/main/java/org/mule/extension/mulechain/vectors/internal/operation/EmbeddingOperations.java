@@ -1,7 +1,6 @@
 package org.mule.extension.mulechain.vectors.internal.operation;
 
 import static org.apache.commons.io.IOUtils.toInputStream;
-import static org.mule.extension.mulechain.vectors.internal.util.JsonUtils.readConfigFile;
 import static org.mule.runtime.extension.api.annotation.param.MediaType.APPLICATION_JSON;
 
 import java.io.InputStream;
@@ -10,14 +9,14 @@ import java.nio.charset.StandardCharsets;
 
 import org.mule.extension.mulechain.vectors.internal.constant.Constants;
 import org.mule.extension.mulechain.vectors.internal.helper.EmbeddingOperationValidator;
-import org.mule.extension.mulechain.vectors.internal.helper.EmbeddingStoreIngestorHelper;
-import org.mule.extension.mulechain.vectors.internal.helper.factory.EmbeddingModelFactory;
 import org.mule.extension.mulechain.vectors.internal.helper.parameter.*;
 import org.mule.extension.mulechain.vectors.internal.config.Configuration;
 import dev.langchain4j.store.embedding.*;
 import dev.langchain4j.store.embedding.filter.Filter;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.mule.extension.mulechain.vectors.internal.model.BaseModel;
+import org.mule.extension.mulechain.vectors.internal.storage.BaseStorage;
 import org.mule.extension.mulechain.vectors.internal.store.BaseStore;
 import org.mule.runtime.extension.api.annotation.Alias;
 import org.mule.runtime.extension.api.annotation.param.*;
@@ -44,14 +43,18 @@ public class EmbeddingOperations {
    */
   @MediaType(value = APPLICATION_JSON, strict = false)
   @Alias("Embedding-add-text-to-store")
-  public InputStream addTextToStore(String storeName, String textToAdd, @Config Configuration configuration, @ParameterGroup(name = "Additional Properties") EmbeddingModelNameParameters modelParams){
+  public InputStream addTextToStore(String storeName, String textToAdd, @Config Configuration configuration, @ParameterGroup(name = "Additional Properties") EmbeddingModelParameters modelParams){
 
-    EmbeddingModel embeddingModel = EmbeddingModelFactory.createModel(configuration, modelParams);
+    BaseModel baseModel = BaseModel.builder()
+        .configuration(configuration)
+        .embeddingModelParameters(modelParams)
+        .build();
+
+    EmbeddingModel embeddingModel = baseModel.buildEmbeddingModel();
 
     BaseStore baseStore = BaseStore.builder()
         .storeName(storeName)
         .configuration(configuration)
-        .embeddingModel(embeddingModel)
         .dimension(embeddingModel.dimension())
         .build();
 
@@ -75,9 +78,14 @@ public class EmbeddingOperations {
    */
   @MediaType(value = APPLICATION_JSON, strict = false)
   @Alias("Embedding-generate-from-text")
-  public InputStream generateEmbedding(String textToAdd, @Config Configuration configuration, @ParameterGroup(name = "Additional Properties") EmbeddingModelNameParameters modelParams){
+  public InputStream generateEmbedding(String textToAdd, @Config Configuration configuration, @ParameterGroup(name = "Additional Properties") EmbeddingModelParameters modelParams){
 
-    EmbeddingModel embeddingModel = EmbeddingModelFactory.createModel(configuration, modelParams);
+    BaseModel baseModel = BaseModel.builder()
+        .configuration(configuration)
+        .embeddingModelParameters(modelParams)
+        .build();
+
+    EmbeddingModel embeddingModel = baseModel.buildEmbeddingModel();
 
     TextSegment textSegment = TextSegment.from(textToAdd);
     Embedding textEmbedding = embeddingModel.embed(textSegment).content();
@@ -100,43 +108,40 @@ public class EmbeddingOperations {
                                 @ParameterGroup(name = "Context") FileTypeParameters fileType,
                                 @ParameterGroup(name = "Storage") StorageTypeParameters storageType,
                                 int maxSegmentSizeInChars, int maxOverlapSizeInChars,
-                                @ParameterGroup(name = "Additional Properties") EmbeddingModelNameParameters modelParams){
+                                @ParameterGroup(name = "Additional Properties") EmbeddingModelParameters modelParams){
 
     EmbeddingOperationValidator.validateOperationType(
             Constants.EMBEDDING_OPERATION_TYPE_STORE_METADATA,configuration.getVectorStore());
 
-    EmbeddingModel embeddingModel = EmbeddingModelFactory.createModel(configuration, modelParams);
+    BaseModel baseModel = BaseModel.builder()
+        .configuration(configuration)
+        .embeddingModelParameters(modelParams)
+        .build();
+
+    EmbeddingModel embeddingModel = baseModel.buildEmbeddingModel();
 
     BaseStore baseStore = BaseStore.builder()
         .storeName(storeName)
         .configuration(configuration)
-        .embeddingModel(embeddingModel)
         .dimension(embeddingModel.dimension())
         .build();
 
     EmbeddingStore<TextSegment> embeddingStore = baseStore.buildEmbeddingStore();
 
-    EmbeddingStoreIngestor ingestor = EmbeddingStoreIngestor.builder()
+    EmbeddingStoreIngestor embeddingStoreIngestor = EmbeddingStoreIngestor.builder()
         .documentSplitter(DocumentSplitters.recursive(maxSegmentSizeInChars, maxOverlapSizeInChars))
         .embeddingModel(embeddingModel)
         .embeddingStore(embeddingStore)
         .build();
 
-    EmbeddingStoreIngestorHelper embeddingStoreIngestorHelper = new EmbeddingStoreIngestorHelper(ingestor, storeName);
+    BaseStorage baseStorage = BaseStorage.builder()
+        .storeName(storeName)
+        .configuration(configuration)
+        .storageType(storageType.getStorageType())
+        .embeddingStoreIngestor(embeddingStoreIngestor)
+        .build();
 
-    JSONObject config = readConfigFile(configuration.getConfigFilePath());
-    JSONObject jsonObject = new JSONObject();
-    System.out.println("Storage Type: " + storageType.getStorageType());
-    if (storageType.getStorageType().equals("S3") && !fileType.getFileType().equals("url")) {
-      JSONObject s3Json = config.getJSONObject("S3");
-      String awsKey = s3Json.getString("AWS_ACCESS_KEY_ID");
-      String awsSecret = s3Json.getString("AWS_SECRET_ACCESS_KEY");
-      String awsRegion = s3Json.getString("AWS_DEFAULT_REGION");
-      String s3Bucket = s3Json.getString("AWS_S3_BUCKET");
-      jsonObject = embeddingStoreIngestorHelper.ingestFromS3Folder(folderPath, fileType, awsKey, awsSecret, awsRegion, s3Bucket);
-    } else {
-      jsonObject = embeddingStoreIngestorHelper.ingestFromLocalFolder(folderPath, fileType);
-    }
+    JSONObject jsonObject = baseStorage.readAndIngestAllFiles(folderPath, fileType.getFileType());
 
     return toInputStream(jsonObject.toString(), StandardCharsets.UTF_8);
   }
@@ -151,49 +156,40 @@ public class EmbeddingOperations {
                                  @ParameterGroup(name = "Context") FileTypeParameters fileType,
                                  @ParameterGroup(name = "Storage") StorageTypeParameters storageType,
                                  int maxSegmentSizeInChars, int maxOverlapSizeInChars,
-                                 @ParameterGroup(name = "Additional Properties") EmbeddingModelNameParameters modelParams) {
+                                 @ParameterGroup(name = "Additional Properties") EmbeddingModelParameters modelParams) {
 
     EmbeddingOperationValidator.validateOperationType(
             Constants.EMBEDDING_OPERATION_TYPE_STORE_METADATA,configuration.getVectorStore());
-                                  
-    EmbeddingModel embeddingModel = EmbeddingModelFactory.createModel(configuration, modelParams);
+
+    BaseModel baseModel = BaseModel.builder()
+        .configuration(configuration)
+        .embeddingModelParameters(modelParams)
+        .build();
+
+    EmbeddingModel embeddingModel = baseModel.buildEmbeddingModel();
 
     BaseStore baseStore = BaseStore.builder()
         .storeName(storeName)
         .configuration(configuration)
-        .embeddingModel(embeddingModel)
         .dimension(embeddingModel.dimension())
         .build();
 
     EmbeddingStore<TextSegment> embeddingStore = baseStore.buildEmbeddingStore();
 
-    EmbeddingStoreIngestor ingestor = EmbeddingStoreIngestor.builder()
+    EmbeddingStoreIngestor embeddingStoreIngestor = EmbeddingStoreIngestor.builder()
         .documentSplitter(DocumentSplitters.recursive(maxSegmentSizeInChars, maxOverlapSizeInChars))
         .embeddingModel(embeddingModel)
         .embeddingStore(embeddingStore)
         .build();
 
-    EmbeddingStoreIngestorHelper embeddingStoreIngestorHelper = new EmbeddingStoreIngestorHelper(ingestor, storeName);
+    BaseStorage baseStorage = BaseStorage.builder()
+        .storeName(storeName)
+        .configuration(configuration)
+        .storageType(storageType.getStorageType())
+        .embeddingStoreIngestor(embeddingStoreIngestor)
+        .build();
 
-    JSONObject config = readConfigFile(configuration.getConfigFilePath());
-    JSONObject jsonObject = new JSONObject();
-    System.out.println("Storage Type: " + storageType.getStorageType());
-    if (storageType.getStorageType().equals("S3") && !fileType.getFileType().equals("url")) {
-      JSONObject s3Json = config.getJSONObject("S3");
-      String awsKey = s3Json.getString("AWS_ACCESS_KEY_ID");
-      String awsSecret = s3Json.getString("AWS_SECRET_ACCESS_KEY");
-      String awsRegion = s3Json.getString("AWS_DEFAULT_REGION");
-      String s3Bucket = s3Json.getString("AWS_S3_BUCKET");
-      jsonObject = embeddingStoreIngestorHelper.ingestFromS3File(contextPath, fileType, awsKey, awsSecret, awsRegion, s3Bucket);
-    } else if (storageType.getStorageType().equals("AZURE_BLOB") && !fileType.getFileType().equals("url")) {
-      JSONObject azJson = config.getJSONObject("AZURE_BLOB");
-      String azureName = azJson.getString("AZURE_BLOB_ACCOUNT_NAME");
-      String azureKey = azJson.getString("AZURE_BLOB_ACCOUNT_KEY");
-      String[] parts = contextPath.split("/", 2);
-      jsonObject = embeddingStoreIngestorHelper.ingestFromAZFile(parts[0], parts[1], fileType, azureName, azureKey);
-    } else {
-      jsonObject = embeddingStoreIngestorHelper.ingestFromLocalFile(contextPath, fileType);
-    }
+    JSONObject jsonObject = baseStorage.readAndIngestFile(contextPath, fileType.getFileType());
 
     return toInputStream(jsonObject.toString(), StandardCharsets.UTF_8);
   }
@@ -205,18 +201,22 @@ public class EmbeddingOperations {
   @Alias("EMBEDDING-query-from-store")
   public InputStream queryFromEmbedding(String storeName, String question, Number maxResults, Double minScore, 
                                   @Config Configuration configuration,
-                                  @ParameterGroup(name = "Additional Properties") EmbeddingModelNameParameters modelParams) {
+                                  @ParameterGroup(name = "Additional Properties") EmbeddingModelParameters modelParams) {
     int maximumResults = (int) maxResults;
     if (minScore == null) { //|| minScore == 0) {
       minScore = Constants.EMBEDDING_SEARCH_REQUEST_DEFAULT_MIN_SCORE;
     }
 
-    EmbeddingModel embeddingModel = EmbeddingModelFactory.createModel(configuration, modelParams);
+    BaseModel baseModel = BaseModel.builder()
+        .configuration(configuration)
+        .embeddingModelParameters(modelParams)
+        .build();
+
+    EmbeddingModel embeddingModel = baseModel.buildEmbeddingModel();
 
     BaseStore baseStore = BaseStore.builder()
         .storeName(storeName)
         .configuration(configuration)
-        .embeddingModel(embeddingModel)
         .dimension(embeddingModel.dimension())
         .build();
 
@@ -244,7 +244,6 @@ public class EmbeddingOperations {
     JSONArray sources = new JSONArray();
 
     JSONObject contentObject;
-    String fullPath;
     for (EmbeddingMatch<TextSegment> match : embeddingMatches) {
       Metadata matchMetadata = match.embedded().metadata();
 
@@ -280,7 +279,7 @@ public class EmbeddingOperations {
   public InputStream queryByFilterFromEmbedding(String storeName, String question, Number maxResults, Double minScore,
                                         @Config Configuration configuration,
                                         @ParameterGroup(name = "Filter") MetadataFilterParameters.SearchFilterParameters searchFilterParams,
-                                        @ParameterGroup(name = "Additional Properties") EmbeddingModelNameParameters modelParams) {
+                                        @ParameterGroup(name = "Additional Properties") EmbeddingModelParameters modelParams) {
 
     EmbeddingOperationValidator.validateOperationType(
             Constants.EMBEDDING_OPERATION_TYPE_FILTER_BY_METADATA,configuration.getVectorStore());
@@ -290,12 +289,16 @@ public class EmbeddingOperations {
       minScore = Constants.EMBEDDING_SEARCH_REQUEST_DEFAULT_MIN_SCORE;
     }
 
-    EmbeddingModel embeddingModel = EmbeddingModelFactory.createModel(configuration, modelParams);
+    BaseModel baseModel = BaseModel.builder()
+        .configuration(configuration)
+        .embeddingModelParameters(modelParams)
+        .build();
+
+    EmbeddingModel embeddingModel = baseModel.buildEmbeddingModel();
 
     BaseStore baseStore = BaseStore.builder()
         .storeName(storeName)
         .configuration(configuration)
-        .embeddingModel(embeddingModel)
         .dimension(embeddingModel.dimension())
         .build();
 
@@ -380,7 +383,7 @@ public class EmbeddingOperations {
   public InputStream listSourcesFromStore(String storeName,
                                         @Config Configuration configuration,
                                         @ParameterGroup(name = "Querying Strategy") QueryParameters queryParams,
-                                        @ParameterGroup(name = "Additional Properties") EmbeddingModelNameParameters modelParams
+                                        @ParameterGroup(name = "Additional Properties") EmbeddingModelParameters modelParams
   ) {
 
     EmbeddingOperationValidator.validateOperationType(
@@ -408,19 +411,23 @@ public class EmbeddingOperations {
   public InputStream removeEmbeddingsByFilter(String storeName,
                                             @Config Configuration configuration,
                                              @ParameterGroup(name = "Filter") MetadataFilterParameters.RemoveFilterParameters removeFilterParams,
-                                            @ParameterGroup(name = "Additional Properties") EmbeddingModelNameParameters modelParams) {
+                                            @ParameterGroup(name = "Additional Properties") EmbeddingModelParameters modelParams) {
 
     EmbeddingOperationValidator.validateOperationType(
             Constants.EMBEDDING_OPERATION_TYPE_REMOVE_EMBEDDINGS,configuration.getVectorStore());
     EmbeddingOperationValidator.validateOperationType(
             Constants.EMBEDDING_OPERATION_TYPE_FILTER_BY_METADATA,configuration.getVectorStore());
 
-    EmbeddingModel embeddingModel = EmbeddingModelFactory.createModel(configuration, modelParams);
+    BaseModel baseModel = BaseModel.builder()
+        .configuration(configuration)
+        .embeddingModelParameters(modelParams)
+        .build();
+
+    EmbeddingModel embeddingModel = baseModel.buildEmbeddingModel();
 
     BaseStore baseStore = BaseStore.builder()
         .storeName(storeName)
         .configuration(configuration)
-        .embeddingModel(embeddingModel)
         .dimension(embeddingModel.dimension())
         .build();
 
@@ -429,6 +436,7 @@ public class EmbeddingOperations {
     Filter filter = removeFilterParams.buildMetadataFilter();
 
     embeddingStore.removeAll(filter);
+
     JSONObject jsonObject = new JSONObject();
     jsonObject.put("storeName", storeName);
     jsonObject.put("filter", removeFilterParams.getFilterJSONObject());

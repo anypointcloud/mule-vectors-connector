@@ -2,13 +2,11 @@ package org.mule.extension.mulechain.vectors.internal.store.chroma;
 
 import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.store.embedding.EmbeddingStore;
-import dev.langchain4j.model.embedding.EmbeddingModel;
 import dev.langchain4j.store.embedding.chroma.ChromaEmbeddingStore;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.mule.extension.mulechain.vectors.internal.config.Configuration;
 import org.mule.extension.mulechain.vectors.internal.constant.Constants;
-import org.mule.extension.mulechain.vectors.internal.helper.parameter.EmbeddingModelNameParameters;
 import org.mule.extension.mulechain.vectors.internal.helper.parameter.QueryParameters;
 import org.mule.extension.mulechain.vectors.internal.store.BaseStore;
 import org.mule.extension.mulechain.vectors.internal.util.JsonUtils;
@@ -35,11 +33,10 @@ public class ChromaStore extends BaseStore {
    * @param storeName     the name of the vector store.
    * @param configuration the configuration object containing necessary settings.
    * @param queryParams   parameters related to query configurations.
-   * @param embeddingModel embedding model.
    */
-  public ChromaStore(String storeName, Configuration configuration, QueryParameters queryParams, EmbeddingModel embeddingModel, int dimension) {
+  public ChromaStore(String storeName, Configuration configuration, QueryParameters queryParams, int dimension) {
 
-    super(storeName, configuration, queryParams, embeddingModel, dimension);
+    super(storeName, configuration, queryParams, dimension);
 
     JSONObject config = JsonUtils.readConfigFile(configuration.getConfigFilePath());
     JSONObject vectorStoreConfig = config.getJSONObject(Constants.VECTOR_STORE_CHROMA);
