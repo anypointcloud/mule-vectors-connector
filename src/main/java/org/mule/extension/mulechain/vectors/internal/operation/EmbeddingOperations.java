@@ -1,7 +1,6 @@
 package org.mule.extension.mulechain.vectors.internal.operation;
 
 import static org.apache.commons.io.IOUtils.toInputStream;
-import static org.mule.extension.mulechain.vectors.internal.util.JsonUtils.readConfigFile;
 import static org.mule.runtime.extension.api.annotation.param.MediaType.APPLICATION_JSON;
 
 import java.io.InputStream;
@@ -10,7 +9,6 @@ import java.nio.charset.StandardCharsets;
 
 import org.mule.extension.mulechain.vectors.internal.constant.Constants;
 import org.mule.extension.mulechain.vectors.internal.helper.EmbeddingOperationValidator;
-import org.mule.extension.mulechain.vectors.internal.helper.EmbeddingStoreIngestorHelper;
 import org.mule.extension.mulechain.vectors.internal.helper.factory.EmbeddingModelFactory;
 import org.mule.extension.mulechain.vectors.internal.helper.parameter.*;
 import org.mule.extension.mulechain.vectors.internal.config.Configuration;
@@ -18,6 +16,7 @@ import dev.langchain4j.store.embedding.*;
 import dev.langchain4j.store.embedding.filter.Filter;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.mule.extension.mulechain.vectors.internal.storage.BaseStorage;
 import org.mule.extension.mulechain.vectors.internal.store.BaseStore;
 import org.mule.runtime.extension.api.annotation.Alias;
 import org.mule.runtime.extension.api.annotation.param.*;
@@ -116,27 +115,20 @@ public class EmbeddingOperations {
 
     EmbeddingStore<TextSegment> embeddingStore = baseStore.buildEmbeddingStore();
 
-    EmbeddingStoreIngestor ingestor = EmbeddingStoreIngestor.builder()
+    EmbeddingStoreIngestor embeddingStoreIngestor = EmbeddingStoreIngestor.builder()
         .documentSplitter(DocumentSplitters.recursive(maxSegmentSizeInChars, maxOverlapSizeInChars))
         .embeddingModel(embeddingModel)
         .embeddingStore(embeddingStore)
         .build();
 
-    EmbeddingStoreIngestorHelper embeddingStoreIngestorHelper = new EmbeddingStoreIngestorHelper(ingestor, storeName);
+    BaseStorage baseStorage = BaseStorage.builder()
+        .storeName(storeName)
+        .configuration(configuration)
+        .storageType(storageType.getStorageType())
+        .embeddingStoreIngestor(embeddingStoreIngestor)
+        .build();
 
-    JSONObject config = readConfigFile(configuration.getConfigFilePath());
-    JSONObject jsonObject = new JSONObject();
-    System.out.println("Storage Type: " + storageType.getStorageType());
-    if (storageType.getStorageType().equals("S3") && !fileType.getFileType().equals("url")) {
-      JSONObject s3Json = config.getJSONObject("S3");
-      String awsKey = s3Json.getString("AWS_ACCESS_KEY_ID");
-      String awsSecret = s3Json.getString("AWS_SECRET_ACCESS_KEY");
-      String awsRegion = s3Json.getString("AWS_DEFAULT_REGION");
-      String s3Bucket = s3Json.getString("AWS_S3_BUCKET");
-      jsonObject = embeddingStoreIngestorHelper.ingestFromS3Folder(folderPath, fileType, awsKey, awsSecret, awsRegion, s3Bucket);
-    } else {
-      jsonObject = embeddingStoreIngestorHelper.ingestFromLocalFolder(folderPath, fileType);
-    }
+    JSONObject jsonObject = baseStorage.readAndIngestAllFiles(folderPath, fileType.getFileType());
 
     return toInputStream(jsonObject.toString(), StandardCharsets.UTF_8);
   }
@@ -167,33 +159,20 @@ public class EmbeddingOperations {
 
     EmbeddingStore<TextSegment> embeddingStore = baseStore.buildEmbeddingStore();
 
-    EmbeddingStoreIngestor ingestor = EmbeddingStoreIngestor.builder()
+    EmbeddingStoreIngestor embeddingStoreIngestor = EmbeddingStoreIngestor.builder()
         .documentSplitter(DocumentSplitters.recursive(maxSegmentSizeInChars, maxOverlapSizeInChars))
         .embeddingModel(embeddingModel)
         .embeddingStore(embeddingStore)
         .build();
 
-    EmbeddingStoreIngestorHelper embeddingStoreIngestorHelper = new EmbeddingStoreIngestorHelper(ingestor, storeName);
+    BaseStorage baseStorage = BaseStorage.builder()
+        .storeName(storeName)
+        .configuration(configuration)
+        .storageType(storageType.getStorageType())
+        .embeddingStoreIngestor(embeddingStoreIngestor)
+        .build();
 
-    JSONObject config = readConfigFile(configuration.getConfigFilePath());
-    JSONObject jsonObject = new JSONObject();
-    System.out.println("Storage Type: " + storageType.getStorageType());
-    if (storageType.getStorageType().equals("S3") && !fileType.getFileType().equals("url")) {
-      JSONObject s3Json = config.getJSONObject("S3");
-      String awsKey = s3Json.getString("AWS_ACCESS_KEY_ID");
-      String awsSecret = s3Json.getString("AWS_SECRET_ACCESS_KEY");
-      String awsRegion = s3Json.getString("AWS_DEFAULT_REGION");
-      String s3Bucket = s3Json.getString("AWS_S3_BUCKET");
-      jsonObject = embeddingStoreIngestorHelper.ingestFromS3File(contextPath, fileType, awsKey, awsSecret, awsRegion, s3Bucket);
-    } else if (storageType.getStorageType().equals("AZURE_BLOB") && !fileType.getFileType().equals("url")) {
-      JSONObject azJson = config.getJSONObject("AZURE_BLOB");
-      String azureName = azJson.getString("AZURE_BLOB_ACCOUNT_NAME");
-      String azureKey = azJson.getString("AZURE_BLOB_ACCOUNT_KEY");
-      String[] parts = contextPath.split("/", 2);
-      jsonObject = embeddingStoreIngestorHelper.ingestFromAZFile(parts[0], parts[1], fileType, azureName, azureKey);
-    } else {
-      jsonObject = embeddingStoreIngestorHelper.ingestFromLocalFile(contextPath, fileType);
-    }
+    JSONObject jsonObject = baseStorage.readAndIngestFile(contextPath, fileType.getFileType());
 
     return toInputStream(jsonObject.toString(), StandardCharsets.UTF_8);
   }
@@ -244,7 +223,6 @@ public class EmbeddingOperations {
     JSONArray sources = new JSONArray();
 
     JSONObject contentObject;
-    String fullPath;
     for (EmbeddingMatch<TextSegment> match : embeddingMatches) {
       Metadata matchMetadata = match.embedded().metadata();
 

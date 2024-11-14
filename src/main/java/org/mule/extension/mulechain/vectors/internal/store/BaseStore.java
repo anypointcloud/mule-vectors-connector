@@ -274,55 +274,55 @@ public class BaseStore {
      */
     public BaseStore build() {
 
-      BaseStore embeddingStore;
+      BaseStore baseStore;
 
       switch (configuration.getVectorStore()) {
 
         case Constants.VECTOR_STORE_MILVUS:
 
-          embeddingStore = new MilvusStore(storeName, configuration, queryParams, embeddingModel, dimension);
+          baseStore = new MilvusStore(storeName, configuration, queryParams, embeddingModel, dimension);
           break;
 
         case Constants.VECTOR_STORE_PGVECTOR:
 
-          embeddingStore = new PGVectorStore(storeName, configuration, queryParams, embeddingModel, dimension);
+          baseStore = new PGVectorStore(storeName, configuration, queryParams, embeddingModel, dimension);
           break;
 
         case Constants.VECTOR_STORE_AI_SEARCH:
 
-          embeddingStore = new AISearchStore(storeName, configuration, queryParams, embeddingModel, dimension);
+          baseStore = new AISearchStore(storeName, configuration, queryParams, embeddingModel, dimension);
           break;
 
         case Constants.VECTOR_STORE_WEAVIATE:
 
-          embeddingStore = new WeaviateStore(storeName, configuration, queryParams, embeddingModel, dimension);
+          baseStore = new WeaviateStore(storeName, configuration, queryParams, embeddingModel, dimension);
           break;
 
         case Constants.VECTOR_STORE_CHROMA:
 
-          embeddingStore = new ChromaStore(storeName, configuration, queryParams, embeddingModel, dimension);
+          baseStore = new ChromaStore(storeName, configuration, queryParams, embeddingModel, dimension);
           break;
 
         case Constants.VECTOR_STORE_PINECONE:
 
-          embeddingStore = new PineconeStore(storeName, configuration, queryParams, embeddingModel, dimension);
+          baseStore = new PineconeStore(storeName, configuration, queryParams, embeddingModel, dimension);
           break;
 
         case Constants.VECTOR_STORE_ELASTICSEARCH:
 
-          embeddingStore = new ElasticsearchStore(storeName, configuration, queryParams, embeddingModel, dimension);
+          baseStore = new ElasticsearchStore(storeName, configuration, queryParams, embeddingModel, dimension);
           break;
 
         case Constants.VECTOR_STORE_OPENSEARCH:
 
-          embeddingStore = new OpenSearchStore(storeName, configuration, queryParams, embeddingModel, dimension);
+          baseStore = new OpenSearchStore(storeName, configuration, queryParams, embeddingModel, dimension);
           break;
 
         default:
           //throw new IllegalOperationException("Unsupported Vector Store: " + configuration.getVectorStore());
-          embeddingStore = null;
+          baseStore = null;
       }
-      return embeddingStore;
+      return baseStore;
     }
   }
 }

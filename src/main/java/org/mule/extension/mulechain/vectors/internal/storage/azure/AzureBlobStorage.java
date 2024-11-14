@@ -9,49 +9,60 @@ import dev.langchain4j.store.embedding.EmbeddingStoreIngestor;
 import dev.langchain4j.data.document.DocumentParser;
 import java.util.List;
 
+import org.json.JSONObject;
+import org.mule.extension.mulechain.vectors.internal.config.Configuration;
 import org.mule.extension.mulechain.vectors.internal.constant.Constants;
-import org.mule.extension.mulechain.vectors.internal.helper.parameter.FileTypeParameters;
 import dev.langchain4j.data.document.parser.TextDocumentParser;
 import dev.langchain4j.data.document.parser.apache.tika.ApacheTikaDocumentParser;
 import dev.langchain4j.data.document.Document;
+import org.mule.extension.mulechain.vectors.internal.storage.BaseStorage;
 import org.mule.extension.mulechain.vectors.internal.util.DocumentUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class AzureBlobStorage {
+import static org.mule.extension.mulechain.vectors.internal.util.JsonUtils.readConfigFile;
+
+public class AzureBlobStorage extends BaseStorage {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AzureBlobStorage.class);
 
-    private final AzureBlobStorageDocumentLoader loader;
+    private final String azureName;
+    private final String azureKey;
 
-    public AzureBlobStorage(String azureName, String azureKey) {
-        StorageSharedKeyCredential credential = new StorageSharedKeyCredential(azureName, azureKey);
+    private StorageSharedKeyCredential getCredentials() {
+        return new StorageSharedKeyCredential(azureName, azureKey);
+    }
 
-        // Azure SDK client builders accept the credential as a parameter
-        BlobServiceClient blobServiceClient = new BlobServiceClientBuilder()
+    private AzureBlobStorageDocumentLoader loader;
+
+    private AzureBlobStorageDocumentLoader getLoader() {
+
+        if(this.loader == null) {
+
+            // Azure SDK client builders accept the credential as a parameter
+            BlobServiceClient blobServiceClient = new BlobServiceClientBuilder()
                 .endpoint(String.format("https://%s.blob.core.windows.net/", azureName))
-                .credential(credential)
+                .credential(getCredentials())
                 .buildClient();
 
-        this.loader = new AzureBlobStorageDocumentLoader(blobServiceClient);
+            this.loader = new AzureBlobStorageDocumentLoader(blobServiceClient);
+        }
+        return this.loader;
     }
 
-    public static BlobServiceClient GetBlobServiceClientAccountKey(String accountName, String accountKey) {
-        StorageSharedKeyCredential credential = new StorageSharedKeyCredential(accountName, accountKey);
+    public AzureBlobStorage(Configuration configuration, String storeName, EmbeddingStoreIngestor embeddingStoreIngestor) {
 
-        // Azure SDK client builders accept the credential as a parameter
-        BlobServiceClient blobServiceClient = new BlobServiceClientBuilder()
-                .endpoint(String.format("https://%s.blob.core.windows.net/", accountName))
-                .credential(credential)
-                .buildClient();
-
-        return blobServiceClient;        
+        super(configuration, storeName, embeddingStoreIngestor);
+        JSONObject config = readConfigFile(configuration.getConfigFilePath());
+        assert config != null;
+        JSONObject storageConfig = config.getJSONObject("AZURE_BLOB");
+        this.azureName = storageConfig.getString("AZURE_BLOB_ACCOUNT_NAME");
+        this.azureKey = storageConfig.getString("AZURE_BLOB_ACCOUNT_KEY");
     }
 
-    public long readAllFiles(String containerName, EmbeddingStoreIngestor ingestor, FileTypeParameters fileType)
-    {
+    public JSONObject readAndIngestAllFiles(String containerName, String fileType) {
         DocumentParser parser = null;
-        switch (fileType.getFileType()){
+        switch (fileType){
             case Constants.FILE_TYPE_TEXT:
             case Constants.FILE_TYPE_CRAWL:
                 parser = new TextDocumentParser();
@@ -60,10 +71,10 @@ public class AzureBlobStorage {
                 parser = new ApacheTikaDocumentParser();
                 break;
             default:
-                throw new IllegalArgumentException("Unsupported File Type: " + fileType.getFileType());
+                throw new IllegalArgumentException("Unsupported File Type: " + fileType);
         }
 
-        List<Document> documents = loader.loadDocuments(containerName, parser);
+        List<Document> documents = getLoader().loadDocuments(containerName, parser);
         int fileCount = documents.size();
         LOGGER.debug("Total number of files in '" + containerName + "': " + fileCount);
 
@@ -71,20 +82,25 @@ public class AzureBlobStorage {
         for (Document document : documents) {
             totalFiles += 1;
             
-            if (fileType.getFileType().equals(Constants.FILE_TYPE_CRAWL)){
+            if (fileType.equals(Constants.FILE_TYPE_CRAWL)){
                 DocumentUtils.addMetadataToDocument(document);
             }
 
             LOGGER.debug("Ingesting File " + totalFiles + ": " + document.metadata().toMap().get("source"));
-            ingestor.ingest(document);
+            embeddingStoreIngestor.ingest(document);
         }
         LOGGER.debug("Total number of files processed: " + totalFiles);
-        return totalFiles;
+        return createFolderIngestionStatusObject(totalFiles, fileType);
     }
 
-    public void readFile(String containerName, String blobName, FileTypeParameters fileType, EmbeddingStoreIngestor ingestor) {
+    public JSONObject readAndIngestFile(String contextPath, String fileType) {
+
+        String[] parts = contextPath.split("/", 2);
+        String containerName = parts[0];
+        String blobName = parts[1];
+
         DocumentParser parser = null;
-        switch (fileType.getFileType()){
+        switch (fileType){
             case Constants.FILE_TYPE_TEXT:
             case Constants.FILE_TYPE_CRAWL:
                 parser = new TextDocumentParser();
@@ -93,16 +109,16 @@ public class AzureBlobStorage {
                 parser = new ApacheTikaDocumentParser();
                 break;
             default:
-                throw new IllegalArgumentException("Unsupported File Type: " + fileType.getFileType());
+                throw new IllegalArgumentException("Unsupported File Type: " + fileType);
         }
-        Document document = loader.loadDocument(containerName, blobName, parser);
-        System.out.println("Ready to add metadata: " + fileType.getFileType());
+        Document document = getLoader().loadDocument(containerName, blobName, parser);
+        System.out.println("Ready to add metadata: " + fileType);
         
-        if (fileType.getFileType().equals(Constants.FILE_TYPE_CRAWL)){
+        if (fileType.equals(Constants.FILE_TYPE_CRAWL)){
             DocumentUtils.addMetadataToDocument(document);
         }
         
-        ingestor.ingest(document);
-
+        embeddingStoreIngestor.ingest(document);
+        return createFileIngestionStatusObject(fileType, containerName);
     }
 }
