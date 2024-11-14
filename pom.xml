@@ -9,6 +9,34 @@
     <version>0.1.25</version>
     <packaging>mule-extension</packaging>
     <name>MuleChain Vectors</name>
+    <description>MAC Vectors provides access to a broad number of external Vector Stores and Databases.</description>
+    <url>https://mac-project.ai/docs/mulechain-vectors/connector-overview</url>
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>https://www.opensource.org/licenses/mit-license.php</url>
+        </license>
+    </licenses>
+    <developers>
+        <developer>
+            <name>Amir Khan</name>
+            <email>amir.khan@mulesoft.com</email>
+            <organization>Salesforce</organization>
+            <organizationUrl>https://www.mulesoft.com</organizationUrl>
+        </developer>
+        <developer>
+            <name>Suraj Kamal</name>
+        </developer>
+        <developer>
+            <name>Laura de Paz</name>
+        </developer>
+        <developer>
+            <name>Ryan Hoegg</name>
+            <email>ryan@hoegg.software</email>
+            <organization>Hoegg Software, Co.</organization>
+            <organizationUrl>https://hoegg.software</organizationUrl>
+        </developer>
+    </developers>
 
     <parent>
         <groupId>org.mule.extensions</groupId>
