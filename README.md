@@ -22,7 +22,7 @@ To use this connector, add the following dependency to your application's `pom.x
 <dependency>
     <groupId>com.mule.mulechain</groupId>
     <artifactId>mulechain-vectors</artifactId>
-    <version>0.1.0</version>
+    <version>0.1.25</version>
     <classifier>mule-plugin</classifier>
 </dependency>
 ```
