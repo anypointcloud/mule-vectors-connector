@@ -4,9 +4,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.mule.mulechain</groupId>
-    <artifactId>mulechain-vectors</artifactId>
-    <version>0.1.25</version>
+    <groupId>cloud.anypoint</groupId>
+    <artifactId>mule-vectors-connector</artifactId>
+    <version>0.1.25-SNAPSHOT</version>
     <packaging>mule-extension</packaging>
     <name>MuleChain Vectors</name>
     <description>MAC Vectors provides access to a broad number of external Vector Stores and Databases.</description>
@@ -204,4 +204,4 @@
         </dependency>
 
 	</dependencies>
-\</project>
+</project>
