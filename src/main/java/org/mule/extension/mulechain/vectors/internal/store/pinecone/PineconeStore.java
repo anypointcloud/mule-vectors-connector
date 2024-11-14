@@ -19,9 +19,9 @@ public class PineconeStore extends BaseStore {
   private String cloud;
   private String region;
 
-  public PineconeStore(String storeName, Configuration configuration, QueryParameters queryParams, EmbeddingModel embeddingModel, int dimension) {
+  public PineconeStore(String storeName, Configuration configuration, QueryParameters queryParams, int dimension) {
 
-    super(storeName, configuration, queryParams, embeddingModel, dimension);
+    super(storeName, configuration, queryParams, dimension);
 
     JSONObject config = JsonUtils.readConfigFile(configuration.getConfigFilePath());
     JSONObject vectorStoreConfig = config.getJSONObject(Constants.VECTOR_STORE_PINECONE);

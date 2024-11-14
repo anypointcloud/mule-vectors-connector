@@ -38,15 +38,13 @@ public class BaseStore {
   protected String storeName;
   protected Configuration configuration;
   protected QueryParameters queryParams;
-  protected EmbeddingModel embeddingModel;
   protected int dimension;
 
-  public BaseStore(String storeName, Configuration configuration, QueryParameters queryParams, EmbeddingModel embeddingModel, int dimension) {
+  public BaseStore(String storeName, Configuration configuration, QueryParameters queryParams, int dimension) {
 
     this.storeName = storeName;
     this.configuration = configuration;
     this.queryParams = queryParams;
-    this.embeddingModel = embeddingModel;
     this.dimension = dimension;
   }
 
@@ -205,7 +203,6 @@ public class BaseStore {
     private String storeName;
     private Configuration configuration;
     private QueryParameters queryParams;
-    private EmbeddingModel embeddingModel;
     private int dimension;
 
     public Builder() {
@@ -245,17 +242,6 @@ public class BaseStore {
       return this;
     }
 
-    /**
-     * Sets a pre-configured embedding model for the {@code BaseStore}.
-     *
-     * @param embeddingModel the embedding model to use.
-     * @return the {@code Builder} instance, for method chaining.
-     */
-    public Builder embeddingModel(EmbeddingModel embeddingModel) {
-      this.embeddingModel = embeddingModel;
-      return this;
-    }
-
     public Builder dimension(int dimension) {
       this.dimension = dimension;
       return this;
@@ -280,42 +266,42 @@ public class BaseStore {
 
         case Constants.VECTOR_STORE_MILVUS:
 
-          baseStore = new MilvusStore(storeName, configuration, queryParams, embeddingModel, dimension);
+          baseStore = new MilvusStore(storeName, configuration, queryParams, dimension);
           break;
 
         case Constants.VECTOR_STORE_PGVECTOR:
 
-          baseStore = new PGVectorStore(storeName, configuration, queryParams, embeddingModel, dimension);
+          baseStore = new PGVectorStore(storeName, configuration, queryParams, dimension);
           break;
 
         case Constants.VECTOR_STORE_AI_SEARCH:
 
-          baseStore = new AISearchStore(storeName, configuration, queryParams, embeddingModel, dimension);
+          baseStore = new AISearchStore(storeName, configuration, queryParams, dimension);
           break;
 
         case Constants.VECTOR_STORE_WEAVIATE:
 
-          baseStore = new WeaviateStore(storeName, configuration, queryParams, embeddingModel, dimension);
+          baseStore = new WeaviateStore(storeName, configuration, queryParams, dimension);
           break;
 
         case Constants.VECTOR_STORE_CHROMA:
 
-          baseStore = new ChromaStore(storeName, configuration, queryParams, embeddingModel, dimension);
+          baseStore = new ChromaStore(storeName, configuration, queryParams, dimension);
           break;
 
         case Constants.VECTOR_STORE_PINECONE:
 
-          baseStore = new PineconeStore(storeName, configuration, queryParams, embeddingModel, dimension);
+          baseStore = new PineconeStore(storeName, configuration, queryParams, dimension);
           break;
 
         case Constants.VECTOR_STORE_ELASTICSEARCH:
 
-          baseStore = new ElasticsearchStore(storeName, configuration, queryParams, embeddingModel, dimension);
+          baseStore = new ElasticsearchStore(storeName, configuration, queryParams, dimension);
           break;
 
         case Constants.VECTOR_STORE_OPENSEARCH:
 
-          baseStore = new OpenSearchStore(storeName, configuration, queryParams, embeddingModel, dimension);
+          baseStore = new OpenSearchStore(storeName, configuration, queryParams, dimension);
           break;
 
         default:

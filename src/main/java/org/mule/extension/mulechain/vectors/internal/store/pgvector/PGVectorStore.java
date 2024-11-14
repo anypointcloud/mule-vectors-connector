@@ -45,11 +45,10 @@ public class PGVectorStore extends BaseStore {
    * @param storeName The name of the store.
    * @param configuration The configuration for connecting to the store.
    * @param queryParams Parameters related to query configurations.
-   * @param embeddingModel Embedding model.
    */
-  public PGVectorStore(String storeName, Configuration configuration, QueryParameters queryParams, EmbeddingModel embeddingModel, int dimension) {
+  public PGVectorStore(String storeName, Configuration configuration, QueryParameters queryParams, int dimension) {
 
-    super(storeName, configuration, queryParams, embeddingModel, dimension);
+    super(storeName, configuration, queryParams, dimension);
 
     JSONObject config = readConfigFile(configuration.getConfigFilePath());
     JSONObject vectorStoreConfig = config.getJSONObject(Constants.VECTOR_STORE_PGVECTOR);

@@ -35,11 +35,10 @@ public class ChromaStore extends BaseStore {
    * @param storeName     the name of the vector store.
    * @param configuration the configuration object containing necessary settings.
    * @param queryParams   parameters related to query configurations.
-   * @param embeddingModel embedding model.
    */
-  public ChromaStore(String storeName, Configuration configuration, QueryParameters queryParams, EmbeddingModel embeddingModel, int dimension) {
+  public ChromaStore(String storeName, Configuration configuration, QueryParameters queryParams, int dimension) {
 
-    super(storeName, configuration, queryParams, embeddingModel, dimension);
+    super(storeName, configuration, queryParams, dimension);
 
     JSONObject config = JsonUtils.readConfigFile(configuration.getConfigFilePath());
     JSONObject vectorStoreConfig = config.getJSONObject(Constants.VECTOR_STORE_CHROMA);

@@ -28,9 +28,9 @@ public class AISearchStore extends BaseStore {
   private String apiKey;
   private String url;
 
-  public AISearchStore(String storeName, Configuration configuration, QueryParameters queryParams, EmbeddingModel embeddingModel, int dimension) {
+  public AISearchStore(String storeName, Configuration configuration, QueryParameters queryParams, int dimension) {
 
-    super(storeName, configuration, queryParams, embeddingModel, dimension);
+    super(storeName, configuration, queryParams, dimension);
 
     JSONObject config = readConfigFile(configuration.getConfigFilePath());
     JSONObject vectorStoreConfig = config.getJSONObject(Constants.VECTOR_STORE_AI_SEARCH);

@@ -1,4 +1,4 @@
-package org.mule.extension.mulechain.vectors.internal.storage.azure;
+package org.mule.extension.mulechain.vectors.internal.storage.azureblob;
 
 import com.azure.storage.blob.BlobServiceClient;
 import com.azure.storage.blob.BlobServiceClientBuilder;

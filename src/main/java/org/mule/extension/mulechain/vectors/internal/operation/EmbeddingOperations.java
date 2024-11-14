@@ -9,13 +9,13 @@ import java.nio.charset.StandardCharsets;
 
 import org.mule.extension.mulechain.vectors.internal.constant.Constants;
 import org.mule.extension.mulechain.vectors.internal.helper.EmbeddingOperationValidator;
-import org.mule.extension.mulechain.vectors.internal.helper.factory.EmbeddingModelFactory;
 import org.mule.extension.mulechain.vectors.internal.helper.parameter.*;
 import org.mule.extension.mulechain.vectors.internal.config.Configuration;
 import dev.langchain4j.store.embedding.*;
 import dev.langchain4j.store.embedding.filter.Filter;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.mule.extension.mulechain.vectors.internal.model.BaseModel;
 import org.mule.extension.mulechain.vectors.internal.storage.BaseStorage;
 import org.mule.extension.mulechain.vectors.internal.store.BaseStore;
 import org.mule.runtime.extension.api.annotation.Alias;
@@ -45,12 +45,16 @@ public class EmbeddingOperations {
   @Alias("Embedding-add-text-to-store")
   public InputStream addTextToStore(String storeName, String textToAdd, @Config Configuration configuration, @ParameterGroup(name = "Additional Properties") EmbeddingModelNameParameters modelParams){
 
-    EmbeddingModel embeddingModel = EmbeddingModelFactory.createModel(configuration, modelParams);
+    BaseModel baseModel = BaseModel.builder()
+        .configuration(configuration)
+        .embeddingModelParameters(modelParams)
+        .build();
+
+    EmbeddingModel embeddingModel = baseModel.buildEmbeddingModel();
 
     BaseStore baseStore = BaseStore.builder()
         .storeName(storeName)
         .configuration(configuration)
-        .embeddingModel(embeddingModel)
         .dimension(embeddingModel.dimension())
         .build();
 
@@ -76,7 +80,12 @@ public class EmbeddingOperations {
   @Alias("Embedding-generate-from-text")
   public InputStream generateEmbedding(String textToAdd, @Config Configuration configuration, @ParameterGroup(name = "Additional Properties") EmbeddingModelNameParameters modelParams){
 
-    EmbeddingModel embeddingModel = EmbeddingModelFactory.createModel(configuration, modelParams);
+    BaseModel baseModel = BaseModel.builder()
+        .configuration(configuration)
+        .embeddingModelParameters(modelParams)
+        .build();
+
+    EmbeddingModel embeddingModel = baseModel.buildEmbeddingModel();
 
     TextSegment textSegment = TextSegment.from(textToAdd);
     Embedding textEmbedding = embeddingModel.embed(textSegment).content();
@@ -104,12 +113,16 @@ public class EmbeddingOperations {
     EmbeddingOperationValidator.validateOperationType(
             Constants.EMBEDDING_OPERATION_TYPE_STORE_METADATA,configuration.getVectorStore());
 
-    EmbeddingModel embeddingModel = EmbeddingModelFactory.createModel(configuration, modelParams);
+    BaseModel baseModel = BaseModel.builder()
+        .configuration(configuration)
+        .embeddingModelParameters(modelParams)
+        .build();
+
+    EmbeddingModel embeddingModel = baseModel.buildEmbeddingModel();
 
     BaseStore baseStore = BaseStore.builder()
         .storeName(storeName)
         .configuration(configuration)
-        .embeddingModel(embeddingModel)
         .dimension(embeddingModel.dimension())
         .build();
 
@@ -147,13 +160,17 @@ public class EmbeddingOperations {
 
     EmbeddingOperationValidator.validateOperationType(
             Constants.EMBEDDING_OPERATION_TYPE_STORE_METADATA,configuration.getVectorStore());
-                                  
-    EmbeddingModel embeddingModel = EmbeddingModelFactory.createModel(configuration, modelParams);
+
+    BaseModel baseModel = BaseModel.builder()
+        .configuration(configuration)
+        .embeddingModelParameters(modelParams)
+        .build();
+
+    EmbeddingModel embeddingModel = baseModel.buildEmbeddingModel();
 
     BaseStore baseStore = BaseStore.builder()
         .storeName(storeName)
         .configuration(configuration)
-        .embeddingModel(embeddingModel)
         .dimension(embeddingModel.dimension())
         .build();
 
@@ -190,12 +207,16 @@ public class EmbeddingOperations {
       minScore = Constants.EMBEDDING_SEARCH_REQUEST_DEFAULT_MIN_SCORE;
     }
 
-    EmbeddingModel embeddingModel = EmbeddingModelFactory.createModel(configuration, modelParams);
+    BaseModel baseModel = BaseModel.builder()
+        .configuration(configuration)
+        .embeddingModelParameters(modelParams)
+        .build();
+
+    EmbeddingModel embeddingModel = baseModel.buildEmbeddingModel();
 
     BaseStore baseStore = BaseStore.builder()
         .storeName(storeName)
         .configuration(configuration)
-        .embeddingModel(embeddingModel)
         .dimension(embeddingModel.dimension())
         .build();
 
@@ -268,12 +289,16 @@ public class EmbeddingOperations {
       minScore = Constants.EMBEDDING_SEARCH_REQUEST_DEFAULT_MIN_SCORE;
     }
 
-    EmbeddingModel embeddingModel = EmbeddingModelFactory.createModel(configuration, modelParams);
+    BaseModel baseModel = BaseModel.builder()
+        .configuration(configuration)
+        .embeddingModelParameters(modelParams)
+        .build();
+
+    EmbeddingModel embeddingModel = baseModel.buildEmbeddingModel();
 
     BaseStore baseStore = BaseStore.builder()
         .storeName(storeName)
         .configuration(configuration)
-        .embeddingModel(embeddingModel)
         .dimension(embeddingModel.dimension())
         .build();
 
@@ -393,12 +418,16 @@ public class EmbeddingOperations {
     EmbeddingOperationValidator.validateOperationType(
             Constants.EMBEDDING_OPERATION_TYPE_FILTER_BY_METADATA,configuration.getVectorStore());
 
-    EmbeddingModel embeddingModel = EmbeddingModelFactory.createModel(configuration, modelParams);
+    BaseModel baseModel = BaseModel.builder()
+        .configuration(configuration)
+        .embeddingModelParameters(modelParams)
+        .build();
+
+    EmbeddingModel embeddingModel = baseModel.buildEmbeddingModel();
 
     BaseStore baseStore = BaseStore.builder()
         .storeName(storeName)
         .configuration(configuration)
-        .embeddingModel(embeddingModel)
         .dimension(embeddingModel.dimension())
         .build();
 
@@ -407,6 +436,7 @@ public class EmbeddingOperations {
     Filter filter = removeFilterParams.buildMetadataFilter();
 
     embeddingStore.removeAll(filter);
+
     JSONObject jsonObject = new JSONObject();
     jsonObject.put("storeName", storeName);
     jsonObject.put("filter", removeFilterParams.getFilterJSONObject());

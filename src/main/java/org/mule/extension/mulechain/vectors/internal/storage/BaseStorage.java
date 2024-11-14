@@ -4,7 +4,7 @@ import dev.langchain4j.store.embedding.EmbeddingStoreIngestor;
 import org.json.JSONObject;
 import org.mule.extension.mulechain.vectors.internal.config.Configuration;
 import org.mule.extension.mulechain.vectors.internal.constant.Constants;
-import org.mule.extension.mulechain.vectors.internal.storage.azure.AzureBlobStorage;
+import org.mule.extension.mulechain.vectors.internal.storage.azureblob.AzureBlobStorage;
 import org.mule.extension.mulechain.vectors.internal.storage.local.LocalStorage;
 import org.mule.extension.mulechain.vectors.internal.storage.s3.AWSS3Storage;
 import org.slf4j.Logger;
