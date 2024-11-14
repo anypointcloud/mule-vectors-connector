@@ -46,14 +46,30 @@
 
     <properties>
         <muleJavaEeBomVersion>4.6.0</muleJavaEeBomVersion>
+        <munit.extensions.maven.plugin.version>1.2.0</munit.extensions.maven.plugin.version>
 		<formatterConfigPath>formatter.xml</formatterConfigPath>
 		<javaFormatter.plugin.version>2.0.1</javaFormatter.plugin.version>
-		<formatterGoal>validate</formatterGoal>	
+		<formatterGoal>validate</formatterGoal>
+		<langchain4j.version>0.34.0</langchain4j.version>
     </properties>
 
-<!-- 	<build>
+ 	<build>
 		<plugins>
-			<plugin>
+            <plugin>
+                <groupId>com.mulesoft.munit</groupId>
+                <artifactId>munit-extensions-maven-plugin</artifactId>
+                <version>${munit.extensions.maven.plugin.version}</version>
+                <extensions>true</extensions>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <phase>integration-test</phase>
+                    </execution>
+                </executions>
+            </plugin>
+<!--			<plugin>
 				<groupId>net.revelc.code.formatter</groupId>
 				<artifactId>formatter-maven-plugin</artifactId>
 				<version>${javaFormatter.plugin.version}</version>
@@ -78,9 +94,9 @@
 						</configuration>
 					</execution>
 				</executions>
-			</plugin>
+			</plugin> -->
 		</plugins>
-	</build> -->
+	</build>
 
     <dependencyManagement>
         <dependencies>
@@ -105,8 +121,19 @@
 		<dependency>
 			<groupId>dev.langchain4j</groupId>
 			<artifactId>langchain4j</artifactId>
-			<version>0.32.0</version>
+			<version>${langchain4j.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.jsoup</groupId>
+                    <artifactId>jsoup</artifactId>
+                </exclusion>
+            </exclusions>
 		</dependency>
+        <dependency>
+            <groupId>org.jsoup</groupId>
+            <artifactId>jsoup</artifactId>
+            <version>1.14.3</version>
+        </dependency>
 
 		<dependency>
 			<groupId>org.json</groupId>
@@ -116,13 +143,13 @@
 		<dependency>
 			<groupId>dev.langchain4j</groupId>
 			<artifactId>langchain4j-document-parser-apache-tika</artifactId>
-			<version>0.32.0</version>
+			<version>${langchain4j.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>dev.langchain4j</groupId>
 			<artifactId>langchain4j-easy-rag</artifactId>
-			<version>0.32.0</version>
+			<version>${langchain4j.version}</version>
 		</dependency>
 
 		<dependency>
@@ -134,67 +161,67 @@
 		<dependency>
 			<groupId>dev.langchain4j</groupId>
 			<artifactId>langchain4j-open-ai</artifactId>
-			<version>0.32.0</version>
+			<version>${langchain4j.version}</version>
 		</dependency>
 
         <dependency>
             <groupId>dev.langchain4j</groupId>
             <artifactId>langchain4j-mistral-ai</artifactId>
-            <version>0.32.0</version>
+            <version>${langchain4j.version}</version>
         </dependency>
 
 		<dependency>
 			<groupId>dev.langchain4j</groupId>
 			<artifactId>langchain4j-nomic</artifactId>
-			<version>0.32.0</version>
+			<version>${langchain4j.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>dev.langchain4j</groupId>
 			<artifactId>langchain4j-hugging-face</artifactId>
-			<version>0.32.0</version>
+			<version>${langchain4j.version}</version>
 		</dependency>
 
         <dependency>
             <groupId>dev.langchain4j</groupId>
             <artifactId>langchain4j-chroma</artifactId>
-            <version>0.32.0</version>
+            <version>${langchain4j.version}</version>
         </dependency>
 
 		<dependency>
             <groupId>dev.langchain4j</groupId>
             <artifactId>langchain4j-milvus</artifactId>
-            <version>0.32.0</version>
+            <version>${langchain4j.version}</version>
         </dependency>
 
         <dependency>
             <groupId>dev.langchain4j</groupId>
             <artifactId>langchain4j-elasticsearch</artifactId>
-            <version>0.32.0</version>
+            <version>${langchain4j.version}</version>
         </dependency>
 
         <dependency>
             <groupId>dev.langchain4j</groupId>
             <artifactId>langchain4j-pgvector</artifactId>
-            <version>0.32.0</version>
+            <version>${langchain4j.version}</version>
         </dependency>
 
         <dependency>
             <groupId>dev.langchain4j</groupId>
             <artifactId>langchain4j-weaviate</artifactId>
-            <version>0.32.0</version>
+            <version>${langchain4j.version}</version>
         </dependency>
 
 		<!--<dependency>
             <groupId>dev.langchain4j</groupId>
             <artifactId>langchain4j-neo4j</artifactId>
-            <version>0.33.0</version>
+            <version>${langchain4j.version}</version>
         </dependency>-->
 
         <dependency>
             <groupId>dev.langchain4j</groupId>
             <artifactId>langchain4j-pinecone</artifactId>
-            <version>0.33.0</version>
+            <version>${langchain4j.version}</version>
         </dependency>
 
         <dependency>
