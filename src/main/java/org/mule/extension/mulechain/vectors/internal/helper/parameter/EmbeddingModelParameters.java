@@ -6,7 +6,7 @@ import org.mule.runtime.extension.api.annotation.Expression;
 import org.mule.runtime.extension.api.annotation.param.Parameter;
 import org.mule.runtime.extension.api.annotation.values.OfValues;
 
-public class EmbeddingModelNameParameters {
+public class EmbeddingModelParameters {
 
   @Parameter
   @Expression(ExpressionSupport.SUPPORTED)

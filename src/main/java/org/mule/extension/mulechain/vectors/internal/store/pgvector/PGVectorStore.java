@@ -2,12 +2,10 @@ package org.mule.extension.mulechain.vectors.internal.store.pgvector;
 
 import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.store.embedding.EmbeddingStore;
-import dev.langchain4j.model.embedding.EmbeddingModel;
 import dev.langchain4j.store.embedding.pgvector.PgVectorEmbeddingStore;
 import org.json.JSONObject;
 import org.mule.extension.mulechain.vectors.internal.config.Configuration;
 import org.mule.extension.mulechain.vectors.internal.constant.Constants;
-import org.mule.extension.mulechain.vectors.internal.helper.parameter.EmbeddingModelNameParameters;
 import org.mule.extension.mulechain.vectors.internal.helper.parameter.QueryParameters;
 import org.mule.extension.mulechain.vectors.internal.store.BaseStore;
 import org.mule.extension.mulechain.vectors.internal.util.JsonUtils;

@@ -4,7 +4,7 @@ import dev.langchain4j.model.azure.AzureOpenAiEmbeddingModel;
 import dev.langchain4j.model.embedding.EmbeddingModel;
 import org.json.JSONObject;
 import org.mule.extension.mulechain.vectors.internal.config.Configuration;
-import org.mule.extension.mulechain.vectors.internal.helper.parameter.EmbeddingModelNameParameters;
+import org.mule.extension.mulechain.vectors.internal.helper.parameter.EmbeddingModelParameters;
 import org.mule.extension.mulechain.vectors.internal.model.BaseModel;
 
 import static org.mule.extension.mulechain.vectors.internal.util.JsonUtils.readConfigFile;
@@ -14,7 +14,7 @@ public class AzureOpenAIModel extends BaseModel {
   private final String apiKey;
   private final String endpoint;
 
-  public AzureOpenAIModel(Configuration configuration, EmbeddingModelNameParameters embeddingModelParameters) {
+  public AzureOpenAIModel(Configuration configuration, EmbeddingModelParameters embeddingModelParameters) {
 
     super(configuration,embeddingModelParameters);
     JSONObject config = readConfigFile(configuration.getConfigFilePath());

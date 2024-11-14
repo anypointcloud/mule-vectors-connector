@@ -3,7 +3,7 @@ package org.mule.extension.mulechain.vectors.internal.model;
 import dev.langchain4j.model.embedding.EmbeddingModel;
 import org.mule.extension.mulechain.vectors.internal.config.Configuration;
 import org.mule.extension.mulechain.vectors.internal.constant.Constants;
-import org.mule.extension.mulechain.vectors.internal.helper.parameter.EmbeddingModelNameParameters;
+import org.mule.extension.mulechain.vectors.internal.helper.parameter.EmbeddingModelParameters;
 import org.mule.extension.mulechain.vectors.internal.model.azureopenai.AzureOpenAIModel;
 import org.mule.extension.mulechain.vectors.internal.model.huggingface.HuggingFaceModel;
 import org.mule.extension.mulechain.vectors.internal.model.mistralai.MistralAIModel;
@@ -17,9 +17,9 @@ public class BaseModel {
   private static final Logger LOGGER = LoggerFactory.getLogger(BaseModel.class);
 
   protected Configuration configuration;
-  protected EmbeddingModelNameParameters embeddingModelParameters;
+  protected EmbeddingModelParameters embeddingModelParameters;
 
-  public BaseModel(Configuration configuration, EmbeddingModelNameParameters embeddingModelParameters) {
+  public BaseModel(Configuration configuration, EmbeddingModelParameters embeddingModelParameters) {
 
     this.configuration = configuration;
     this.embeddingModelParameters = embeddingModelParameters;
@@ -38,7 +38,7 @@ public class BaseModel {
   public static class Builder {
 
     private Configuration configuration;
-    private EmbeddingModelNameParameters embeddingModelParameters;
+    private EmbeddingModelParameters embeddingModelParameters;
 
     public Builder() {
 
@@ -49,7 +49,7 @@ public class BaseModel {
       return this;
     }
 
-    public BaseModel.Builder embeddingModelParameters(EmbeddingModelNameParameters embeddingModelParameters) {
+    public BaseModel.Builder embeddingModelParameters(EmbeddingModelParameters embeddingModelParameters) {
       this.embeddingModelParameters = embeddingModelParameters;
       return this;
     }

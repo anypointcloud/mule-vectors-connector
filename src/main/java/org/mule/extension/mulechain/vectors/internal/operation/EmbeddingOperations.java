@@ -43,7 +43,7 @@ public class EmbeddingOperations {
    */
   @MediaType(value = APPLICATION_JSON, strict = false)
   @Alias("Embedding-add-text-to-store")
-  public InputStream addTextToStore(String storeName, String textToAdd, @Config Configuration configuration, @ParameterGroup(name = "Additional Properties") EmbeddingModelNameParameters modelParams){
+  public InputStream addTextToStore(String storeName, String textToAdd, @Config Configuration configuration, @ParameterGroup(name = "Additional Properties") EmbeddingModelParameters modelParams){
 
     BaseModel baseModel = BaseModel.builder()
         .configuration(configuration)
@@ -78,7 +78,7 @@ public class EmbeddingOperations {
    */
   @MediaType(value = APPLICATION_JSON, strict = false)
   @Alias("Embedding-generate-from-text")
-  public InputStream generateEmbedding(String textToAdd, @Config Configuration configuration, @ParameterGroup(name = "Additional Properties") EmbeddingModelNameParameters modelParams){
+  public InputStream generateEmbedding(String textToAdd, @Config Configuration configuration, @ParameterGroup(name = "Additional Properties") EmbeddingModelParameters modelParams){
 
     BaseModel baseModel = BaseModel.builder()
         .configuration(configuration)
@@ -108,7 +108,7 @@ public class EmbeddingOperations {
                                 @ParameterGroup(name = "Context") FileTypeParameters fileType,
                                 @ParameterGroup(name = "Storage") StorageTypeParameters storageType,
                                 int maxSegmentSizeInChars, int maxOverlapSizeInChars,
-                                @ParameterGroup(name = "Additional Properties") EmbeddingModelNameParameters modelParams){
+                                @ParameterGroup(name = "Additional Properties") EmbeddingModelParameters modelParams){
 
     EmbeddingOperationValidator.validateOperationType(
             Constants.EMBEDDING_OPERATION_TYPE_STORE_METADATA,configuration.getVectorStore());
@@ -156,7 +156,7 @@ public class EmbeddingOperations {
                                  @ParameterGroup(name = "Context") FileTypeParameters fileType,
                                  @ParameterGroup(name = "Storage") StorageTypeParameters storageType,
                                  int maxSegmentSizeInChars, int maxOverlapSizeInChars,
-                                 @ParameterGroup(name = "Additional Properties") EmbeddingModelNameParameters modelParams) {
+                                 @ParameterGroup(name = "Additional Properties") EmbeddingModelParameters modelParams) {
 
     EmbeddingOperationValidator.validateOperationType(
             Constants.EMBEDDING_OPERATION_TYPE_STORE_METADATA,configuration.getVectorStore());
@@ -201,7 +201,7 @@ public class EmbeddingOperations {
   @Alias("EMBEDDING-query-from-store")
   public InputStream queryFromEmbedding(String storeName, String question, Number maxResults, Double minScore, 
                                   @Config Configuration configuration,
-                                  @ParameterGroup(name = "Additional Properties") EmbeddingModelNameParameters modelParams) {
+                                  @ParameterGroup(name = "Additional Properties") EmbeddingModelParameters modelParams) {
     int maximumResults = (int) maxResults;
     if (minScore == null) { //|| minScore == 0) {
       minScore = Constants.EMBEDDING_SEARCH_REQUEST_DEFAULT_MIN_SCORE;
@@ -279,7 +279,7 @@ public class EmbeddingOperations {
   public InputStream queryByFilterFromEmbedding(String storeName, String question, Number maxResults, Double minScore,
                                         @Config Configuration configuration,
                                         @ParameterGroup(name = "Filter") MetadataFilterParameters.SearchFilterParameters searchFilterParams,
-                                        @ParameterGroup(name = "Additional Properties") EmbeddingModelNameParameters modelParams) {
+                                        @ParameterGroup(name = "Additional Properties") EmbeddingModelParameters modelParams) {
 
     EmbeddingOperationValidator.validateOperationType(
             Constants.EMBEDDING_OPERATION_TYPE_FILTER_BY_METADATA,configuration.getVectorStore());
@@ -383,7 +383,7 @@ public class EmbeddingOperations {
   public InputStream listSourcesFromStore(String storeName,
                                         @Config Configuration configuration,
                                         @ParameterGroup(name = "Querying Strategy") QueryParameters queryParams,
-                                        @ParameterGroup(name = "Additional Properties") EmbeddingModelNameParameters modelParams
+                                        @ParameterGroup(name = "Additional Properties") EmbeddingModelParameters modelParams
   ) {
 
     EmbeddingOperationValidator.validateOperationType(
@@ -411,7 +411,7 @@ public class EmbeddingOperations {
   public InputStream removeEmbeddingsByFilter(String storeName,
                                             @Config Configuration configuration,
                                              @ParameterGroup(name = "Filter") MetadataFilterParameters.RemoveFilterParameters removeFilterParams,
-                                            @ParameterGroup(name = "Additional Properties") EmbeddingModelNameParameters modelParams) {
+                                            @ParameterGroup(name = "Additional Properties") EmbeddingModelParameters modelParams) {
 
     EmbeddingOperationValidator.validateOperationType(
             Constants.EMBEDDING_OPERATION_TYPE_REMOVE_EMBEDDINGS,configuration.getVectorStore());
