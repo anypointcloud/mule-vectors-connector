@@ -1,5 +1,6 @@
 package org.mule.extension.mulechain.vectors.internal.storage.s3;
 
+import software.amazon.awssdk.regions.Region;
 import dev.langchain4j.store.embedding.EmbeddingStoreIngestor;
 import dev.langchain4j.data.document.loader.amazon.s3.AmazonS3DocumentLoader;
 import dev.langchain4j.data.document.loader.amazon.s3.AwsCredentials;
@@ -16,6 +17,12 @@ import org.mule.extension.mulechain.vectors.internal.storage.BaseStorage;
 import org.mule.extension.mulechain.vectors.internal.util.DocumentUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
+import software.amazon.awssdk.services.s3.model.S3Object;
 
 import static org.mule.extension.mulechain.vectors.internal.util.JsonUtils.readConfigFile;
 
@@ -72,16 +79,54 @@ public class AWSS3Storage extends BaseStorage {
                 throw new IllegalArgumentException("Unsupported File Type: " + fileType);
         }
 
-        List<Document> documents = getLoader().loadDocuments(awsS3Bucket, folderPath, parser);
-        int fileCount = documents.size();
-        LOGGER.debug("Total number of files in '" + folderPath + "': " + fileCount);
-
         long totalFiles = 0;
-        for (Document document : documents) {
-            embeddingStoreIngestor.ingest(document);
-            totalFiles += 1;
-            LOGGER.debug("Ingesting File " + totalFiles + ": " + document.metadata().toMap().get("source"));
-        }
+
+        // Create S3 client with your credentials
+        S3Client s3Client = S3Client.builder()
+            .region(Region.of(awsRegion))
+            .credentialsProvider(StaticCredentialsProvider.create(
+                AwsBasicCredentials.create(awsAccessKeyId, awsSecretAccessKey)))
+            .build();
+
+        String continuationToken = null;
+
+        do {
+            // Build the request
+            ListObjectsV2Request.Builder requestBuilder = ListObjectsV2Request.builder()
+                .bucket(awsS3Bucket);
+
+            if (continuationToken != null) {
+                requestBuilder.continuationToken(continuationToken);
+            }
+
+            // List objects in the bucket
+            ListObjectsV2Request listObjectsV2Request = requestBuilder.build();
+            ListObjectsV2Response response = s3Client.listObjectsV2(listObjectsV2Request);
+
+            // Extract and print only the keys (object names)
+            List<S3Object> objects = response.contents();
+            if (objects.isEmpty()) {
+                System.out.println("No objects found in the bucket.");
+            } else {
+                for (S3Object object : objects) {
+
+                    LOGGER.debug("AWS S3 Key: " + object.key());  // Only printing the keys (names) of objects
+                    Document document = getLoader().loadDocument(awsS3Bucket, object.key(), parser);
+                    // TODO: Add metadata to document
+                    embeddingStoreIngestor.ingest(document);
+                    LOGGER.debug("Ingesting File " + totalFiles + ": " + document.metadata().toMap().get("source"));
+                    totalFiles += 1;
+                }
+            }
+
+            // Check if there are more objects (pagination)
+            continuationToken = response.nextContinuationToken();
+
+        } while (continuationToken != null);  // Continue if there's a next page of results
+
+        // Close the S3 client
+        s3Client.close();
+
         LOGGER.debug("Total number of files processed: " + totalFiles);
         return createFolderIngestionStatusObject(totalFiles, fileType);
     }
@@ -103,6 +148,7 @@ public class AWSS3Storage extends BaseStorage {
         if (fileType.equals(Constants.FILE_TYPE_CRAWL)){
             DocumentUtils.addMetadataToDocument(document);
         }
+        // TODO: Add metadata to document
         embeddingStoreIngestor.ingest(document);
         return createFileIngestionStatusObject(fileType, key);
     }
