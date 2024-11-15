@@ -99,12 +99,12 @@ public class BaseStore {
     String sourceId = sourceObject.has(Constants.METADATA_KEY_SOURCE_ID) ? sourceObject.getString(Constants.METADATA_KEY_SOURCE_ID) : "";
 
     String url = sourceObject.has(Constants.METADATA_KEY_URL) ? sourceObject.getString(Constants.METADATA_KEY_URL) : "";
-    String fullPath = sourceObject.has(Constants.METADATA_KEY_FULL_PATH) ? sourceObject.getString(Constants.METADATA_KEY_FULL_PATH) : "";
+    String absoluteDirectoryPath = sourceObject.has(Constants.METADATA_KEY_ABSOLUTE_DIRECTORY_PATH) ? sourceObject.getString(Constants.METADATA_KEY_ABSOLUTE_DIRECTORY_PATH) : "";
     String source = sourceObject.has(Constants.METADATA_KEY_SOURCE) ? sourceObject.getString(Constants.METADATA_KEY_SOURCE) : "";
     String ingestionDatetime = sourceObject.has(Constants.METADATA_KEY_INGESTION_DATETIME) ? sourceObject.getString(Constants.METADATA_KEY_INGESTION_DATETIME) : "";
 
     String alternativeKey =
-        ((fullPath != null && !fullPath.isEmpty()) ? fullPath :
+        ((absoluteDirectoryPath != null && !absoluteDirectoryPath.isEmpty()) ? absoluteDirectoryPath :
             ((url != null && !url.isEmpty()) ? url :
                   (source != null && !source.isEmpty()) ? source : "")) +
               ((ingestionDatetime != null && !ingestionDatetime.isEmpty()) ? ingestionDatetime : "");
@@ -156,7 +156,7 @@ public class BaseStore {
     String index = metadataObject.has(Constants.METADATA_KEY_INDEX) ? metadataObject.getString(Constants.METADATA_KEY_INDEX) : null;
     String fileName = metadataObject.has(Constants.METADATA_KEY_FILE_NAME) ?  metadataObject.getString(Constants.METADATA_KEY_FILE_NAME) : null;
     String url = metadataObject.has(Constants.METADATA_KEY_URL) ?  metadataObject.getString(Constants.METADATA_KEY_URL) : null;
-    String fullPath = metadataObject.has(Constants.METADATA_KEY_FULL_PATH) ?  metadataObject.getString(Constants.METADATA_KEY_FULL_PATH) : null;
+    String title = metadataObject.has(Constants.METADATA_KEY_TITLE) ?  metadataObject.getString(Constants.METADATA_KEY_TITLE) : null;
     String source = metadataObject.has(Constants.METADATA_KEY_SOURCE) ?  metadataObject.getString(Constants.METADATA_KEY_SOURCE) : null;
     String absoluteDirectoryPath = metadataObject.has(Constants.METADATA_KEY_ABSOLUTE_DIRECTORY_PATH) ?  metadataObject.getString(Constants.METADATA_KEY_ABSOLUTE_DIRECTORY_PATH) : null;
     String ingestionDatetime = metadataObject.has(Constants.METADATA_KEY_INGESTION_DATETIME) ?  metadataObject.getString(Constants.METADATA_KEY_INGESTION_DATETIME) : null;
@@ -167,7 +167,7 @@ public class BaseStore {
     sourceObject.put(Constants.METADATA_KEY_SOURCE_ID, sourceId);
     sourceObject.put(Constants.METADATA_KEY_ABSOLUTE_DIRECTORY_PATH, absoluteDirectoryPath);
     sourceObject.put(Constants.METADATA_KEY_SOURCE, source);
-    sourceObject.put(Constants.METADATA_KEY_FULL_PATH, fullPath);
+    sourceObject.put(Constants.METADATA_KEY_TITLE, title);
     sourceObject.put(Constants.METADATA_KEY_FILE_NAME, fileName);
     sourceObject.put(Constants.METADATA_KEY_URL, url);
     sourceObject.put(Constants.METADATA_KEY_INGESTION_DATETIME, ingestionDatetime);
