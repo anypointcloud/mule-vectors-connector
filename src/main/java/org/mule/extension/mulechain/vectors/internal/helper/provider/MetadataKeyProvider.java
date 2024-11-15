@@ -18,8 +18,8 @@ public class MetadataKeyProvider implements ValueProvider {
             Constants.METADATA_KEY_FILE_NAME,
             Constants.METADATA_KEY_FILE_TYPE,
             Constants.METADATA_KEY_URL,
-            Constants.METADATA_KEY_FULL_PATH,
             Constants.METADATA_KEY_ABSOLUTE_DIRECTORY_PATH,
+            Constants.METADATA_KEY_SOURCE,
             Constants.METADATA_KEY_INGESTION_DATETIME,
             Constants.METADATA_KEY_INGESTION_TIMESTAMP);// "textSegment"
   }

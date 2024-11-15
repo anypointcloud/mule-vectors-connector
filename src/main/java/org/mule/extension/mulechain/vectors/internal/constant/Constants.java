@@ -48,7 +48,6 @@ public class Constants {
   public static final String METADATA_KEY_INDEX = "index";
   public static final String METADATA_KEY_FILE_NAME = "file_name";
   public static final String METADATA_KEY_FILE_TYPE = "file_type";
-  public static final String METADATA_KEY_FULL_PATH = "full_path";
   public static final String METADATA_KEY_ABSOLUTE_DIRECTORY_PATH = "absolute_directory_path";
   public static final String METADATA_KEY_URL = "url";
   public static final String METADATA_KEY_SOURCE = "source";

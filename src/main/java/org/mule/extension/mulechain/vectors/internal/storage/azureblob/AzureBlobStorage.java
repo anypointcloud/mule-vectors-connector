@@ -82,7 +82,8 @@ public class AzureBlobStorage extends BaseStorage {
         for (Document document : documents) {
 
             totalFiles += 1;
-            DocumentUtils.addMetadataToDocument(document, fileType);
+            // TODO: Get File Name
+            DocumentUtils.addMetadataToDocument(document, fileType, "");
             LOGGER.debug("Ingesting File " + totalFiles + ": " + document.metadata().toMap().get("source"));
             embeddingStoreIngestor.ingest(document);
         }
@@ -110,7 +111,7 @@ public class AzureBlobStorage extends BaseStorage {
         }
         Document document = getLoader().loadDocument(containerName, blobName, parser);
         LOGGER.debug("Ready to add metadata: " + fileType);
-        DocumentUtils.addMetadataToDocument(document, fileType);
+        DocumentUtils.addMetadataToDocument(document, fileType, blobName);
         embeddingStoreIngestor.ingest(document);
         return createFileIngestionStatusObject(fileType, containerName);
     }
