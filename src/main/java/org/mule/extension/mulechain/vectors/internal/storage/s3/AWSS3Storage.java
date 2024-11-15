@@ -67,17 +67,7 @@ public class AWSS3Storage extends BaseStorage {
 
     public JSONObject readAndIngestAllFiles(String folderPath, String fileType) {
 
-        DocumentParser parser = null;
-        switch (fileType){
-            case Constants.FILE_TYPE_TEXT:
-                parser = new TextDocumentParser();
-                break;
-            case Constants.FILE_TYPE_ANY:
-                parser = new ApacheTikaDocumentParser();
-                break;
-            default:
-                throw new IllegalArgumentException("Unsupported File Type: " + fileType);
-        }
+        DocumentParser documentParser = getDocumentParser(fileType);
 
         long totalFiles = 0;
 
@@ -111,7 +101,7 @@ public class AWSS3Storage extends BaseStorage {
                 for (S3Object object : objects) {
 
                     LOGGER.debug("AWS S3 Key: " + object.key());  // Only printing the keys (names) of objects
-                    Document document = getLoader().loadDocument(awsS3Bucket, object.key(), parser);
+                    Document document = getLoader().loadDocument(awsS3Bucket, object.key(), documentParser);
                     DocumentUtils.addMetadataToDocument(document, fileType, object.key());
                     embeddingStoreIngestor.ingest(document);
                     LOGGER.debug("Ingesting File " + totalFiles + ": " + document.metadata().toMap().get("source"));
@@ -132,19 +122,10 @@ public class AWSS3Storage extends BaseStorage {
     }
 
     public JSONObject readAndIngestFile(String key, String fileType) {
-        DocumentParser parser = null;
-        switch (fileType){
-            case Constants.FILE_TYPE_TEXT:
-            case Constants.FILE_TYPE_CRAWL:
-                parser = new TextDocumentParser();
-                break;
-            case Constants.FILE_TYPE_ANY:
-                parser = new ApacheTikaDocumentParser();
-                break;
-            default:
-                throw new IllegalArgumentException("Unsupported File Type: " + fileType);
-        }
-        Document document = getLoader().loadDocument(awsS3Bucket, key, parser);
+
+        DocumentParser documentParser = getDocumentParser(fileType);
+
+        Document document = getLoader().loadDocument(awsS3Bucket, key, documentParser);
         DocumentUtils.addMetadataToDocument(document, fileType, key);
         embeddingStoreIngestor.ingest(document);
         return createFileIngestionStatusObject(fileType, key);

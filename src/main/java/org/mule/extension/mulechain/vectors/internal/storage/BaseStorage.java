@@ -1,5 +1,8 @@
 package org.mule.extension.mulechain.vectors.internal.storage;
 
+import dev.langchain4j.data.document.DocumentParser;
+import dev.langchain4j.data.document.parser.TextDocumentParser;
+import dev.langchain4j.data.document.parser.apache.tika.ApacheTikaDocumentParser;
 import dev.langchain4j.store.embedding.EmbeddingStoreIngestor;
 import org.json.JSONObject;
 import org.mule.extension.mulechain.vectors.internal.config.Configuration;
@@ -33,6 +36,24 @@ public abstract class BaseStorage {
   public JSONObject readAndIngestFile(String contextPath, String fileType) {
 
     throw new UnsupportedOperationException("This method should be overridden by subclasses");
+  }
+
+  protected DocumentParser getDocumentParser(String fileType) {
+
+    DocumentParser documentParser = null;
+    switch (fileType){
+
+      case Constants.FILE_TYPE_TEXT:
+      case Constants.FILE_TYPE_CRAWL:
+        documentParser = new TextDocumentParser();
+        break;
+      case Constants.FILE_TYPE_ANY:
+        documentParser = new ApacheTikaDocumentParser();
+        break;
+      default:
+        throw new IllegalArgumentException("Unsupported File Type: " + fileType);
+    }
+    return documentParser;
   }
 
   /**

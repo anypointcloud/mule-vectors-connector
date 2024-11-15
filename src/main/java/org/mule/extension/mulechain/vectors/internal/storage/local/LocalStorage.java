@@ -49,6 +49,8 @@ public class LocalStorage extends BaseStorage {
       LOGGER.error(Arrays.toString(e.getStackTrace()));
     }
 
+    DocumentParser documentParser = getDocumentParser(fileType);
+
     LOGGER.info("Total number of files to process: " + totalFiles);
     AtomicInteger fileCounter = new AtomicInteger(0);
     try (Stream<Path> paths = Files.walk(Paths.get(folderPath))) {
@@ -59,17 +61,17 @@ public class LocalStorage extends BaseStorage {
         Document document;
         switch (fileType) {
           case Constants.FILE_TYPE_CRAWL:
-            document = loadDocument(path.toString(), new TextDocumentParser());
+            document = loadDocument(path.toString(), documentParser);
             DocumentUtils.addMetadataToDocument(document, Constants.FILE_TYPE_CRAWL, path.getFileName().toString());
             embeddingStoreIngestor.ingest(document);
             break;
           case Constants.FILE_TYPE_TEXT:
-            document = loadDocument(path.toString(), new TextDocumentParser());
+            document = loadDocument(path.toString(), documentParser);
             DocumentUtils.addMetadataToDocument(document, Constants.FILE_TYPE_TEXT, path.getFileName().toString());
             embeddingStoreIngestor.ingest(document);
             break;
           case Constants.FILE_TYPE_ANY:
-            document = loadDocument(path.toString(), new ApacheTikaDocumentParser());
+            document = loadDocument(path.toString(), documentParser);
             DocumentUtils.addMetadataToDocument(document, Constants.FILE_TYPE_ANY, path.getFileName().toString());
             embeddingStoreIngestor.ingest(document);
             break;
@@ -88,18 +90,20 @@ public class LocalStorage extends BaseStorage {
 
     Path path = Paths.get(filePath);
 
+    DocumentParser documentParser = getDocumentParser(fileType);
+
     Document document;
     switch (fileType) {
       case Constants.FILE_TYPE_CRAWL:
-        document = loadDocument(path.toString(), new TextDocumentParser());
+        document = loadDocument(path.toString(), documentParser);
         DocumentUtils.addMetadataToDocument(document, Constants.FILE_TYPE_CRAWL, path.getFileName().toString());
         break;
       case Constants.FILE_TYPE_TEXT:
-        document = loadDocument(path.toString(), new TextDocumentParser());
+        document = loadDocument(path.toString(), documentParser);
         DocumentUtils.addMetadataToDocument(document, Constants.FILE_TYPE_TEXT, Utils.getFileNameFromPath(filePath));
         break;
       case Constants.FILE_TYPE_ANY:
-        document = loadDocument(path.toString(), new ApacheTikaDocumentParser());
+        document = loadDocument(path.toString(), documentParser);
         DocumentUtils.addMetadataToDocument(document, Constants.FILE_TYPE_ANY, Utils.getFileNameFromPath(filePath));
         break;
       case Constants.FILE_TYPE_URL:
