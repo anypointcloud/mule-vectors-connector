@@ -1,17 +1,15 @@
 package org.mule.extension.mulechain.vectors.internal.storage.s3;
 
+import org.mule.extension.mulechain.vectors.internal.util.JsonUtils;
 import software.amazon.awssdk.regions.Region;
 import dev.langchain4j.store.embedding.EmbeddingStoreIngestor;
 import dev.langchain4j.data.document.loader.amazon.s3.AmazonS3DocumentLoader;
 import dev.langchain4j.data.document.loader.amazon.s3.AwsCredentials;
-import dev.langchain4j.data.document.DocumentParser;
-import java.util.List;
+
+import java.util.Iterator;
 
 import org.json.JSONObject;
 import org.mule.extension.mulechain.vectors.internal.config.Configuration;
-import org.mule.extension.mulechain.vectors.internal.constant.Constants;
-import dev.langchain4j.data.document.parser.TextDocumentParser;
-import dev.langchain4j.data.document.parser.apache.tika.ApacheTikaDocumentParser;
 import dev.langchain4j.data.document.Document;
 import org.mule.extension.mulechain.vectors.internal.storage.BaseStorage;
 import org.mule.extension.mulechain.vectors.internal.util.DocumentUtils;
@@ -35,6 +33,8 @@ public class AWSS3Storage extends BaseStorage {
     private final String awsRegion;
     private final String awsS3Bucket;
 
+    private String continuationToken = null;
+
     private AwsCredentials getCredentials() {
         return new AwsCredentials(awsAccessKeyId, awsSecretAccessKey);
     }
@@ -53,9 +53,54 @@ public class AWSS3Storage extends BaseStorage {
         return loader;
     }
 
-    public AWSS3Storage(Configuration configuration, String storeName, EmbeddingStoreIngestor embeddingStoreIngestor) {
+    private S3Client s3Client;
 
-        super(configuration, storeName, embeddingStoreIngestor);
+    private S3Client getS3Client() {
+
+        if(s3Client == null) {
+
+            // Create S3 client with your credentials
+            this.s3Client = S3Client.builder()
+                .region(Region.of(awsRegion))
+                .credentialsProvider(StaticCredentialsProvider.create(
+                    AwsBasicCredentials.create(awsAccessKeyId, awsSecretAccessKey)))
+                .build();
+        }
+        return s3Client;
+    }
+
+    private Iterator<S3Object> s3ObjectIterator;
+    private ListObjectsV2Response response;
+
+    private Iterator<S3Object> getS3ObjectIterator() {
+
+
+        if(s3ObjectIterator != null && !s3ObjectIterator.hasNext() && continuationToken != null) {
+            // Get the continuation token for pagination
+            continuationToken = response.nextContinuationToken();
+        }
+
+        if(s3ObjectIterator == null || (!s3ObjectIterator.hasNext() && continuationToken != null)) {
+
+            // Build the request
+            ListObjectsV2Request.Builder requestBuilder = ListObjectsV2Request.builder()
+                .bucket(awsS3Bucket);
+            if (continuationToken != null) {
+                requestBuilder.continuationToken(continuationToken); // Set continuation token
+            }
+
+            ListObjectsV2Request listObjectsV2Request = requestBuilder.build();
+            response = getS3Client().listObjectsV2(listObjectsV2Request);
+
+            // Get the list of S3 objects and create an iterator
+            this.s3ObjectIterator = response.contents().iterator();
+        }
+        return s3ObjectIterator;
+    }
+
+    public AWSS3Storage(Configuration configuration,  String contextPath, String fileType) {
+
+        super(configuration, contextPath, fileType);
         JSONObject config = readConfigFile(configuration.getConfigFilePath());
         assert config != null;
         JSONObject storageConfig = config.getJSONObject("S3");
@@ -65,88 +110,27 @@ public class AWSS3Storage extends BaseStorage {
         this.awsS3Bucket = storageConfig.getString("AWS_S3_BUCKET");
     }
 
-    public JSONObject readAndIngestAllFiles(String folderPath, String fileType) {
+    @Override
+    public boolean hasNext() {
 
-        DocumentParser parser = null;
-        switch (fileType){
-            case Constants.FILE_TYPE_TEXT:
-                parser = new TextDocumentParser();
-                break;
-            case Constants.FILE_TYPE_ANY:
-                parser = new ApacheTikaDocumentParser();
-                break;
-            default:
-                throw new IllegalArgumentException("Unsupported File Type: " + fileType);
-        }
-
-        long totalFiles = 0;
-
-        // Create S3 client with your credentials
-        S3Client s3Client = S3Client.builder()
-            .region(Region.of(awsRegion))
-            .credentialsProvider(StaticCredentialsProvider.create(
-                AwsBasicCredentials.create(awsAccessKeyId, awsSecretAccessKey)))
-            .build();
-
-        String continuationToken = null;
-
-        do {
-            // Build the request
-            ListObjectsV2Request.Builder requestBuilder = ListObjectsV2Request.builder()
-                .bucket(awsS3Bucket);
-
-            if (continuationToken != null) {
-                requestBuilder.continuationToken(continuationToken);
-            }
-
-            // List objects in the bucket
-            ListObjectsV2Request listObjectsV2Request = requestBuilder.build();
-            ListObjectsV2Response response = s3Client.listObjectsV2(listObjectsV2Request);
-
-            // Extract and print only the keys (object names)
-            List<S3Object> objects = response.contents();
-            if (objects.isEmpty()) {
-                System.out.println("No objects found in the bucket.");
-            } else {
-                for (S3Object object : objects) {
-
-                    LOGGER.debug("AWS S3 Key: " + object.key());  // Only printing the keys (names) of objects
-                    Document document = getLoader().loadDocument(awsS3Bucket, object.key(), parser);
-                    DocumentUtils.addMetadataToDocument(document, fileType, object.key());
-                    embeddingStoreIngestor.ingest(document);
-                    LOGGER.debug("Ingesting File " + totalFiles + ": " + document.metadata().toMap().get("source"));
-                    totalFiles += 1;
-                }
-            }
-
-            // Check if there are more objects (pagination)
-            continuationToken = response.nextContinuationToken();
-
-        } while (continuationToken != null);  // Continue if there's a next page of results
-
-        // Close the S3 client
-        s3Client.close();
-
-        LOGGER.debug("Total number of files processed: " + totalFiles);
-        return createFolderIngestionStatusObject(totalFiles, fileType);
+        return getS3ObjectIterator().hasNext();
     }
 
-    public JSONObject readAndIngestFile(String key, String fileType) {
-        DocumentParser parser = null;
-        switch (fileType){
-            case Constants.FILE_TYPE_TEXT:
-            case Constants.FILE_TYPE_CRAWL:
-                parser = new TextDocumentParser();
-                break;
-            case Constants.FILE_TYPE_ANY:
-                parser = new ApacheTikaDocumentParser();
-                break;
-            default:
-                throw new IllegalArgumentException("Unsupported File Type: " + fileType);
-        }
-        Document document = getLoader().loadDocument(awsS3Bucket, key, parser);
-        DocumentUtils.addMetadataToDocument(document, fileType, key);
-        embeddingStoreIngestor.ingest(document);
-        return createFileIngestionStatusObject(fileType, key);
+    @Override
+    public Document next() {
+
+        S3Object object = getS3ObjectIterator().next();
+        LOGGER.debug("AWS S3 Key: " + object.key());
+        Document document = getLoader().loadDocument(awsS3Bucket, object.key(), documentParser);
+        DocumentUtils.addMetadataToDocument(document, fileType, object.key());
+        return document;
+    }
+
+    public Document getSingleDocument() {
+
+        LOGGER.debug("AWS S3 Key: " + contextPath);
+        Document document = getLoader().loadDocument(awsS3Bucket, contextPath, documentParser);
+        DocumentUtils.addMetadataToDocument(document, fileType, contextPath);
+        return document;
     }
 }
