@@ -13,6 +13,7 @@ import org.mule.extension.mulechain.vectors.internal.constant.Constants;
 import org.mule.extension.mulechain.vectors.internal.storage.BaseStorage;
 import org.mule.extension.mulechain.vectors.internal.storage.s3.AWSS3Storage;
 import org.mule.extension.mulechain.vectors.internal.util.DocumentUtils;
+import org.mule.extension.mulechain.vectors.internal.util.JsonUtils;
 import org.mule.extension.mulechain.vectors.internal.util.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,8 +25,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static dev.langchain4j.data.document.loader.FileSystemDocumentLoader.loadDocument;
@@ -35,85 +38,68 @@ public class LocalStorage extends BaseStorage {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(LocalStorage.class);
 
-  public LocalStorage(Configuration configuration, String storeName, EmbeddingStoreIngestor embeddingStoreIngestor) {
+  private List<Path> pathList;
+  private Iterator<Path> pathIterator;
 
-    super(configuration, storeName, embeddingStoreIngestor);
+  private Iterator<Path> getPathIterator() {
+    if (pathList == null) {  // Only load files if not already loaded
+      try (Stream<Path> paths = Files.walk(Paths.get(contextPath))) {
+        // Collect all files as a list
+        pathList = paths.filter(Files::isRegularFile).collect(Collectors.toList());
+        // Create an iterator for the list of files
+        pathIterator = pathList.iterator();
+      } catch (IOException e) {
+        LOGGER.error("Error processing files: ", e);
+      }
+    }
+    return pathIterator;
   }
 
-  public JSONObject readAndIngestAllFiles(String folderPath, String fileType) {
+  public LocalStorage(Configuration configuration, String contextPath, String fileType) {
 
-    long totalFiles = 0;
-    try (Stream<Path> paths = Files.walk(Paths.get(folderPath))) {
-      totalFiles = paths.filter(Files::isRegularFile).count();
-    } catch (IOException e) {
-      LOGGER.error(Arrays.toString(e.getStackTrace()));
-    }
-
-    DocumentParser documentParser = getDocumentParser(fileType);
-
-    LOGGER.info("Total number of files to process: " + totalFiles);
-    AtomicInteger fileCounter = new AtomicInteger(0);
-    try (Stream<Path> paths = Files.walk(Paths.get(folderPath))) {
-      paths.filter(Files::isRegularFile).forEach(path -> {
-        int currentFileCounter = fileCounter.incrementAndGet();
-        LOGGER.info("Processing file " + currentFileCounter + ": " + path.getFileName());
-
-        Document document;
-        switch (fileType) {
-          case Constants.FILE_TYPE_CRAWL:
-            document = loadDocument(path.toString(), documentParser);
-            DocumentUtils.addMetadataToDocument(document, Constants.FILE_TYPE_CRAWL, path.getFileName().toString());
-            embeddingStoreIngestor.ingest(document);
-            break;
-          case Constants.FILE_TYPE_TEXT:
-            document = loadDocument(path.toString(), documentParser);
-            DocumentUtils.addMetadataToDocument(document, Constants.FILE_TYPE_TEXT, path.getFileName().toString());
-            embeddingStoreIngestor.ingest(document);
-            break;
-          case Constants.FILE_TYPE_ANY:
-            document = loadDocument(path.toString(), documentParser);
-            DocumentUtils.addMetadataToDocument(document, Constants.FILE_TYPE_ANY, path.getFileName().toString());
-            embeddingStoreIngestor.ingest(document);
-            break;
-          default:
-            throw new IllegalArgumentException("Unsupported File Type: " + fileType);
-        }
-      });
-    } catch (IOException e) {
-      LOGGER.error(Arrays.toString(e.getStackTrace()));
-    }
-    LOGGER.info("Processing complete");
-    return createFolderIngestionStatusObject(totalFiles, fileType);
+    super(configuration, contextPath, fileType);
   }
 
-  public JSONObject readAndIngestFile(String filePath, String fileType) {
+  // Override hasNext to check if there are files left to process
+  @Override
+  public boolean hasNext() {
+    return getPathIterator() != null && getPathIterator().hasNext();
+  }
 
-    Path path = Paths.get(filePath);
+  // Override next to return the next document
+  @Override
+  public Document next() {
+    if (hasNext()) {
+      Path path = getPathIterator().next();
+      LOGGER.debug("File: " + path.getFileName().toString());
+      Document document = loadDocument(path.toString(), documentParser);
+      DocumentUtils.addMetadataToDocument(document, fileType, path.getFileName().toString());
+      return document;
+    }
+    throw new IllegalStateException("No more files to iterate");
+  }
+
+  public Document getSingleDocument() {
+
+    Path path = Paths.get(contextPath);
 
     DocumentParser documentParser = getDocumentParser(fileType);
 
     Document document;
     switch (fileType) {
       case Constants.FILE_TYPE_CRAWL:
-        document = loadDocument(path.toString(), documentParser);
-        DocumentUtils.addMetadataToDocument(document, Constants.FILE_TYPE_CRAWL, path.getFileName().toString());
-        break;
       case Constants.FILE_TYPE_TEXT:
-        document = loadDocument(path.toString(), documentParser);
-        DocumentUtils.addMetadataToDocument(document, Constants.FILE_TYPE_TEXT, Utils.getFileNameFromPath(filePath));
-        break;
       case Constants.FILE_TYPE_ANY:
         document = loadDocument(path.toString(), documentParser);
-        DocumentUtils.addMetadataToDocument(document, Constants.FILE_TYPE_ANY, Utils.getFileNameFromPath(filePath));
+        DocumentUtils.addMetadataToDocument(document, fileType, Utils.getFileNameFromPath(contextPath));
         break;
       case Constants.FILE_TYPE_URL:
-        document = loadUrlDocument(filePath);
+        document = loadUrlDocument(contextPath);
         break;
       default:
         throw new IllegalArgumentException("Unsupported File Type: " + fileType);
     }
-    embeddingStoreIngestor.ingest(document);
-    return createFileIngestionStatusObject(fileType, filePath);
+    return document;
   }
 
   private Document loadUrlDocument(String contextPath) {
@@ -125,6 +111,7 @@ public class LocalStorage extends BaseStorage {
       HtmlToTextDocumentTransformer transformer = new HtmlToTextDocumentTransformer(null, null, true);
       document = transformer.transform(htmlDocument);
       document.metadata().put(Constants.METADATA_KEY_URL, contextPath);
+      DocumentUtils.addMetadataToDocument(document, Constants.FILE_TYPE_URL, "");
     } catch (MalformedURLException e) {
       throw new RuntimeException("Invalid URL: " + contextPath, e);
     }

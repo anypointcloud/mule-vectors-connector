@@ -1,10 +1,9 @@
 package org.mule.extension.mulechain.vectors.internal.storage;
 
+import dev.langchain4j.data.document.Document;
 import dev.langchain4j.data.document.DocumentParser;
 import dev.langchain4j.data.document.parser.TextDocumentParser;
 import dev.langchain4j.data.document.parser.apache.tika.ApacheTikaDocumentParser;
-import dev.langchain4j.store.embedding.EmbeddingStoreIngestor;
-import org.json.JSONObject;
 import org.mule.extension.mulechain.vectors.internal.config.Configuration;
 import org.mule.extension.mulechain.vectors.internal.constant.Constants;
 import org.mule.extension.mulechain.vectors.internal.storage.azureblob.AzureBlobStorage;
@@ -13,28 +12,36 @@ import org.mule.extension.mulechain.vectors.internal.storage.s3.AWSS3Storage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class BaseStorage {
+import java.util.Iterator;
+
+public abstract class BaseStorage implements Iterator<Document> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BaseStorage.class);
 
-  protected String storeName;
   protected Configuration configuration;
-  protected EmbeddingStoreIngestor embeddingStoreIngestor;
+  protected String contextPath;
+  protected String fileType;
+  protected DocumentParser documentParser;
 
-  public BaseStorage(Configuration configuration, String storeName, EmbeddingStoreIngestor embeddingStoreIngestor) {
+  public BaseStorage(Configuration configuration, String contextPath, String fileType) {
 
-    this.storeName = storeName;
     this.configuration = configuration;
-    this.embeddingStoreIngestor = embeddingStoreIngestor;
+    this.contextPath = contextPath;
+    this.fileType = fileType;
+    this.documentParser = getDocumentParser(fileType);
   }
 
-  public JSONObject readAndIngestAllFiles(String contextPath, String fileType) {
-
+  @Override
+  public boolean hasNext() {
     throw new UnsupportedOperationException("This method should be overridden by subclasses");
   }
 
-  public JSONObject readAndIngestFile(String contextPath, String fileType) {
+  @Override
+  public Document next() {
+    throw new UnsupportedOperationException("This method should be overridden by subclasses");
+  }
 
+  public Document getSingleDocument() {
     throw new UnsupportedOperationException("This method should be overridden by subclasses");
   }
 
@@ -56,40 +63,6 @@ public abstract class BaseStorage {
     return documentParser;
   }
 
-  /**
-   * Creates a JSONObject representing the ingestion status.
-   *
-   * @param fileType the type of the ingested file.
-   * @param contextPath the path of the ingested file or folder.
-   * @return a JSONObject containing ingestion status metadata.
-   */
-  protected JSONObject createFileIngestionStatusObject(String fileType, String contextPath) {
-
-    JSONObject jsonObject = new JSONObject();
-    jsonObject.put("fileType", fileType);
-    jsonObject.put("filePath", contextPath);
-    jsonObject.put("storeName", storeName);
-    jsonObject.put("status", "updated");
-    return jsonObject;
-  }
-
-  /**
-   * Creates a JSONObject representing the ingestion status of a folder or set of files.
-   *
-   * @param totalFiles the total number of files processed.
-   * @param contextPath the path of the processed folder.
-   * @return a JSONObject containing the ingestion status with file count, folder path, store name, and status.
-   */
-  protected JSONObject createFolderIngestionStatusObject(Long totalFiles, String contextPath) {
-
-    JSONObject jsonObject = new JSONObject();
-    jsonObject.put("filesCount", totalFiles);
-    jsonObject.put("folderPath", contextPath);
-    jsonObject.put("storeName", storeName);
-    jsonObject.put("status", "updated");
-    return jsonObject;
-  }
-
   public static BaseStorage.Builder builder() {
 
     return new BaseStorage.Builder();
@@ -97,18 +70,13 @@ public abstract class BaseStorage {
 
   public static class Builder {
 
-    private String storeName;
     private Configuration configuration;
     private String storageType;
-    private EmbeddingStoreIngestor embeddingStoreIngestor;
+    private String contextPath;
+    private String fileType;
 
     public Builder() {
 
-    }
-
-    public BaseStorage.Builder storeName(String storeName) {
-      this.storeName = storeName;
-      return this;
     }
 
     public BaseStorage.Builder configuration(Configuration configuration) {
@@ -121,8 +89,13 @@ public abstract class BaseStorage {
       return this;
     }
 
-    public BaseStorage.Builder embeddingStoreIngestor(EmbeddingStoreIngestor embeddingStoreIngestor) {
-      this.embeddingStoreIngestor = embeddingStoreIngestor;
+    public BaseStorage.Builder contextPath(String contextPath) {
+      this.contextPath = contextPath;
+      return this;
+    }
+
+    public BaseStorage.Builder fileType(String fileType) {
+      this.fileType = fileType;
       return this;
     }
 
@@ -135,16 +108,16 @@ public abstract class BaseStorage {
 
         case Constants.STORAGE_TYPE_LOCAL:
 
-          baseStorage = new LocalStorage(configuration, storeName, embeddingStoreIngestor);
+          baseStorage = new LocalStorage(configuration, contextPath, fileType);
           break;
         case Constants.STORAGE_TYPE_S3:
 
-          baseStorage = new AWSS3Storage(configuration, storeName, embeddingStoreIngestor);
+          baseStorage = new AWSS3Storage(configuration, contextPath, fileType);
           break;
 
         case Constants.STORAGE_TYPE_AZURE_BLOB:
 
-          baseStorage = new AzureBlobStorage(configuration, storeName, embeddingStoreIngestor);
+          baseStorage = new AzureBlobStorage(configuration, contextPath, fileType);
           break;
 
         default:

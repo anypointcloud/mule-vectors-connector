@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.util.List;
 import java.nio.charset.StandardCharsets;
 
+import dev.langchain4j.data.document.Document;
 import org.mule.extension.mulechain.vectors.internal.constant.Constants;
 import org.mule.extension.mulechain.vectors.internal.helper.EmbeddingOperationValidator;
 import org.mule.extension.mulechain.vectors.internal.helper.parameter.*;
@@ -18,6 +19,7 @@ import org.json.JSONObject;
 import org.mule.extension.mulechain.vectors.internal.model.BaseModel;
 import org.mule.extension.mulechain.vectors.internal.storage.BaseStorage;
 import org.mule.extension.mulechain.vectors.internal.store.BaseStore;
+import org.mule.extension.mulechain.vectors.internal.util.JsonUtils;
 import org.mule.runtime.extension.api.annotation.Alias;
 import org.mule.runtime.extension.api.annotation.param.*;
 
@@ -104,7 +106,7 @@ public class EmbeddingOperations {
    */
   @MediaType(value = APPLICATION_JSON, strict = false)
   @Alias("Embedding-add-folder-to-store")
-  public InputStream addFolderToStore(String storeName, String folderPath, @Config Configuration configuration,
+  public InputStream addFolderToStore(String storeName, String contextPath, @Config Configuration configuration,
                                 @ParameterGroup(name = "Context") FileTypeParameters fileType,
                                 @ParameterGroup(name = "Storage") StorageTypeParameters storageType,
                                 int maxSegmentSizeInChars, int maxOverlapSizeInChars,
@@ -135,13 +137,20 @@ public class EmbeddingOperations {
         .build();
 
     BaseStorage baseStorage = BaseStorage.builder()
-        .storeName(storeName)
         .configuration(configuration)
         .storageType(storageType.getStorageType())
-        .embeddingStoreIngestor(embeddingStoreIngestor)
+        .contextPath(contextPath) // TODO: Add context Path
+        .fileType(fileType.getFileType()) // TODO: Add file Type
         .build();
 
-    JSONObject jsonObject = baseStorage.readAndIngestAllFiles(folderPath, fileType.getFileType());
+    long documentNumber = 0;
+    while(baseStorage.hasNext()) {
+
+      Document document = baseStorage.next();
+      embeddingStoreIngestor.ingest(document);
+      documentNumber ++;
+    }
+    JSONObject jsonObject = JsonUtils.createFolderIngestionStatusObject(storeName, documentNumber, fileType.getFileType());
 
     return toInputStream(jsonObject.toString(), StandardCharsets.UTF_8);
   }
@@ -183,13 +192,16 @@ public class EmbeddingOperations {
         .build();
 
     BaseStorage baseStorage = BaseStorage.builder()
-        .storeName(storeName)
         .configuration(configuration)
         .storageType(storageType.getStorageType())
-        .embeddingStoreIngestor(embeddingStoreIngestor)
+        .contextPath(contextPath)
+        .fileType(fileType.getFileType())
         .build();
+    Document document = baseStorage.getSingleDocument();
 
-    JSONObject jsonObject = baseStorage.readAndIngestFile(contextPath, fileType.getFileType());
+    embeddingStoreIngestor.ingest(document);
+
+    JSONObject jsonObject = JsonUtils.createFileIngestionStatusObject(storeName, fileType.getFileType(), contextPath);
 
     return toInputStream(jsonObject.toString(), StandardCharsets.UTF_8);
   }
