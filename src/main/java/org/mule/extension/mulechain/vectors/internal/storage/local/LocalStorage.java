@@ -60,7 +60,7 @@ public class LocalStorage extends BaseStorage {
         switch (fileType) {
           case Constants.FILE_TYPE_CRAWL:
             document = loadDocument(path.toString(), new TextDocumentParser());
-            DocumentUtils.addMetadataToDocument(document, Constants.FILE_TYPE_CRAWL, path);
+            DocumentUtils.addMetadataToDocument(document, Constants.FILE_TYPE_CRAWL);
             embeddingStoreIngestor.ingest(document);
             break;
           case Constants.FILE_TYPE_TEXT:
@@ -92,7 +92,7 @@ public class LocalStorage extends BaseStorage {
     switch (fileType) {
       case Constants.FILE_TYPE_CRAWL:
         document = loadDocument(path.toString(), new TextDocumentParser());
-        DocumentUtils.addMetadataToDocument(document, Constants.FILE_TYPE_CRAWL, path);
+        DocumentUtils.addMetadataToDocument(document, Constants.FILE_TYPE_CRAWL);
         break;
       case Constants.FILE_TYPE_TEXT:
         document = loadDocument(path.toString(), new TextDocumentParser());

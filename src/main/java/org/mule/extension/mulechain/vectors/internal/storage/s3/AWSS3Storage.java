@@ -112,7 +112,7 @@ public class AWSS3Storage extends BaseStorage {
 
                     LOGGER.debug("AWS S3 Key: " + object.key());  // Only printing the keys (names) of objects
                     Document document = getLoader().loadDocument(awsS3Bucket, object.key(), parser);
-                    // TODO: Add metadata to document
+                    DocumentUtils.addMetadataToDocument(document, fileType);
                     embeddingStoreIngestor.ingest(document);
                     LOGGER.debug("Ingesting File " + totalFiles + ": " + document.metadata().toMap().get("source"));
                     totalFiles += 1;
@@ -145,10 +145,7 @@ public class AWSS3Storage extends BaseStorage {
                 throw new IllegalArgumentException("Unsupported File Type: " + fileType);
         }
         Document document = getLoader().loadDocument(awsS3Bucket, key, parser);
-        if (fileType.equals(Constants.FILE_TYPE_CRAWL)){
-            DocumentUtils.addMetadataToDocument(document);
-        }
-        // TODO: Add metadata to document
+        DocumentUtils.addMetadataToDocument(document, fileType);
         embeddingStoreIngestor.ingest(document);
         return createFileIngestionStatusObject(fileType, key);
     }

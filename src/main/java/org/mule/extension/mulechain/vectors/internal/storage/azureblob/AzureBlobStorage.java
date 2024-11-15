@@ -80,12 +80,9 @@ public class AzureBlobStorage extends BaseStorage {
 
         long totalFiles = 0;
         for (Document document : documents) {
-            totalFiles += 1;
-            
-            if (fileType.equals(Constants.FILE_TYPE_CRAWL)){
-                DocumentUtils.addMetadataToDocument(document);
-            }
 
+            totalFiles += 1;
+            DocumentUtils.addMetadataToDocument(document, fileType);
             LOGGER.debug("Ingesting File " + totalFiles + ": " + document.metadata().toMap().get("source"));
             embeddingStoreIngestor.ingest(document);
         }
@@ -112,12 +109,8 @@ public class AzureBlobStorage extends BaseStorage {
                 throw new IllegalArgumentException("Unsupported File Type: " + fileType);
         }
         Document document = getLoader().loadDocument(containerName, blobName, parser);
-        System.out.println("Ready to add metadata: " + fileType);
-        
-        if (fileType.equals(Constants.FILE_TYPE_CRAWL)){
-            DocumentUtils.addMetadataToDocument(document);
-        }
-        
+        LOGGER.debug("Ready to add metadata: " + fileType);
+        DocumentUtils.addMetadataToDocument(document, fileType);
         embeddingStoreIngestor.ingest(document);
         return createFileIngestionStatusObject(fileType, containerName);
     }
