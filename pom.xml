@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>cloud.anypoint</groupId>
     <artifactId>mule-vectors-connector</artifactId>
-    <version>0.1.25-SNAPSHOT</version>
+    <version>0.1.25</version>
     <packaging>mule-extension</packaging>
     <name>MuleChain Vectors</name>
     <description>MAC Vectors provides access to a broad number of external Vector Stores and Databases.</description>
@@ -235,7 +233,8 @@
         <connection>scm:git:git@github.com:anypointcloud/mule-vectors-connector.git</connection>
         <developerConnection>scm:git:git@github.com:anypointcloud/mule-vectors-connector.git</developerConnection>
         <url>https://github.com/anypointcloud/mule-vectors-connector</url>
-    </scm>
+      <tag>0.1.25</tag>
+  </scm>
 
     <distributionManagement>
         <snapshotRepository>
