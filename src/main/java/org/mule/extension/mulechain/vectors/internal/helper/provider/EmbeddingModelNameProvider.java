@@ -48,6 +48,8 @@ public class EmbeddingModelNameProvider implements ValueProvider {
     switch (embeddingModelService) {
       case Constants.EMBEDDING_MODEL_SERVICE_OPENAI:
         return VALUES_FOR_OPENAI;
+      case Constants.EMBEDDING_MODEL_SERVICE_AZURE_OPENAI:
+        return VALUES_FOR_AZURE_OPENAI;
       case Constants.EMBEDDING_MODEL_SERVICE_MISTRAL_AI:
         return VALUES_FOR_MISTRAL_AI;
       case Constants.EMBEDDING_MODEL_SERVICE_NOMIC:
