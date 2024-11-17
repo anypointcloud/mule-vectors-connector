@@ -4,19 +4,21 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.mule.mulechain</groupId>
-    <artifactId>mulechain-vectors</artifactId>
-    <version>0.1.112-SNAPSHOT</version>
+    <groupId>com.mulesoft.connectors</groupId>
+    <artifactId>mule4-vectors-connector</artifactId>
+    <version>0.1.113-SNAPSHOT</version>
     <packaging>mule-extension</packaging>
-    <name>Mule Vectors Connector</name>
-    <description>MAC Vectors provides access to a broad number of external Vector Stores and Databases.</description>
+    <name>MuleSoft Vectors Connector - Mule 4</name>
+    <description>MuleSoft Vectors Connector provides access to a broad number of external Vector Stores.</description>
     <url>https://mac-project.ai/docs/mulechain-vectors/connector-overview</url>
+
     <licenses>
         <license>
             <name>MIT License</name>
             <url>https://www.opensource.org/licenses/mit-license.php</url>
         </license>
     </licenses>
+
     <developers>
         <developer>
             <name>Amir Khan</name>
@@ -26,7 +28,7 @@
         </developer>
 		<developer>
 			<name>Tommaso Bolis</name>
-			<email>tbolis@salesforce.com</email>
+			<email>tbolis-at-salesforce-dot-com</email>
 			<organization>Salesforce</organization>
 			<organizationUrl>https://www.salesforce.com</organizationUrl>
 		</developer>
@@ -61,6 +63,7 @@
 		<formatterGoal>validate</formatterGoal>	
 		<langchain4jVersion>0.35.0</langchain4jVersion>
 		<slf4jApi.version>2.0.7</slf4jApi.version>
+		<mule.sdk.api.version>0.9.0-rc1</mule.sdk.api.version>
     </properties>
 
 	<build>
@@ -79,38 +82,11 @@
 					</execution>
 				</executions>
 			</plugin>
-			<!--			<plugin>
-                            <groupId>net.revelc.code.formatter</groupId>
-                            <artifactId>formatter-maven-plugin</artifactId>
-                            <version>${javaFormatter.plugin.version}</version>
-                            <configuration>
-                                <compilerCompliance>${javaVersion}</compilerCompliance>
-                                <compilerSource>${javaVersion}</compilerSource>
-                                <compilerTargetPlatform>${javaVersion}</compilerTargetPlatform>
-                                <configFile>${basedir}/${formatterConfigPath}</configFile>
-                                <configJsFile>${basedir}/${formatterConfigPath}</configJsFile>
-                                <aggregator>false</aggregator>
-                                <executionRoot>true</executionRoot>
-                            </configuration>
-                            <executions>
-                                <execution>
-                                    <id>apply-format</id>
-                                    <phase>compile</phase>
-                                    <goals>
-                                        <goal>${formatterGoal}</goal>
-                                    </goals>
-                                    <configuration>
-                                        <skipFormatting>${skipVerifications}</skipFormatting>
-                                    </configuration>
-                                </execution>
-                            </executions>
-                        </plugin> -->
 		</plugins>
 	</build>
 
     <dependencyManagement>
         <dependencies>
-
             <dependency>
                 <groupId>org.mule</groupId>
                 <artifactId>mule-javaee-runtime-bom</artifactId>
@@ -122,27 +98,30 @@
     </dependencyManagement>
 
     <dependencies>
+
 		<dependency>
 			<groupId>dev.langchain4j</groupId>
 			<artifactId>langchain4j-azure-ai-search</artifactId>
 			<version>${langchain4jVersion}</version>
 		</dependency>
+
 		<dependency>
 			<groupId>dev.langchain4j</groupId>
 			<artifactId>langchain4j-document-loader-azure-storage-blob</artifactId>
 			<version>${langchain4jVersion}</version>
 		</dependency>
+
 		<dependency>
 			<groupId>dev.langchain4j</groupId>
 			<artifactId>langchain4j-document-loader-amazon-s3</artifactId>
 			<version>${langchain4jVersion}</version>
 		</dependency>
 
-        <dependency>
-            <groupId>org.mule.sdk</groupId>
-            <artifactId>mule-sdk-api</artifactId>
-            <version>0.9.0-rc1</version>
-        </dependency> 
+		<dependency>
+			<groupId>org.mule.sdk</groupId>
+			<artifactId>mule-sdk-api</artifactId>
+			<version>${mule.sdk.api.version}</version>
+		</dependency>
 
 		<dependency>
 			<groupId>dev.langchain4j</groupId>
@@ -155,11 +134,13 @@
 				</exclusion>
 			</exclusions>
         </dependency>
+
 		<dependency>
 			<groupId>org.jsoup</groupId>
 			<artifactId>jsoup</artifactId>
 			<version>1.14.3</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
@@ -170,6 +151,7 @@
 			<artifactId>json</artifactId>
 			<version>20240303</version>
 		</dependency>
+
 		<dependency>
 			<groupId>dev.langchain4j</groupId>
 			<artifactId>langchain4j-document-parser-apache-tika</artifactId>
@@ -279,6 +261,7 @@
         </dependency>
 
 	</dependencies>
+
 	<repositories>
 		<repository>
 			<id>mule-releases</id>
@@ -298,4 +281,5 @@
 			</snapshots>
 		</pluginRepository>
 	</pluginRepositories>
+
 </project>
