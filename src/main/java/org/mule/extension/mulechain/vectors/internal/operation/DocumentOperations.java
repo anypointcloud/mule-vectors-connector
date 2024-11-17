@@ -11,9 +11,12 @@ import dev.langchain4j.data.segment.TextSegment;
 import org.json.JSONObject;
 import org.mule.extension.mulechain.vectors.internal.constant.Constants;
 import org.mule.extension.mulechain.vectors.internal.helper.parameter.FileTypeParameters;
+import org.mule.extension.mulechain.vectors.internal.helper.parameter.SegmentationParameters;
 import org.mule.runtime.extension.api.annotation.Alias;
 import org.mule.runtime.extension.api.annotation.param.MediaType;
 import org.mule.runtime.extension.api.annotation.param.ParameterGroup;
+import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
+import org.mule.runtime.extension.api.annotation.param.display.Summary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,8 +40,9 @@ public class DocumentOperations {
      */
     @MediaType(value = APPLICATION_JSON, strict = false)
     @Alias("Document-split-into-chunks")
-    public InputStream documentSplitter(String contextPath, @ParameterGroup(name = "Context") FileTypeParameters fileType,
-                                        int maxSegmentSizeInChars, int maxOverlapSizeInChars){
+    public InputStream documentSplitter(@Alias("contextPath") @DisplayName("Context Path") @Summary("The context path.") String contextPath,
+                                        @ParameterGroup(name = "Context") FileTypeParameters fileType,
+                                        @ParameterGroup(name = "Segmentation") SegmentationParameters segmentationParameters){
 
         List<TextSegment> segments;
         DocumentSplitter splitter;
@@ -46,12 +50,12 @@ public class DocumentOperations {
         switch (fileType.getFileType()) {
             case Constants.FILE_TYPE_TEXT:
                 document = loadDocument(contextPath, new TextDocumentParser());
-                splitter = DocumentSplitters.recursive(maxSegmentSizeInChars, maxOverlapSizeInChars);
+                splitter = DocumentSplitters.recursive(segmentationParameters.getMaxSegmentSizeInChar(), segmentationParameters.getMaxOverlapSizeInChars());
                 segments = splitter.split(document);
                 break;
             case Constants.FILE_TYPE_ANY:
                 document = loadDocument(contextPath, new ApacheTikaDocumentParser());
-                splitter = DocumentSplitters.recursive(maxSegmentSizeInChars, maxOverlapSizeInChars);
+                splitter = DocumentSplitters.recursive(segmentationParameters.getMaxSegmentSizeInChar(), segmentationParameters.getMaxOverlapSizeInChars());
                 segments = splitter.split(document);
                 break;
             case Constants.FILE_TYPE_URL:
@@ -66,7 +70,7 @@ public class DocumentOperations {
                 HtmlToTextDocumentTransformer transformer = new HtmlToTextDocumentTransformer(null, null, true);
                 document = transformer.transform(htmlDocument);
                 document.metadata().put(Constants.METADATA_KEY_URL, contextPath);
-                splitter = DocumentSplitters.recursive(maxSegmentSizeInChars, maxOverlapSizeInChars);
+                splitter = DocumentSplitters.recursive(segmentationParameters.getMaxSegmentSizeInChar(), segmentationParameters.getMaxOverlapSizeInChars());
                 segments = splitter.split(document);
                 break;
             default:
@@ -86,7 +90,8 @@ public class DocumentOperations {
      */
     @MediaType(value = APPLICATION_JSON, strict = false)
     @Alias("Document-parser")
-    public InputStream documentParser(String contextPath,  @ParameterGroup(name = "Context") FileTypeParameters fileType){
+    public InputStream documentParser(@Alias("contextPath") @DisplayName("Context Path") @Summary("The context path.") String contextPath,
+                                      @ParameterGroup(name = "Context") FileTypeParameters fileType){
 
         Document document = null;
         switch (fileType.getFileType()) {

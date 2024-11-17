@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import org.mule.extension.mulechain.vectors.internal.constant.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,7 +66,7 @@ public final class JsonUtils {
     jsonObject.put("fileType", fileType);
     jsonObject.put("filePath", contextPath);
     jsonObject.put("storeName", storeName);
-    jsonObject.put("status", "updated");
+    jsonObject.put("status", Constants.OPERATION_STATUS_UPDATED);
     return jsonObject;
   }
 
@@ -82,7 +83,7 @@ public final class JsonUtils {
     jsonObject.put("filesCount", totalFiles);
     jsonObject.put("folderPath", contextPath);
     jsonObject.put("storeName", storeName);
-    jsonObject.put("status", "updated");
+    jsonObject.put("status", Constants.OPERATION_STATUS_UPDATED);
     return jsonObject;
   }
 }
