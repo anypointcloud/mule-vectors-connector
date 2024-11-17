@@ -4,9 +4,12 @@ import org.mule.extension.mulechain.vectors.internal.helper.provider.EmbeddingMo
 import org.mule.extension.mulechain.vectors.internal.helper.provider.VectorStoreProvider;
 import org.mule.extension.mulechain.vectors.internal.operation.DocumentOperations;
 import org.mule.extension.mulechain.vectors.internal.operation.EmbeddingOperations;
+import org.mule.runtime.extension.api.annotation.Alias;
 import org.mule.runtime.extension.api.annotation.Operations;
 import org.mule.runtime.extension.api.annotation.param.Parameter;
+import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
 import org.mule.runtime.extension.api.annotation.param.display.Placement;
+import org.mule.runtime.extension.api.annotation.param.display.Summary;
 import org.mule.runtime.extension.api.annotation.values.OfValues;
 
 /**
@@ -18,16 +21,25 @@ import org.mule.runtime.extension.api.annotation.values.OfValues;
 public class Configuration {
 
   @Parameter
+  @Alias("embeddingModelService")
+  @DisplayName("Embedding Model Service")
+  @Summary("The embedding model service.")
   @Placement(order = 1, tab = Placement.DEFAULT_TAB)
   @OfValues(EmbeddingModelServiceProvider.class)
   private String embeddingModelService;
 
   @Parameter
+  @Alias("vectorStore")
+  @DisplayName("Vector Store")
+  @Summary("The vector store.")
   @Placement(order = 2, tab = Placement.DEFAULT_TAB)
   @OfValues(VectorStoreProvider.class)
   private String vectorStore;
 
   @Parameter
+  @Alias("configFilePath")
+  @DisplayName("Configuration File Path")
+  @Summary("The configuration file path.")
   @Placement(order = 3, tab = Placement.DEFAULT_TAB)
   private String configFilePath;
 

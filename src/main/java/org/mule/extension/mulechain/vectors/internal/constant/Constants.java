@@ -39,7 +39,6 @@ public class Constants {
   public static final String VECTOR_STORE_PINECONE = "PINECONE";
   public static final String VECTOR_STORE_WEAVIATE = "WEAVIATE";
   public static final String VECTOR_STORE_AI_SEARCH = "AI_SEARCH";
-  public static final String VECTOR_STORE_NEO4J = "NEO4J";
 
   public static final String STORE_SCHEMA_METADATA_FIELD_NAME = "metadata";
   public static final String STORE_SCHEMA_VECTOR_FIELD_NAME = "vector";
@@ -66,4 +65,8 @@ public class Constants {
   public static final String EMBEDDING_OPERATION_TYPE_FILTER_BY_METADATA = "FILTER_BY_METADATA";
   public static final String EMBEDDING_OPERATION_TYPE_REMOVE_EMBEDDINGS = "REMOVE_EMBEDDINGS";
   public static final String EMBEDDING_OPERATION_TYPE_QUERY_ALL = "QUERY_ALL";
+
+  public static final String OPERATION_STATUS_ADDED = "added";
+  public static final String OPERATION_STATUS_UPDATED = "updated";
+  public static final String OPERATION_STATUS_DELETED = "deleted";
 }
