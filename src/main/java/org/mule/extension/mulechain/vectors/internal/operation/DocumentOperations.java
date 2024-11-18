@@ -2,11 +2,7 @@ package org.mule.extension.mulechain.vectors.internal.operation;
 
 import dev.langchain4j.data.document.Document;
 import dev.langchain4j.data.document.DocumentSplitter;
-import dev.langchain4j.data.document.loader.UrlDocumentLoader;
-import dev.langchain4j.data.document.parser.TextDocumentParser;
-import dev.langchain4j.data.document.parser.apache.tika.ApacheTikaDocumentParser;
 import dev.langchain4j.data.document.splitter.DocumentSplitters;
-import dev.langchain4j.data.document.transformer.jsoup.HtmlToTextDocumentTransformer;
 import dev.langchain4j.data.segment.TextSegment;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -25,23 +21,15 @@ import org.mule.runtime.extension.api.annotation.metadata.fixed.OutputJsonType;
 import org.mule.runtime.extension.api.annotation.param.Config;
 import org.mule.runtime.extension.api.annotation.param.MediaType;
 import org.mule.runtime.extension.api.annotation.param.ParameterGroup;
-import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
-import org.mule.runtime.extension.api.annotation.param.display.Summary;
 import org.mule.runtime.extension.api.exception.ModuleException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static dev.langchain4j.data.document.loader.FileSystemDocumentLoader.loadDocument;
 import static org.mule.extension.mulechain.vectors.internal.helper.ResponseHelper.createDocumentResponse;
 import static org.mule.runtime.extension.api.annotation.param.MediaType.APPLICATION_JSON;
 
@@ -81,16 +69,19 @@ public class DocumentOperations {
       JSONArray jsonSegments = IntStream.range(0, segments.size())
           .mapToObj(i -> {
             JSONObject jsonObject = new JSONObject();
-            jsonObject.put("text", segments.get(i).text()); // Replace getText with the actual method
-            jsonObject.put("index", i);
+            jsonObject.put(Constants.JSON_KEY_TEXT, segments.get(i).text()); // Replace getText with the actual method
+            jsonObject.put(Constants.JSON_KEY_INDEX, i);
             return jsonObject;
           })
           .collect(JSONArray::new, JSONArray::put, JSONArray::putAll);
 
       JSONObject jsonObject = new JSONObject();
-      jsonObject.put("segments", jsonSegments);
+      jsonObject.put(Constants.JSON_KEY_SEGMENTS, jsonSegments);
 
       return createDocumentResponse(jsonObject.toString(), new HashMap<>());
+
+    } catch (ModuleException me) {
+      throw me;
 
     } catch (Exception e) {
 
@@ -123,9 +114,12 @@ public class DocumentOperations {
       Document document = baseStorage.getSingleDocument();
 
       JSONObject jsonObject = new JSONObject();
-      jsonObject.put("text",document.text());
+      jsonObject.put(Constants.JSON_KEY_TEXT,document.text());
 
       return createDocumentResponse(jsonObject.toString(), new HashMap<>());
+
+    } catch (ModuleException me) {
+      throw me;
 
     } catch (Exception e) {
 

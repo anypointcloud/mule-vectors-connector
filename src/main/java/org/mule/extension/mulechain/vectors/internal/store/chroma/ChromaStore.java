@@ -61,7 +61,7 @@ public class ChromaStore extends BaseStore {
     HashMap<String, JSONObject> sourceObjectMap = new HashMap<String, JSONObject>();
 
     JSONObject jsonObject = new JSONObject();
-    jsonObject.put(JSON_KEY_STORE_NAME, storeName);
+    jsonObject.put(Constants.JSON_KEY_STORE_NAME, storeName);
 
     long segmentCount = 0; // Counter to track the number of segments processed
     long offset = 0; // Initialize offset for pagination
@@ -89,8 +89,8 @@ public class ChromaStore extends BaseStore {
       LOGGER.error("Error while listing sources", e);
     }
 
-    jsonObject.put(JSON_KEY_SOURCES, JsonUtils.jsonObjectCollectionToJsonArray(sourceObjectMap.values()));
-    jsonObject.put(JSON_KEY_SOURCE_COUNT, sourceObjectMap.size());
+    jsonObject.put(Constants.JSON_KEY_SOURCES, JsonUtils.jsonObjectCollectionToJsonArray(sourceObjectMap.values()));
+    jsonObject.put(Constants.JSON_KEY_SOURCE_COUNT, sourceObjectMap.size());
 
     return jsonObject;
   }

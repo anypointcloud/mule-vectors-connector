@@ -66,7 +66,7 @@ public final class JsonUtils {
     jsonObject.put("fileType", fileType);
     jsonObject.put("filePath", contextPath);
     jsonObject.put("storeName", storeName);
-    jsonObject.put("status", Constants.OPERATION_STATUS_UPDATED);
+    jsonObject.put(Constants.JSON_KEY_STATUS, Constants.OPERATION_STATUS_UPDATED);
     return jsonObject;
   }
 
@@ -82,8 +82,8 @@ public final class JsonUtils {
     JSONObject jsonObject = new JSONObject();
     jsonObject.put("filesCount", totalFiles);
     jsonObject.put("folderPath", contextPath);
-    jsonObject.put("storeName", storeName);
-    jsonObject.put("status", Constants.OPERATION_STATUS_UPDATED);
+    jsonObject.put(Constants.JSON_KEY_STORE_NAME, storeName);
+    jsonObject.put(Constants.JSON_KEY_STATUS, Constants.OPERATION_STATUS_UPDATED);
     return jsonObject;
   }
 }

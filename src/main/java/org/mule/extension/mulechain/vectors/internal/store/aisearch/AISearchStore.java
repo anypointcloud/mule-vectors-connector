@@ -5,8 +5,8 @@ import dev.langchain4j.store.embedding.EmbeddingStore;
 import dev.langchain4j.store.embedding.azure.search.AzureAiSearchEmbeddingStore;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.mule.extension.mulechain.vectors.internal.config.Configuration;
 import org.mule.extension.mulechain.vectors.internal.constant.Constants;
+import org.mule.extension.mulechain.vectors.internal.config.Configuration;
 import org.mule.extension.mulechain.vectors.internal.helper.parameter.QueryParameters;
 import org.mule.extension.mulechain.vectors.internal.store.BaseStore;
 import org.mule.extension.mulechain.vectors.internal.util.JsonUtils;
@@ -51,7 +51,7 @@ public class AISearchStore extends BaseStore {
     HashMap<String, JSONObject> sourceObjectMap = new HashMap<String, JSONObject>();
 
     JSONObject jsonObject = new JSONObject();
-    jsonObject.put(JSON_KEY_STORE_NAME, storeName);
+    jsonObject.put(Constants.JSON_KEY_STORE_NAME, storeName);
 
     int segmentCount = 0; // Counter to track the number of segments processed
     int offset = 0; // Initialize offset for pagination
@@ -144,7 +144,7 @@ public class AISearchStore extends BaseStore {
       } while (hasMore); // Continue if more pages are available
 
       // Output total count of processed documents
-      LOGGER.debug(JSON_KEY_SEGMENT_COUNT + ": " + segmentCount);
+      LOGGER.debug(Constants.JSON_KEY_SEGMENT_COUNT + ": " + segmentCount);
 
     } catch (Exception e) {
 
@@ -152,8 +152,8 @@ public class AISearchStore extends BaseStore {
       LOGGER.error("Error while listing sources", e);
     }
 
-    jsonObject.put(JSON_KEY_SOURCES, JsonUtils.jsonObjectCollectionToJsonArray(sourceObjectMap.values()));
-    jsonObject.put(JSON_KEY_SOURCE_COUNT, sourceObjectMap.size());
+    jsonObject.put(Constants.JSON_KEY_SOURCES, JsonUtils.jsonObjectCollectionToJsonArray(sourceObjectMap.values()));
+    jsonObject.put(Constants.JSON_KEY_SOURCE_COUNT, sourceObjectMap.size());
 
     return jsonObject;
   }

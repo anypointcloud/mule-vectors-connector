@@ -80,7 +80,7 @@ public class PGVectorStore extends BaseStore {
     HashMap<String, JSONObject> sourceObjectMap = new HashMap<>();
 
     JSONObject jsonObject = new JSONObject();
-    jsonObject.put(JSON_KEY_STORE_NAME, storeName);
+    jsonObject.put(Constants.JSON_KEY_STORE_NAME, storeName);
 
     try (PgVectorMetadataIterator iterator = new PgVectorMetadataIterator(userName, password, host, port, database, storeName, (int)queryParams.embeddingPageSize())) {
       while (iterator.hasNext()) {
@@ -93,8 +93,8 @@ public class PGVectorStore extends BaseStore {
       LOGGER.error("Error while listing sources", e);
     }
 
-    jsonObject.put(JSON_KEY_SOURCES, JsonUtils.jsonObjectCollectionToJsonArray(sourceObjectMap.values()));
-    jsonObject.put(JSON_KEY_SOURCE_COUNT, sourceObjectMap.size());
+    jsonObject.put(Constants.JSON_KEY_SOURCES, JsonUtils.jsonObjectCollectionToJsonArray(sourceObjectMap.values()));
+    jsonObject.put(Constants.JSON_KEY_SOURCE_COUNT, sourceObjectMap.size());
 
     return jsonObject;
   }

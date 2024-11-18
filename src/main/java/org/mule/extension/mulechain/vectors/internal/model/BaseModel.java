@@ -3,12 +3,15 @@ package org.mule.extension.mulechain.vectors.internal.model;
 import dev.langchain4j.model.embedding.EmbeddingModel;
 import org.mule.extension.mulechain.vectors.internal.config.Configuration;
 import org.mule.extension.mulechain.vectors.internal.constant.Constants;
+import org.mule.extension.mulechain.vectors.internal.error.MuleVectorsErrorType;
 import org.mule.extension.mulechain.vectors.internal.helper.parameter.EmbeddingModelParameters;
 import org.mule.extension.mulechain.vectors.internal.model.azureopenai.AzureOpenAIModel;
 import org.mule.extension.mulechain.vectors.internal.model.huggingface.HuggingFaceModel;
 import org.mule.extension.mulechain.vectors.internal.model.mistralai.MistralAIModel;
 import org.mule.extension.mulechain.vectors.internal.model.nomic.NomicModel;
 import org.mule.extension.mulechain.vectors.internal.model.openai.OpenAIModel;
+import org.mule.runtime.extension.api.exception.ModuleException;
+import org.mule.runtime.module.extension.internal.runtime.operation.IllegalOperationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -82,8 +85,9 @@ public class BaseModel {
           break;
 
         default:
-          //throw new IllegalOperationException("Unsupported Vector Store: " + configuration.getVectorStore());
-          baseModel = null;
+          throw new ModuleException(
+              String.format("Error while initializing embedding model service. \"%s\" is not supported.", configuration.getEmbeddingModelService()),
+              MuleVectorsErrorType.AI_SERVICES_FAILURE);
       }
       return baseModel;
     }

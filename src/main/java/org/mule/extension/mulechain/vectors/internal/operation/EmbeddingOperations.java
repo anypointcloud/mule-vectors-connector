@@ -62,6 +62,8 @@ public class EmbeddingOperations {
 
     try {
 
+      LOGGER.debug(String.format("Adding text %s to store %s", text, storeName));
+
       BaseModel baseModel = BaseModel.builder()
           .configuration(configuration)
           .embeddingModelParameters(embeddingModelParameters)
@@ -82,17 +84,20 @@ public class EmbeddingOperations {
       embeddingStore.add(textEmbedding, textSegment);
 
       JSONObject jsonObject = new JSONObject();
-      jsonObject.put("status", Constants.OPERATION_STATUS_ADDED);
-      jsonObject.put("textSegment", textSegment.toString());
-      jsonObject.put("textEmbedding", textEmbedding.toString());
-      jsonObject.put("storeName", storeName);
+      jsonObject.put(Constants.JSON_KEY_STATUS, Constants.OPERATION_STATUS_ADDED);
+      jsonObject.put(Constants.JSON_KEY_TEXT, textSegment.toString());
+      jsonObject.put(Constants.JSON_KEY_EMBEDDING, textEmbedding.toString());
+      jsonObject.put(Constants.JSON_KEY_STORE_NAME, storeName);
 
       return createEmbeddingResponse(jsonObject.toString(), new HashMap<>());
+
+    } catch (ModuleException me) {
+      throw me;
 
     } catch (Exception e) {
 
       throw new ModuleException(
-          String.format("Error while adding text %s into the store %s", text, storeName),
+          String.format("Error while adding text \"%s\" into the store %s", text, storeName),
           MuleVectorsErrorType.EMBEDDING_OPERATIONS_FAILURE,
           e);
     }
@@ -119,19 +124,33 @@ public class EmbeddingOperations {
       EmbeddingModel embeddingModel = baseModel.buildEmbeddingModel();
 
       TextSegment textSegment = TextSegment.from(text);
-      Embedding textEmbedding = embeddingModel.embed(textSegment).content();
+      Embedding embedding = null;
+      try {
+
+        embedding = embeddingModel.embed(textSegment).content();
+
+      } catch(Exception e) {
+
+        throw new ModuleException(
+            String.format("Error while generating embedding from text \"%s\"", text),
+            MuleVectorsErrorType.AI_SERVICES_FAILURE,
+            e);
+      }
 
       JSONObject jsonObject = new JSONObject();
-      jsonObject.put("Segment", textSegment.toString());
-      jsonObject.put("Embedding", textEmbedding.toString());
-      jsonObject.put("Dimension", textEmbedding.dimension());
+      jsonObject.put(Constants.JSON_KEY_TEXT, textSegment.toString());
+      jsonObject.put(Constants.JSON_KEY_EMBEDDING, embedding.toString());
+      jsonObject.put(Constants.JSON_KEY_DIMENSIONS, embedding.dimension());
 
       return createEmbeddingResponse(jsonObject.toString(), new HashMap<>());
+
+    } catch (ModuleException me) {
+      throw me;
 
     } catch (Exception e) {
 
       throw new ModuleException(
-          String.format("Error while generating embedding from text %s", text),
+          String.format("Error while generating embedding from text \"%s\"", text),
           MuleVectorsErrorType.EMBEDDING_OPERATIONS_FAILURE,
           e);
     }
@@ -194,6 +213,9 @@ public class EmbeddingOperations {
       JSONObject jsonObject = JsonUtils.createFolderIngestionStatusObject(storeName, documentNumber, documentParameters.getFileType());
 
       return createEmbeddingResponse(jsonObject.toString(), new HashMap<>());
+
+    } catch (ModuleException me) {
+      throw me;
 
     } catch (Exception e) {
 
@@ -259,6 +281,9 @@ public class EmbeddingOperations {
 
       return createEmbeddingResponse(jsonObject.toString(), new HashMap<>());
 
+    } catch (ModuleException me) {
+      throw me;
+
     } catch (Exception e) {
 
       throw new ModuleException(
@@ -320,9 +345,12 @@ public class EmbeddingOperations {
           .collect(joining("\n\n"));
 
       JSONObject jsonObject = new JSONObject();
-      jsonObject.put("response", information);
-      jsonObject.put("storeName", storeName);
-      jsonObject.put("question", question);
+      jsonObject.put(Constants.JSON_KEY_RESPONSE, information);
+      jsonObject.put(Constants.JSON_KEY_STORE_NAME, storeName);
+      jsonObject.put(Constants.JSON_KEY_QUESTION, question);
+      jsonObject.put(Constants.JSON_KEY_MAX_RESULTS, maxResults);
+      jsonObject.put(Constants.JSON_KEY_MIN_SCORE, minScore);
+
       JSONArray sources = new JSONArray();
 
       JSONObject contentObject;
@@ -330,25 +358,24 @@ public class EmbeddingOperations {
         Metadata matchMetadata = match.embedded().metadata();
 
         contentObject = new JSONObject();
-        contentObject.put("embeddingId", match.embeddingId());
-        contentObject.put("text", match.embedded().text());
-        contentObject.put("score", match.score());
+        contentObject.put(Constants.JSON_KEY_EMBEDDING_ID, match.embeddingId());
+        contentObject.put(Constants.JSON_KEY_TEXT, match.embedded().text());
+        contentObject.put(Constants.JSON_KEY_SCORE, match.score());
 
         JSONObject metadataObject = new JSONObject(matchMetadata.toMap());
-        contentObject.put("metadata", metadataObject);
+        contentObject.put(Constants.JSON_KEY_METADATA, metadataObject);
 
         sources.put(contentObject);
       }
 
-      jsonObject.put("sources", sources);
+      jsonObject.put(Constants.JSON_KEY_SOURCES, sources);
 
-      jsonObject.put("maxResults", maxResults);
-      jsonObject.put("minScore", minScore);
-      jsonObject.put("question", question);
-      jsonObject.put("storeName", storeName);
 
 
       return createEmbeddingResponse(jsonObject.toString(), new HashMap<>());
+
+    } catch (ModuleException me) {
+      throw me;
 
     } catch (Exception e) {
 
@@ -427,9 +454,11 @@ public class EmbeddingOperations {
               .map(match -> match.embedded().text())
               .collect(joining("\n\n"));
 
-      jsonObject.put("response", information);
-      jsonObject.put("storeName", storeName);
-      jsonObject.put("question", question);
+      jsonObject.put(Constants.JSON_KEY_RESPONSE, information);
+      jsonObject.put(Constants.JSON_KEY_STORE_NAME, storeName);
+      jsonObject.put(Constants.JSON_KEY_QUESTION, question);
+      jsonObject.put(Constants.JSON_KEY_MAX_RESULTS, maxResults);
+      jsonObject.put(Constants.JSON_KEY_MIN_SCORE, minScore);
 
       JSONArray sources = new JSONArray();
 
@@ -440,24 +469,22 @@ public class EmbeddingOperations {
 
 
         contentObject = new JSONObject();
-        contentObject.put("embeddingId", match.embeddingId());
-        contentObject.put("text", match.embedded().text());
-        contentObject.put("score", match.score());
+        contentObject.put(Constants.JSON_KEY_EMBEDDING_ID, match.embeddingId());
+        contentObject.put(Constants.JSON_KEY_TEXT, match.embedded().text());
+        contentObject.put(Constants.JSON_KEY_SCORE, match.score());
 
         JSONObject metadataObject = new JSONObject(matchMetadata.toMap());
-        contentObject.put("metadata", metadataObject);
+        contentObject.put(Constants.JSON_KEY_METADATA, metadataObject);
 
         sources.put(contentObject);
       }
 
-      jsonObject.put("sources", sources);
-
-      jsonObject.put("maxResults", maxResults);
-      jsonObject.put("minScore", minScore);
-      jsonObject.put("question", question);
-      jsonObject.put("storeName", storeName);
+      jsonObject.put(Constants.JSON_KEY_SOURCES, sources);
 
       return createEmbeddingResponse(jsonObject.toString(), new HashMap<>());
+
+    } catch (ModuleException me) {
+      throw me;
 
     } catch (Exception e) {
 
@@ -508,6 +535,9 @@ public class EmbeddingOperations {
 
       return createEmbeddingResponse(jsonObject.toString(), new HashMap<>());
 
+    } catch (ModuleException me) {
+      throw me;
+
     } catch (Exception e) {
 
       throw new ModuleException(
@@ -557,11 +587,15 @@ public class EmbeddingOperations {
       embeddingStore.removeAll(filter);
 
       JSONObject jsonObject = new JSONObject();
-      jsonObject.put("storeName", storeName);
-      jsonObject.put("filter", removeFilterParams.getFilterJSONObject());
-      jsonObject.put("status", Constants.OPERATION_STATUS_DELETED);
+      jsonObject.put(Constants.JSON_KEY_STORE_NAME, storeName);
+      jsonObject.put(Constants.JSON_KEY_STATUS, Constants.OPERATION_STATUS_DELETED);
+
+      //jsonObject.put("filter", removeFilterParams.getFilterJSONObject());
 
       return createEmbeddingResponse(jsonObject.toString(), new HashMap<>());
+
+    } catch (ModuleException me) {
+      throw me;
 
     } catch (Exception e) {
       throw new ModuleException(

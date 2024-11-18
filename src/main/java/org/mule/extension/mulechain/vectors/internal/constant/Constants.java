@@ -17,10 +17,10 @@ public class Constants {
   public static final String STORAGE_TYPE_AZURE_BLOB = "AZURE_BLOB";
 
   public static final String EMBEDDING_MODEL_SERVICE_OPENAI = "OPENAI";
+  public static final String EMBEDDING_MODEL_SERVICE_AZURE_OPENAI = "AZURE_OPENAI";
   public static final String EMBEDDING_MODEL_SERVICE_MISTRAL_AI = "MISTRAL_AI";
   public static final String EMBEDDING_MODEL_SERVICE_NOMIC = "NOMIC";
   public static final String EMBEDDING_MODEL_SERVICE_HUGGING_FACE = "HUGGING_FACE";
-  public static final String EMBEDDING_MODEL_SERVICE_AZURE_OPENAI = "AZURE_OPENAI";
 
   public static final String EMBEDDING_MODEL_NAME_TEXT_EMBEDDING_3_SMALL = "text-embedding-3-small";
   public static final String EMBEDDING_MODEL_NAME_TEXT_EMBEDDING_3_LARGE = "text-embedding-3-large";
@@ -65,6 +65,24 @@ public class Constants {
   public static final String EMBEDDING_OPERATION_TYPE_FILTER_BY_METADATA = "FILTER_BY_METADATA";
   public static final String EMBEDDING_OPERATION_TYPE_REMOVE_EMBEDDINGS = "REMOVE_EMBEDDINGS";
   public static final String EMBEDDING_OPERATION_TYPE_QUERY_ALL = "QUERY_ALL";
+
+  public static final String JSON_KEY_SOURCES = "sources";
+  public static final String JSON_KEY_SEGMENTS = "segments";
+  public static final String JSON_KEY_SEGMENT_COUNT = "segmentCount";
+  public static final String JSON_KEY_SOURCE_COUNT = "sourceCount";
+  public static final String JSON_KEY_STORE_NAME = "storeName";
+  public static final String JSON_KEY_TEXT = "text";
+  public static final String JSON_KEY_STATUS = "status";
+  public static final String JSON_KEY_EMBEDDING = "embedding";
+  public static final String JSON_KEY_DIMENSIONS = "dimensions";
+  public static final String JSON_KEY_RESPONSE = "response";
+  public static final String JSON_KEY_QUESTION = "question";
+  public static final String JSON_KEY_MAX_RESULTS = "maxResults";
+  public static final String JSON_KEY_MIN_SCORE = "minScore";
+  public static final String JSON_KEY_EMBEDDING_ID = "embeddingId";
+  public static final String JSON_KEY_SCORE = "score";
+  public static final String JSON_KEY_METADATA = "metadata";
+  public static final String JSON_KEY_INDEX = "index";
 
   public static final String OPERATION_STATUS_ADDED = "added";
   public static final String OPERATION_STATUS_UPDATED = "updated";

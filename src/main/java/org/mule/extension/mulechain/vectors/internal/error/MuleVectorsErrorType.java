@@ -7,5 +7,5 @@ import org.mule.runtime.extension.api.error.ErrorTypeDefinition;
  */
 public enum MuleVectorsErrorType implements ErrorTypeDefinition<MuleVectorsErrorType> {
 
-  DOCUMENT_OPERATIONS_FAILURE, EMBEDDING_OPERATIONS_FAILURE
+  DOCUMENT_OPERATIONS_FAILURE, EMBEDDING_OPERATIONS_FAILURE, AI_SERVICES_FAILURE
 }
