@@ -33,8 +33,8 @@ public class DocumentUtils {
     document.metadata().put(Constants.METADATA_KEY_INGESTION_DATETIME, Utils.getCurrentISO8601Timestamp());
     document.metadata().put(Constants.METADATA_KEY_INGESTION_TIMESTAMP, Utils.getCurrentTimeMillis());
 
-    document.metadata().put(Constants.METADATA_KEY_FILE_TYPE, fileType);
-    document.metadata().put(Constants.METADATA_KEY_FILE_NAME, fileName);
+    if(!fileType.isEmpty()) document.metadata().put(Constants.METADATA_KEY_FILE_TYPE, fileType);
+    if(!fileName.isEmpty()) document.metadata().put(Constants.METADATA_KEY_FILE_NAME, fileName);
 
     if (fileType.equals(Constants.FILE_TYPE_CRAWL)) {
 
@@ -43,8 +43,8 @@ public class DocumentUtils {
         JsonNode jsonNode = JsonUtils.stringToJsonNode(document.text());
         String source_url = jsonNode.path("url").asText();
         String title = jsonNode.path("title").asText();
-        document.metadata().put(Constants.METADATA_KEY_URL, source_url);
-        document.metadata().put(Constants.METADATA_KEY_TITLE, title);
+        if(!source_url.isEmpty()) document.metadata().put(Constants.METADATA_KEY_URL, source_url);
+        if(!title.isEmpty()) document.metadata().put(Constants.METADATA_KEY_TITLE, title);
       } catch (IOException ioe) {
 
         LOGGER.error(ioe.getMessage() + " " + Arrays.toString(ioe.getStackTrace()));
