@@ -57,6 +57,8 @@ public abstract class BaseStorage implements Iterator<Document> {
       case Constants.FILE_TYPE_ANY:
         documentParser = new ApacheTikaDocumentParser();
         break;
+      case Constants.FILE_TYPE_URL:
+        break;
       default:
         throw new IllegalArgumentException("Unsupported File Type: " + fileType);
     }
