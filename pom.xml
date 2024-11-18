@@ -4,59 +4,89 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.mule.mulechain</groupId>
-    <artifactId>mulechain-vectors</artifactId>
-    <version>0.1.25</version>
+    <groupId>com.mulesoft.connectors</groupId>
+    <artifactId>mule4-vectors-connector</artifactId>
+    <version>0.1.117-SNAPSHOT</version>
     <packaging>mule-extension</packaging>
-    <name>MuleChain Vectors</name>
+    <name>MuleSoft Vectors Connector - Mule 4</name>
+    <description>MuleSoft Vectors Connector provides access to a broad number of external Vector Stores.</description>
+    <url>https://mac-project.ai/docs/mulechain-vectors/connector-overview</url>
+
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>https://www.opensource.org/licenses/mit-license.php</url>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>Amir Khan</name>
+            <email>amir.khan@salesforce.com</email>
+            <organization>Salesforce</organization>
+            <organizationUrl>https://www.salesforce.com</organizationUrl>
+        </developer>
+		<developer>
+			<name>Tommaso Bolis</name>
+			<email>tbolis-at-salesforce-dot-com</email>
+			<organization>Salesforce</organization>
+			<organizationUrl>https://www.salesforce.com</organizationUrl>
+		</developer>
+        <developer>
+            <name>Suraj Kamal</name>
+        </developer>
+        <developer>
+            <name>Laura de Paz</name>
+			<email>laura.depaz@salesforce.com</email>
+			<organization>Salesforce</organization>
+			<organizationUrl>https://www.salesforce.com</organizationUrl>
+        </developer>
+        <developer>
+            <name>Ryan Hoegg</name>
+            <email>ryan@hoegg.software</email>
+            <organization>Hoegg Software, Co.</organization>
+            <organizationUrl>https://hoegg.software</organizationUrl>
+        </developer>
+    </developers>
 
     <parent>
         <groupId>org.mule.extensions</groupId>
         <artifactId>mule-modules-parent</artifactId>
-        <version>1.1.3</version>
+        <version>1.3.2</version>
     </parent>
 
     <properties>
         <muleJavaEeBomVersion>4.6.0</muleJavaEeBomVersion>
+        <munit.extensions.maven.plugin.version>1.2.0</munit.extensions.maven.plugin.version>
 		<formatterConfigPath>formatter.xml</formatterConfigPath>
 		<javaFormatter.plugin.version>2.0.1</javaFormatter.plugin.version>
 		<formatterGoal>validate</formatterGoal>	
+		<langchain4jVersion>0.35.0</langchain4jVersion>
+		<slf4jApi.version>2.0.7</slf4jApi.version>
+		<mule.sdk.api.version>0.9.0-rc1</mule.sdk.api.version>
     </properties>
 
-<!-- 	<build>
+	<build>
 		<plugins>
 			<plugin>
-				<groupId>net.revelc.code.formatter</groupId>
-				<artifactId>formatter-maven-plugin</artifactId>
-				<version>${javaFormatter.plugin.version}</version>
-				<configuration>
-					<compilerCompliance>${javaVersion}</compilerCompliance>
-					<compilerSource>${javaVersion}</compilerSource>
-					<compilerTargetPlatform>${javaVersion}</compilerTargetPlatform>
-					<configFile>${basedir}/${formatterConfigPath}</configFile>
-					<configJsFile>${basedir}/${formatterConfigPath}</configJsFile>
-					<aggregator>false</aggregator>
-					<executionRoot>true</executionRoot>
-				</configuration>
+				<groupId>com.mulesoft.munit</groupId>
+				<artifactId>munit-extensions-maven-plugin</artifactId>
+				<version>${munit.extensions.maven.plugin.version}</version>
+				<extensions>true</extensions>
 				<executions>
 					<execution>
-						<id>apply-format</id>
-						<phase>compile</phase>
 						<goals>
-							<goal>${formatterGoal}</goal>
+							<goal>test</goal>
 						</goals>
-						<configuration>
-							<skipFormatting>${skipVerifications}</skipFormatting>
-						</configuration>
+						<phase>integration-test</phase>
 					</execution>
 				</executions>
 			</plugin>
 		</plugins>
-	</build> -->
+	</build>
 
     <dependencyManagement>
         <dependencies>
-
             <dependency>
                 <groupId>org.mule</groupId>
                 <artifactId>mule-javaee-runtime-bom</artifactId>
@@ -68,33 +98,76 @@
     </dependencyManagement>
 
     <dependencies>
-        <dependency>
-            <groupId>org.mule.sdk</groupId>
-            <artifactId>mule-sdk-api</artifactId>
-            <version>0.9.0-rc1</version>
-        </dependency> 
+
+		<dependency>
+			<groupId>dev.langchain4j</groupId>
+			<artifactId>langchain4j-azure-ai-search</artifactId>
+			<version>${langchain4jVersion}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>dev.langchain4j</groupId>
+			<artifactId>langchain4j-document-loader-azure-storage-blob</artifactId>
+			<version>${langchain4jVersion}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>dev.langchain4j</groupId>
+			<artifactId>langchain4j-document-loader-amazon-s3</artifactId>
+			<version>${langchain4jVersion}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.mule.sdk</groupId>
+			<artifactId>mule-sdk-api</artifactId>
+			<version>${mule.sdk.api.version}</version>
+		</dependency>
 
 		<dependency>
 			<groupId>dev.langchain4j</groupId>
 			<artifactId>langchain4j</artifactId>
-			<version>0.32.0</version>
+			<version>${langchain4jVersion}</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>jsoup</artifactId>
+					<groupId>org.jsoup</groupId>
+				</exclusion>
+			</exclusions>
+        </dependency>
+
+		<dependency>
+			<groupId>org.jsoup</groupId>
+			<artifactId>jsoup</artifactId>
+			<version>1.14.3</version>
 		</dependency>
 
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>${slf4jApi.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
 			<version>20240303</version>
 		</dependency>
+
 		<dependency>
 			<groupId>dev.langchain4j</groupId>
 			<artifactId>langchain4j-document-parser-apache-tika</artifactId>
-			<version>0.32.0</version>
+			<version>${langchain4jVersion}</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>log4j-api</artifactId>
+					<groupId>org.apache.logging.log4j</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<dependency>
 			<groupId>dev.langchain4j</groupId>
 			<artifactId>langchain4j-easy-rag</artifactId>
-			<version>0.32.0</version>
+			<version>${langchain4jVersion}</version>
 		</dependency>
 
 		<dependency>
@@ -105,68 +178,80 @@
 
 		<dependency>
 			<groupId>dev.langchain4j</groupId>
+			<artifactId>langchain4j-azure-open-ai</artifactId>
+			<version>${langchain4jVersion}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>dev.langchain4j</groupId>
 			<artifactId>langchain4j-open-ai</artifactId>
-			<version>0.32.0</version>
+			<version>${langchain4jVersion}</version>
 		</dependency>
 
         <dependency>
             <groupId>dev.langchain4j</groupId>
             <artifactId>langchain4j-mistral-ai</artifactId>
-            <version>0.32.0</version>
+            <version>${langchain4jVersion}</version>
         </dependency>
 
 		<dependency>
 			<groupId>dev.langchain4j</groupId>
 			<artifactId>langchain4j-nomic</artifactId>
-			<version>0.32.0</version>
+			<version>${langchain4jVersion}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>dev.langchain4j</groupId>
 			<artifactId>langchain4j-hugging-face</artifactId>
-			<version>0.32.0</version>
+			<version>${langchain4jVersion}</version>
 		</dependency>
 
         <dependency>
             <groupId>dev.langchain4j</groupId>
             <artifactId>langchain4j-chroma</artifactId>
-            <version>0.32.0</version>
+            <version>${langchain4jVersion}</version>
         </dependency>
 
 		<dependency>
             <groupId>dev.langchain4j</groupId>
             <artifactId>langchain4j-milvus</artifactId>
-            <version>0.32.0</version>
+            <version>${langchain4jVersion}</version>
         </dependency>
 
         <dependency>
             <groupId>dev.langchain4j</groupId>
             <artifactId>langchain4j-elasticsearch</artifactId>
-            <version>0.32.0</version>
+            <version>${langchain4jVersion}</version>
         </dependency>
+
+		<dependency>
+			<groupId>dev.langchain4j</groupId>
+			<artifactId>langchain4j-opensearch</artifactId>
+			<version>${langchain4jVersion}</version>
+		</dependency>
 
         <dependency>
             <groupId>dev.langchain4j</groupId>
             <artifactId>langchain4j-pgvector</artifactId>
-            <version>0.32.0</version>
+            <version>${langchain4jVersion}</version>
         </dependency>
 
         <dependency>
             <groupId>dev.langchain4j</groupId>
             <artifactId>langchain4j-weaviate</artifactId>
-            <version>0.32.0</version>
+            <version>${langchain4jVersion}</version>
         </dependency>
 
-		<!--<dependency>
-            <groupId>dev.langchain4j</groupId>
-            <artifactId>langchain4j-neo4j</artifactId>
-            <version>0.33.0</version>
-        </dependency>-->
+		<dependency>
+			<groupId>dev.langchain4j</groupId>
+			<artifactId>langchain4j-document-transformer-jsoup</artifactId>
+			<version>${langchain4jVersion}</version>
+		</dependency>
 
         <dependency>
             <groupId>dev.langchain4j</groupId>
             <artifactId>langchain4j-pinecone</artifactId>
-            <version>0.33.0</version>
+            <version>${langchain4jVersion}</version>
         </dependency>
 
         <dependency>
@@ -176,14 +261,15 @@
         </dependency>
 
 	</dependencies>
+
 	<repositories>
 		<repository>
-			<id>anypoint-exchange-v3</id>
-			<name>Anypoint Exchange V3</name>
-			<url>https://maven.eu1.anypoint.mulesoft.com/api/v3/maven</url>
-			<layout>default</layout>
+			<id>mule-releases</id>
+			<name>Nexus Public Releases</name>
+			<url>https://repository-master.mulesoft.org/nexus/content/repositories/releases/</url>
 		</repository>
 	</repositories>
+
 	<pluginRepositories>
 		<pluginRepository>
 			<id>mulesoft-releases</id>
@@ -195,18 +281,5 @@
 			</snapshots>
 		</pluginRepository>
 	</pluginRepositories>
-	<distributionManagement>
-		<snapshotRepository>
-			<id>exchange-repository</id>
-			<name>Exchange Repository</name>
-			<url>https://maven.anypoint.mulesoft.com/api/v1/organizations/38a33986-994f-4d43-a2de-7abe5f26b93b/maven</url>
-			<layout>default</layout>
-		</snapshotRepository>
-		<repository>
-			<id>exchange-repository</id>
-			<name>Exchange Repository</name>
-			<url>https://maven.anypoint.mulesoft.com/api/v1/organizations/38a33986-994f-4d43-a2de-7abe5f26b93b/maven</url>
-			<layout>default</layout>
-		</repository>
-	</distributionManagement>
+
 </project>
