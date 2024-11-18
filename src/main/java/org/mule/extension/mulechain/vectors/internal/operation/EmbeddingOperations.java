@@ -25,6 +25,7 @@ import org.mule.extension.mulechain.vectors.internal.store.BaseStore;
 import org.mule.extension.mulechain.vectors.internal.util.JsonUtils;
 import org.mule.runtime.extension.api.annotation.Alias;
 import org.mule.runtime.extension.api.annotation.error.Throws;
+import org.mule.runtime.extension.api.annotation.metadata.fixed.OutputJsonType;
 import org.mule.runtime.extension.api.annotation.param.*;
 
 import static java.util.stream.Collectors.joining;
@@ -273,6 +274,7 @@ public class EmbeddingOperations {
   @MediaType(value = APPLICATION_JSON, strict = false)
   @Alias("EMBEDDING-query-from-store")
   @Throws(EmbeddingErrorTypeProvider.class)
+  @OutputJsonType(schema = "api/response/EmbeddingQueryResponse.json")
   public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, EmbeddingResponseAttributes>
       queryFromEmbedding( @Config Configuration configuration,
                           @Alias("storeName") @DisplayName("Store Name") String storeName,
@@ -365,6 +367,7 @@ public class EmbeddingOperations {
   @MediaType(value = APPLICATION_JSON, strict = false)
   @Alias("EMBEDDING-query-from-store-with-filter")
   @Throws(EmbeddingErrorTypeProvider.class)
+  @OutputJsonType(schema = "api/response/EmbeddingQueryResponse.json")
   public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, EmbeddingResponseAttributes>
       queryByFilterFromEmbedding( String storeName,
                                   String question,
@@ -412,7 +415,7 @@ public class EmbeddingOperations {
 
         Filter filter = searchFilterParams.buildMetadataFilter();
         searchRequestBuilder.filter(filter);
-        jsonObject.put("filter", searchFilterParams.getFilterJSONObject());
+        //jsonObject.put("filter", searchFilterParams.getFilterJSONObject());
       }
 
       EmbeddingSearchRequest searchRequest = searchRequestBuilder.build();

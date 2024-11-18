@@ -107,7 +107,7 @@ public class LocalStorage extends BaseStorage {
     Document document;
     try {
       URL url = new URL(contextPath);
-      Document htmlDocument = UrlDocumentLoader.load(url, new TextDocumentParser());
+      Document htmlDocument = UrlDocumentLoader.load(url, documentParser);
       HtmlToTextDocumentTransformer transformer = new HtmlToTextDocumentTransformer(null, null, true);
       document = transformer.transform(htmlDocument);
       document.metadata().put(Constants.METADATA_KEY_URL, contextPath);

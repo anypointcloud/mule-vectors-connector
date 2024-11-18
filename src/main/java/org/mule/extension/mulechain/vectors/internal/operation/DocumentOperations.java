@@ -21,6 +21,7 @@ import org.mule.extension.mulechain.vectors.internal.helper.parameter.Segmentati
 import org.mule.extension.mulechain.vectors.internal.storage.BaseStorage;
 import org.mule.runtime.extension.api.annotation.Alias;
 import org.mule.runtime.extension.api.annotation.error.Throws;
+import org.mule.runtime.extension.api.annotation.metadata.fixed.OutputJsonType;
 import org.mule.runtime.extension.api.annotation.param.Config;
 import org.mule.runtime.extension.api.annotation.param.MediaType;
 import org.mule.runtime.extension.api.annotation.param.ParameterGroup;
@@ -54,6 +55,7 @@ public class DocumentOperations {
   @MediaType(value = APPLICATION_JSON, strict = false)
   @Alias("Document-split-into-chunks")
   @Throws(DocumentErrorTypeProvider.class)
+  @OutputJsonType(schema = "api/response/DocumentSplitResponse.json")
   public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, DocumentResponseAttributes>
       documentSplitter(@Config Configuration configuration,
                        @ParameterGroup(name = "Document") DocumentParameters documentParameters,
@@ -105,6 +107,7 @@ public class DocumentOperations {
   @MediaType(value = APPLICATION_JSON, strict = false)
   @Alias("Document-parser")
   @Throws(DocumentErrorTypeProvider.class)
+  @OutputJsonType(schema = "api/response/DocumentParseResponse.json")
   public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, DocumentResponseAttributes>
       documentParser( @Config Configuration configuration,
                       @ParameterGroup(name = "Document") DocumentParameters documentParameters){
