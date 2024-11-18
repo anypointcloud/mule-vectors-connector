@@ -55,7 +55,7 @@ public class EmbeddingOperations {
   @MediaType(value = APPLICATION_JSON, strict = false)
   @Alias("Embedding-add-text-to-store")
   @Throws(EmbeddingErrorTypeProvider.class)
-  @OutputJsonType(schema = "api/response/EmbeddingAddTextToStoreResponse.json")
+  @OutputJsonType(schema = "api/response/EmbeddingAddToStoreResponse.json")
   public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, EmbeddingResponseAttributes>
       addTextToStore( @Config Configuration configuration,
                       @Alias("text") @DisplayName("Text") String text,
@@ -168,7 +168,7 @@ public class EmbeddingOperations {
   @MediaType(value = APPLICATION_JSON, strict = false)
   @Alias("Embedding-add-folder-to-store")
   @Throws(EmbeddingErrorTypeProvider.class)
-  @OutputJsonType(schema = "api/response/EmbeddingAddFolderToStoreResponse.json")
+  @OutputJsonType(schema = "api/response/EmbeddingAddToStoreResponse.json")
   public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, EmbeddingResponseAttributes>
       addFolderToStore( @Config Configuration configuration,
                         @Alias("storeName") @DisplayName("Store Name") String storeName,
@@ -248,7 +248,7 @@ public class EmbeddingOperations {
   @MediaType(value = APPLICATION_JSON, strict = false)
   @Alias("EMBEDDING-add-document-to-store")
   @Throws(EmbeddingErrorTypeProvider.class)
-  @OutputJsonType(schema = "api/response/EmbeddingAddDocumentToStoreResponse.json")
+  @OutputJsonType(schema = "api/response/EmbeddingAddToStoreResponse.json")
   public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, EmbeddingResponseAttributes>
       addFileEmbedding( @Config Configuration configuration,
                         @Alias("storeName") @DisplayName("Store Name") String storeName,
