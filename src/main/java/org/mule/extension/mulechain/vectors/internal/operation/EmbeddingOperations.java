@@ -4,6 +4,7 @@ import static org.mule.extension.mulechain.vectors.internal.helper.ResponseHelpe
 import static org.mule.runtime.extension.api.annotation.param.MediaType.APPLICATION_JSON;
 
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -22,6 +23,7 @@ import org.json.JSONObject;
 import org.mule.extension.mulechain.vectors.internal.model.BaseModel;
 import org.mule.extension.mulechain.vectors.internal.storage.BaseStorage;
 import org.mule.extension.mulechain.vectors.internal.store.BaseStore;
+import org.mule.extension.mulechain.vectors.internal.util.MetadatatUtils;
 import org.mule.extension.mulechain.vectors.internal.util.JsonUtils;
 import org.mule.runtime.extension.api.annotation.Alias;
 import org.mule.runtime.extension.api.annotation.error.Throws;
@@ -53,7 +55,7 @@ public class EmbeddingOperations {
   @MediaType(value = APPLICATION_JSON, strict = false)
   @Alias("Embedding-add-text-to-store")
   @Throws(EmbeddingErrorTypeProvider.class)
-
+  @OutputJsonType(schema = "api/response/EmbeddingAddTextToStoreResponse.json")
   public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, EmbeddingResponseAttributes>
       addTextToStore( @Config Configuration configuration,
                       @Alias("text") @DisplayName("Text") String text,
@@ -79,17 +81,20 @@ public class EmbeddingOperations {
 
       EmbeddingStore<TextSegment> embeddingStore = baseStore.buildEmbeddingStore();
 
-      TextSegment textSegment = TextSegment.from(text);
+      Metadata metadata = new Metadata();
+      MetadatatUtils.setBaseMetadata(metadata);
+
+      TextSegment textSegment = TextSegment.from(text, metadata);
       Embedding textEmbedding = embeddingModel.embed(textSegment).content();
       embeddingStore.add(textEmbedding, textSegment);
 
-      JSONObject jsonObject = new JSONObject();
-      jsonObject.put(Constants.JSON_KEY_STATUS, Constants.OPERATION_STATUS_ADDED);
-      jsonObject.put(Constants.JSON_KEY_TEXT, textSegment.toString());
-      jsonObject.put(Constants.JSON_KEY_EMBEDDING, textEmbedding.toString());
-      jsonObject.put(Constants.JSON_KEY_STORE_NAME, storeName);
+      JSONObject jsonObject = JsonUtils.createIngestionStatusObject(storeName);
 
-      return createEmbeddingResponse(jsonObject.toString(), new HashMap<>());
+      return createEmbeddingResponse(
+          jsonObject.toString(),
+          new HashMap<String, Object>() {{
+            put("storeName", storeName);
+          }});
 
     } catch (ModuleException me) {
       throw me;
@@ -109,6 +114,7 @@ public class EmbeddingOperations {
   @MediaType(value = APPLICATION_JSON, strict = false)
   @Alias("Embedding-generate-from-text")
   @Throws(EmbeddingErrorTypeProvider.class)
+  @OutputJsonType(schema = "api/response/EmbeddingGenerateFromTextResponse.json")
   public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, EmbeddingResponseAttributes>
       generateEmbedding(@Config Configuration configuration,
                         @Alias("text") @DisplayName("Text")  String text,
@@ -138,8 +144,8 @@ public class EmbeddingOperations {
       }
 
       JSONObject jsonObject = new JSONObject();
-      jsonObject.put(Constants.JSON_KEY_TEXT, textSegment.toString());
-      jsonObject.put(Constants.JSON_KEY_EMBEDDING, embedding.toString());
+      jsonObject.put(Constants.JSON_KEY_TEXT, textSegment.text());
+      jsonObject.put(Constants.JSON_KEY_EMBEDDING, Arrays.toString(embedding.vector()));
       jsonObject.put(Constants.JSON_KEY_DIMENSIONS, embedding.dimension());
 
       return createEmbeddingResponse(jsonObject.toString(), new HashMap<>());
@@ -162,7 +168,7 @@ public class EmbeddingOperations {
   @MediaType(value = APPLICATION_JSON, strict = false)
   @Alias("Embedding-add-folder-to-store")
   @Throws(EmbeddingErrorTypeProvider.class)
-
+  @OutputJsonType(schema = "api/response/EmbeddingAddFolderToStoreResponse.json")
   public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, EmbeddingResponseAttributes>
       addFolderToStore( @Config Configuration configuration,
                         @Alias("storeName") @DisplayName("Store Name") String storeName,
@@ -203,16 +209,25 @@ public class EmbeddingOperations {
           .fileType(documentParameters.getFileType())
           .build();
 
-      long documentNumber = 0;
+      long documentNumber = 0L;
       while(baseStorage.hasNext()) {
 
         Document document = baseStorage.next();
         embeddingStoreIngestor.ingest(document);
         documentNumber ++;
       }
-      JSONObject jsonObject = JsonUtils.createFolderIngestionStatusObject(storeName, documentNumber, documentParameters.getFileType());
+      JSONObject jsonObject = JsonUtils.createIngestionStatusObject(storeName);
 
-      return createEmbeddingResponse(jsonObject.toString(), new HashMap<>());
+      long finalDocumentNumber = documentNumber;
+      return createEmbeddingResponse(
+          jsonObject.toString(),
+          new HashMap<String, Object>() {{
+            put("documentCount", finalDocumentNumber);
+            put("storeName", storeName);
+            put("storageType", documentParameters.getStorageType());
+            put("fileType", documentParameters.getFileType());
+            put("contextPath", documentParameters.getContextPath());
+          }});
 
     } catch (ModuleException me) {
       throw me;
@@ -233,7 +248,7 @@ public class EmbeddingOperations {
   @MediaType(value = APPLICATION_JSON, strict = false)
   @Alias("EMBEDDING-add-document-to-store")
   @Throws(EmbeddingErrorTypeProvider.class)
-
+  @OutputJsonType(schema = "api/response/EmbeddingAddDocumentToStoreResponse.json")
   public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, EmbeddingResponseAttributes>
       addFileEmbedding( @Config Configuration configuration,
                         @Alias("storeName") @DisplayName("Store Name") String storeName,
@@ -277,9 +292,16 @@ public class EmbeddingOperations {
 
       embeddingStoreIngestor.ingest(document);
 
-      JSONObject jsonObject = JsonUtils.createFileIngestionStatusObject(storeName, documentParameters.getFileType(), documentParameters.getContextPath());
+      JSONObject jsonObject = JsonUtils.createIngestionStatusObject(storeName);
 
-      return createEmbeddingResponse(jsonObject.toString(), new HashMap<>());
+      return createEmbeddingResponse(
+          jsonObject.toString(),
+          new HashMap<String, Object>() {{
+            put("storeName", storeName);
+            put("storageType", documentParameters.getStorageType());
+            put("fileType", documentParameters.getFileType());
+            put("contextPath", documentParameters.getContextPath());
+          }});
 
     } catch (ModuleException me) {
       throw me;

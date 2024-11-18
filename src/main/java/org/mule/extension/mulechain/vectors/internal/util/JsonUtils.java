@@ -6,6 +6,7 @@ package org.mule.extension.mulechain.vectors.internal.util;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import opennlp.tools.parser.Cons;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -54,34 +55,13 @@ public final class JsonUtils {
   }
 
   /**
-   * Creates a JSONObject representing the ingestion status.
-   *
-   * @param fileType the type of the ingested file.
-   * @param contextPath the path of the ingested file or folder.
-   * @return a JSONObject containing ingestion status metadata.
-   */
-  public static JSONObject createFileIngestionStatusObject(String storeName, String fileType, String contextPath) {
-
-    JSONObject jsonObject = new JSONObject();
-    jsonObject.put("fileType", fileType);
-    jsonObject.put("filePath", contextPath);
-    jsonObject.put("storeName", storeName);
-    jsonObject.put(Constants.JSON_KEY_STATUS, Constants.OPERATION_STATUS_UPDATED);
-    return jsonObject;
-  }
-
-  /**
    * Creates a JSONObject representing the ingestion status of a folder or set of files.
    *
-   * @param totalFiles the total number of files processed.
-   * @param contextPath the path of the processed folder.
    * @return a JSONObject containing the ingestion status with file count, folder path, store name, and status.
    */
-  public static JSONObject createFolderIngestionStatusObject(String storeName, Long totalFiles, String contextPath) {
+  public static JSONObject createIngestionStatusObject(String storeName) {
 
     JSONObject jsonObject = new JSONObject();
-    jsonObject.put("filesCount", totalFiles);
-    jsonObject.put("folderPath", contextPath);
     jsonObject.put(Constants.JSON_KEY_STORE_NAME, storeName);
     jsonObject.put(Constants.JSON_KEY_STATUS, Constants.OPERATION_STATUS_UPDATED);
     return jsonObject;

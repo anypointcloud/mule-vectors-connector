@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "text": {
+      "type": "string",
+      "description": "The original text being represented by the embedding."
+    },
+    "embedding": {
+      "type": "array",
+      "items": {
+        "type": "number",
+        "format": "float"
+      },
+      "description": "An array of floats representing the embedding vector."
+    },
+    "dimensions": {
+      "type": "integer",
+      "description": "The number of dimensions in the embedding vector."
+    }
+  },
+  "required": ["text", "embedding", "dimensions"]
+}

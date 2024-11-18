@@ -7,26 +7,13 @@ import com.azure.storage.blob.models.BlobItem;
 import com.azure.storage.common.StorageSharedKeyCredential;
 import dev.langchain4j.data.document.loader.azure.storage.blob.AzureBlobStorageDocumentLoader;
 
-import dev.langchain4j.store.embedding.EmbeddingStoreIngestor;
-import dev.langchain4j.data.document.DocumentParser;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Iterator;
-import java.util.List;
-import java.util.stream.Stream;
 
 import org.json.JSONObject;
 import org.mule.extension.mulechain.vectors.internal.config.Configuration;
-import org.mule.extension.mulechain.vectors.internal.constant.Constants;
-import dev.langchain4j.data.document.parser.TextDocumentParser;
-import dev.langchain4j.data.document.parser.apache.tika.ApacheTikaDocumentParser;
 import dev.langchain4j.data.document.Document;
 import org.mule.extension.mulechain.vectors.internal.storage.BaseStorage;
-import org.mule.extension.mulechain.vectors.internal.util.DocumentUtils;
-import org.mule.extension.mulechain.vectors.internal.util.JsonUtils;
+import org.mule.extension.mulechain.vectors.internal.util.MetadatatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -105,7 +92,7 @@ public class AzureBlobStorage extends BaseStorage {
         BlobItem blobItem = blobIterator.next();
         LOGGER.debug("Blob name: " + blobItem.getName());
         Document document = getLoader().loadDocument(contextPath, blobItem.getName(), documentParser);
-        DocumentUtils.addMetadataToDocument(document, fileType, blobItem.getName());
+        MetadatatUtils.addMetadataToDocument(document, fileType, blobItem.getName());
         return document;
     }
 
@@ -116,7 +103,7 @@ public class AzureBlobStorage extends BaseStorage {
         String blobName = parts[1];
         LOGGER.debug("Blob name: " + blobName);
         Document document = getLoader().loadDocument(containerName, blobName, documentParser);
-        DocumentUtils.addMetadataToDocument(document, fileType, blobName);
+        MetadatatUtils.addMetadataToDocument(document, fileType, blobName);
         return document;
     }
 }

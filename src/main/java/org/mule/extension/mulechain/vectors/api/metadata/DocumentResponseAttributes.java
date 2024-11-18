@@ -2,13 +2,18 @@ package org.mule.extension.mulechain.vectors.api.metadata;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.Map;
 
 public class DocumentResponseAttributes implements Serializable {
 
-  private final HashMap<String, String> documentAttributes;
+  private final HashMap<String, Object> requestAttributes;
 
-  public DocumentResponseAttributes(HashMap<String, String> documentAttributes) {
+  public DocumentResponseAttributes(HashMap<String, Object> requestAttributes) {
 
-    this.documentAttributes = documentAttributes;
+    this.requestAttributes = requestAttributes;
+  }
+
+  public Map<String, Object> getRequestAttributes() {
+    return requestAttributes;
   }
 }
