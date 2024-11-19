@@ -1,23 +1,31 @@
 {
-  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
-    "text": {
-      "type": "string",
-      "description": "The original text being represented by the embedding."
-    },
-    "embedding": {
+    "segments": {
       "type": "array",
       "items": {
-        "type": "number",
-        "format": "float"
+        "type": "object",
+        "properties": {
+          "index": {
+            "type": "integer"
+          },
+          "text": {
+            "type": "string"
+          },
+          "embedding": {
+            "type": "string",
+            "description": "Serialized representation of a high-dimensional vector."
+          }
+        },
+        "required": ["index", "text", "embedding"]
       },
-      "description": "An array of floats representing the embedding vector."
+      "minItems": 0
     },
     "dimensions": {
       "type": "integer",
-      "description": "The number of dimensions in the embedding vector."
+      "description": "Number of dimensions in the embedding vectors."
     }
   },
-  "required": ["text", "embedding", "dimensions"]
+  "required": ["segments", "dimensions"]
 }
