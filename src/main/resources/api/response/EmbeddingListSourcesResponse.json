@@ -1,0 +1,54 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "sourceCount": {
+      "type": "integer"
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "ingestion_timestamp": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "source_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "source": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "segmentCount": {
+            "type": "integer"
+          },
+          "ingestion_datetime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "absolute_directory_path": {
+            "type": "string",
+            "optional": true
+          },
+          "file_name": {
+            "type": "string",
+            "optional": true
+          },
+          "file_type": {
+            "type": "string"
+          }
+        }
+      },
+      "minItems": 0
+    }
+  },
+  "required": ["sourceCount", "sources"]
+}

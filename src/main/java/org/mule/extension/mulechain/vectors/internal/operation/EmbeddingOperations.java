@@ -397,9 +397,11 @@ public class EmbeddingOperations {
 
       jsonObject.put(Constants.JSON_KEY_SOURCES, sources);
 
-
-
-      return createEmbeddingResponse(jsonObject.toString(), new HashMap<>());
+      return createEmbeddingResponse(
+          jsonObject.toString(),
+          new HashMap<String, Object>() {{
+            put("storeName", storeName);
+          }});
 
     } catch (ModuleException me) {
       throw me;
@@ -490,7 +492,6 @@ public class EmbeddingOperations {
       JSONArray sources = new JSONArray();
 
       JSONObject contentObject;
-      String fullPath;
       for (EmbeddingMatch<TextSegment> match : embeddingMatches) {
         Metadata matchMetadata = match.embedded().metadata();
 
@@ -508,7 +509,13 @@ public class EmbeddingOperations {
 
       jsonObject.put(Constants.JSON_KEY_SOURCES, sources);
 
-      return createEmbeddingResponse(jsonObject.toString(), new HashMap<>());
+
+      return createEmbeddingResponse(
+          jsonObject.toString(),
+          new HashMap<String, Object>() {{
+            put("storeName", storeName);
+            put("filter", searchFilterParams.getFilterJSONObject());
+          }});
 
     } catch (ModuleException me) {
       throw me;
@@ -521,7 +528,6 @@ public class EmbeddingOperations {
           e);
     }
   }
-
 
   /**
    * Retrieves and lists sources from the specified embedding store.
@@ -539,6 +545,7 @@ public class EmbeddingOperations {
   @MediaType(value = APPLICATION_JSON, strict = false)
   @Alias("EMBEDDING-list-sources")
   @Throws(EmbeddingErrorTypeProvider.class)
+  @OutputJsonType(schema = "api/response/EmbeddingListSourcesResponse.json")
   public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, EmbeddingResponseAttributes>
       listSourcesFromStore( String storeName,
                             @Config Configuration configuration,
@@ -560,7 +567,11 @@ public class EmbeddingOperations {
 
       JSONObject jsonObject = baseStore.listSources();
 
-      return createEmbeddingResponse(jsonObject.toString(), new HashMap<>());
+      return createEmbeddingResponse(
+          jsonObject.toString(),
+          new HashMap<String, Object>() {{
+            put("storeName", storeName);
+          }});
 
     } catch (ModuleException me) {
       throw me;
@@ -581,7 +592,7 @@ public class EmbeddingOperations {
   @MediaType(value = APPLICATION_JSON, strict = false)
   @Alias("EMBEDDING-remove-from-store-by-filter")
   @Throws(EmbeddingErrorTypeProvider.class)
-
+  @OutputJsonType(schema = "api/response/EmbeddingRemoveFromStoreResponse.json")
   public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, EmbeddingResponseAttributes>
       removeEmbeddingsByFilter( String storeName,
                                 @Config Configuration configuration,
@@ -614,12 +625,14 @@ public class EmbeddingOperations {
       embeddingStore.removeAll(filter);
 
       JSONObject jsonObject = new JSONObject();
-      jsonObject.put(Constants.JSON_KEY_STORE_NAME, storeName);
       jsonObject.put(Constants.JSON_KEY_STATUS, Constants.OPERATION_STATUS_DELETED);
 
-      //jsonObject.put("filter", removeFilterParams.getFilterJSONObject());
-
-      return createEmbeddingResponse(jsonObject.toString(), new HashMap<>());
+      return createEmbeddingResponse(
+          jsonObject.toString(),
+          new HashMap<String, Object>() {{
+            put("storeName", storeName);
+            put("filter", removeFilterParams.getFilterJSONObject());
+          }});
 
     } catch (ModuleException me) {
       throw me;
