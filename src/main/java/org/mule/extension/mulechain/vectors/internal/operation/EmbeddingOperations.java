@@ -7,8 +7,10 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import dev.langchain4j.data.document.Document;
+import dev.langchain4j.data.document.DocumentSplitter;
 import org.mule.extension.mulechain.vectors.api.metadata.EmbeddingResponseAttributes;
 import org.mule.extension.mulechain.vectors.internal.constant.Constants;
 import org.mule.extension.mulechain.vectors.internal.error.MuleVectorsErrorType;
@@ -123,6 +125,7 @@ public class EmbeddingOperations {
   public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, EmbeddingResponseAttributes>
       generateEmbedding(@Config Configuration configuration,
                         @Alias("text") @DisplayName("Text")  String text,
+                        @ParameterGroup(name = "Segmentation") SegmentationParameters segmentationParameters,
                         @ParameterGroup(name = "Embedding Model") EmbeddingModelParameters embeddingModelParameters){
 
     try {
@@ -134,11 +137,14 @@ public class EmbeddingOperations {
 
       EmbeddingModel embeddingModel = baseModel.buildEmbeddingModel();
 
-      TextSegment textSegment = TextSegment.from(text);
-      Embedding embedding = null;
+      DocumentSplitter documentSplitter = DocumentSplitters.recursive(segmentationParameters.getMaxSegmentSizeInChar(),
+                                                                      segmentationParameters.getMaxOverlapSizeInChars());
+
+      List<TextSegment> textSegments = documentSplitter.split(new Document(text));
+      List<Embedding> embeddings;
       try {
 
-        embedding = embeddingModel.embed(textSegment).content();
+        embeddings = embeddingModel.embedAll(textSegments).content();
 
       } catch(Exception e) {
 
@@ -149,9 +155,18 @@ public class EmbeddingOperations {
       }
 
       JSONObject jsonObject = new JSONObject();
-      jsonObject.put(Constants.JSON_KEY_TEXT, textSegment.text());
-      jsonObject.put(Constants.JSON_KEY_EMBEDDING, Arrays.toString(embedding.vector()));
-      jsonObject.put(Constants.JSON_KEY_DIMENSIONS, embedding.dimension());
+      JSONArray jsonSegments = IntStream.range(0, embeddings.size())
+          .mapToObj(i -> {
+            JSONObject jsonSegment = new JSONObject();
+            jsonSegment.put(Constants.JSON_KEY_TEXT, textSegments.get(i).text());
+            jsonSegment.put(Constants.JSON_KEY_EMBEDDING, Arrays.toString(embeddings.get(i).vector())); // Replace getText with the actual method
+            jsonSegment.put(Constants.JSON_KEY_INDEX, i);
+            return jsonSegment;
+          })
+          .collect(JSONArray::new, JSONArray::put, JSONArray::putAll);
+
+      jsonObject.put(Constants.JSON_KEY_SEGMENTS, jsonSegments);
+      jsonObject.put(Constants.JSON_KEY_DIMENSIONS, embeddingModel.dimension());
 
       return createEmbeddingResponse(jsonObject.toString(), new HashMap<>());
 
