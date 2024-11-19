@@ -158,7 +158,7 @@ public class BaseStore {
     Long ingestionTimestamp = metadataObject.has(Constants.METADATA_KEY_INGESTION_TIMESTAMP) ?  metadataObject.getLong(Constants.METADATA_KEY_INGESTION_TIMESTAMP) : null;
 
     JSONObject sourceObject = new JSONObject();
-    sourceObject.put(Constants.JSON_KEY_SEGMENT_COUNT, Integer.parseInt(index) + 1);
+    if(index != null && !index.isEmpty()) sourceObject.put(Constants.JSON_KEY_SEGMENT_COUNT, Integer.parseInt(index) + 1);
     sourceObject.put(Constants.METADATA_KEY_SOURCE_ID, sourceId);
     sourceObject.put(Constants.METADATA_KEY_ABSOLUTE_DIRECTORY_PATH, absoluteDirectoryPath);
     sourceObject.put(Constants.METADATA_KEY_SOURCE, source);
