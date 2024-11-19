@@ -60,6 +60,7 @@ public class EmbeddingOperations {
       addTextToStore( @Config Configuration configuration,
                       @Alias("text") @DisplayName("Text") String text,
                       @Alias("storeName") @DisplayName("Store Name")  String storeName,
+                      @ParameterGroup(name = "Segmentation") SegmentationParameters segmentationParameters,
                       @ParameterGroup(name = "Embedding Model") EmbeddingModelParameters embeddingModelParameters){
 
     try {
@@ -81,12 +82,16 @@ public class EmbeddingOperations {
 
       EmbeddingStore<TextSegment> embeddingStore = baseStore.buildEmbeddingStore();
 
-      Metadata metadata = new Metadata();
-      MetadatatUtils.setBaseMetadata(metadata);
+      EmbeddingStoreIngestor embeddingStoreIngestor = EmbeddingStoreIngestor.builder()
+          .documentSplitter(DocumentSplitters.recursive(segmentationParameters.getMaxSegmentSizeInChar(), segmentationParameters.getMaxOverlapSizeInChars()))
+          .embeddingModel(embeddingModel)
+          .embeddingStore(embeddingStore)
+          .build();
 
-      TextSegment textSegment = TextSegment.from(text, metadata);
-      Embedding textEmbedding = embeddingModel.embed(textSegment).content();
-      embeddingStore.add(textEmbedding, textSegment);
+      Document document = new Document(text);
+      MetadatatUtils.addMetadataToDocument(document, Constants.FILE_TYPE_TEXT);
+
+      embeddingStoreIngestor.ingest(document);
 
       JSONObject jsonObject = JsonUtils.createIngestionStatusObject(storeName);
 

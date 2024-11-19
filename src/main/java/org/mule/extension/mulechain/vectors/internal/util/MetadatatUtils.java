@@ -17,26 +17,13 @@ public class MetadatatUtils {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MetadatatUtils.class);
 
-  public static void setBaseMetadata(Metadata metadata) {
+  public static void addMetadataToDocument(Document document, String fileType) {
 
-    metadata.put(Constants.METADATA_KEY_SOURCE_ID, dev.langchain4j.internal.Utils.randomUUID());
-    metadata.put(Constants.METADATA_KEY_INGESTION_DATETIME, Utils.getCurrentISO8601Timestamp());
-    metadata.put(Constants.METADATA_KEY_INGESTION_TIMESTAMP, Utils.getCurrentTimeMillis());
-  }
-
-  /**
-   * Adds metadata to a Document with specified file type, file name, and file path.
-   *
-   * @param document the Document to which metadata is added.
-   * @param fileType the type of the file (e.g., text, any).
-   * @param fileName the name of the file.
-   */
-  public static void addMetadataToDocument(Document document, String fileType, String fileName) {
-
-    setBaseMetadata(document.metadata());
+    document.metadata().put(Constants.METADATA_KEY_SOURCE_ID, dev.langchain4j.internal.Utils.randomUUID());
+    document.metadata().put(Constants.METADATA_KEY_INGESTION_DATETIME, Utils.getCurrentISO8601Timestamp());
+    document.metadata().put(Constants.METADATA_KEY_INGESTION_TIMESTAMP, Utils.getCurrentTimeMillis());
 
     if(!fileType.isEmpty()) document.metadata().put(Constants.METADATA_KEY_FILE_TYPE, fileType);
-    if(!fileName.isEmpty()) document.metadata().put(Constants.METADATA_KEY_FILE_NAME, fileName);
 
     if (fileType.equals(Constants.FILE_TYPE_CRAWL)) {
 
@@ -52,5 +39,18 @@ public class MetadatatUtils {
         LOGGER.error(ioe.getMessage() + " " + Arrays.toString(ioe.getStackTrace()));
       }
     }
+  }
+
+  /**
+   * Adds metadata to a Document with specified file type, file name, and file path.
+   *
+   * @param document the Document to which metadata is added.
+   * @param fileType the type of the file (e.g., text, any).
+   * @param fileName the name of the file.
+   */
+  public static void addMetadataToDocument(Document document, String fileType, String fileName) {
+
+    addMetadataToDocument(document, fileType);
+    if(!fileName.isEmpty()) document.metadata().put(Constants.METADATA_KEY_FILE_NAME, fileName);
   }
 }
