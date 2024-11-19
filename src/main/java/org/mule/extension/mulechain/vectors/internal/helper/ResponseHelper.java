@@ -18,10 +18,10 @@ public final class ResponseHelper {
 
   public static Result<InputStream, EmbeddingResponseAttributes> createEmbeddingResponse(
       String response,
-      Map<String, String> embeddingAttributes) {
+      Map<String, Object> embeddingAttributes) {
 
     return Result.<InputStream, EmbeddingResponseAttributes>builder()
-        .attributes(new EmbeddingResponseAttributes((HashMap<String, String>) embeddingAttributes))
+        .attributes(new EmbeddingResponseAttributes((HashMap<String, Object>) embeddingAttributes))
         .attributesMediaType(org.mule.runtime.api.metadata.MediaType.APPLICATION_JAVA)
         .output(toInputStream(response, StandardCharsets.UTF_8))
         .mediaType(org.mule.runtime.api.metadata.MediaType.APPLICATION_JSON)
@@ -30,10 +30,10 @@ public final class ResponseHelper {
 
   public static Result<InputStream, DocumentResponseAttributes> createDocumentResponse(
       String response,
-      Map<String, String> documentAttributes) {
+      Map<String, Object> documentAttributes) {
 
     return Result.<InputStream, DocumentResponseAttributes>builder()
-        .attributes(new DocumentResponseAttributes((HashMap<String, String>) documentAttributes))
+        .attributes(new DocumentResponseAttributes((HashMap<String, Object>) documentAttributes))
         .attributesMediaType(org.mule.runtime.api.metadata.MediaType.APPLICATION_JAVA)
         .output(toInputStream(response, StandardCharsets.UTF_8))
         .mediaType(org.mule.runtime.api.metadata.MediaType.APPLICATION_JSON)

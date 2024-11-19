@@ -51,7 +51,7 @@ public class MilvusStore extends BaseStore {
     HashMap<String, JSONObject> sourceObjectMap = new HashMap<String, JSONObject>();
     
     JSONObject jsonObject = new JSONObject();
-    jsonObject.put(JSON_KEY_STORE_NAME, storeName);
+    jsonObject.put(Constants.JSON_KEY_STORE_NAME, storeName);
 
     // Specify the host and port for the Milvus server
     ConnectParam connectParam = ConnectParam.newBuilder()
@@ -103,8 +103,8 @@ public class MilvusStore extends BaseStore {
       client.close();
     }
 
-    jsonObject.put(JSON_KEY_SOURCES, JsonUtils.jsonObjectCollectionToJsonArray(sourceObjectMap.values()));
-    jsonObject.put(JSON_KEY_SOURCE_COUNT, sourceObjectMap.size());
+    jsonObject.put(Constants.JSON_KEY_SOURCES, JsonUtils.jsonObjectCollectionToJsonArray(sourceObjectMap.values()));
+    jsonObject.put(Constants.JSON_KEY_SOURCE_COUNT, sourceObjectMap.size());
 
     return jsonObject;
   }

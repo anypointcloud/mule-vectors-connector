@@ -1,8 +1,6 @@
 package org.mule.extension.mulechain.vectors.internal.storage.s3;
 
-import org.mule.extension.mulechain.vectors.internal.util.JsonUtils;
 import software.amazon.awssdk.regions.Region;
-import dev.langchain4j.store.embedding.EmbeddingStoreIngestor;
 import dev.langchain4j.data.document.loader.amazon.s3.AmazonS3DocumentLoader;
 import dev.langchain4j.data.document.loader.amazon.s3.AwsCredentials;
 
@@ -12,7 +10,7 @@ import org.json.JSONObject;
 import org.mule.extension.mulechain.vectors.internal.config.Configuration;
 import dev.langchain4j.data.document.Document;
 import org.mule.extension.mulechain.vectors.internal.storage.BaseStorage;
-import org.mule.extension.mulechain.vectors.internal.util.DocumentUtils;
+import org.mule.extension.mulechain.vectors.internal.util.MetadatatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
@@ -122,7 +120,7 @@ public class AWSS3Storage extends BaseStorage {
         S3Object object = getS3ObjectIterator().next();
         LOGGER.debug("AWS S3 Key: " + object.key());
         Document document = getLoader().loadDocument(awsS3Bucket, object.key(), documentParser);
-        DocumentUtils.addMetadataToDocument(document, fileType, object.key());
+        MetadatatUtils.addMetadataToDocument(document, fileType, object.key());
         return document;
     }
 
@@ -130,7 +128,7 @@ public class AWSS3Storage extends BaseStorage {
 
         LOGGER.debug("AWS S3 Key: " + contextPath);
         Document document = getLoader().loadDocument(awsS3Bucket, contextPath, documentParser);
-        DocumentUtils.addMetadataToDocument(document, fileType, contextPath);
+        MetadatatUtils.addMetadataToDocument(document, fileType, contextPath);
         return document;
     }
 }

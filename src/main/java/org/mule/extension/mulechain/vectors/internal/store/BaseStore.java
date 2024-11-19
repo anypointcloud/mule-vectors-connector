@@ -30,11 +30,6 @@ public class BaseStore {
 
   protected static final Logger LOGGER = LoggerFactory.getLogger(BaseStore.class);
 
-  protected static final String JSON_KEY_SOURCES = "sources";
-  protected static final String JSON_KEY_SEGMENT_COUNT = "segmentCount";
-  protected static final String JSON_KEY_SOURCE_COUNT = "sourceCount";
-  protected static final String JSON_KEY_STORE_NAME = "storeName";
-
   protected String storeName;
   protected Configuration configuration;
   protected QueryParameters queryParams;
@@ -127,9 +122,9 @@ public class BaseStore {
       // Overwrite sourceObject if current one has a greater index (greatest index represents the number of segments)
       if(sourceObjectMap.containsKey(sourceUniqueKey)){
         // Get current index
-        int currentSegmentCount = sourceObject.getInt(JSON_KEY_SEGMENT_COUNT);
+        int currentSegmentCount = sourceObject.getInt(Constants.JSON_KEY_SEGMENT_COUNT);
         // Get previously stored index
-        int storedSegmentCount = (int) sourceObjectMap.get(sourceUniqueKey).get(JSON_KEY_SEGMENT_COUNT);
+        int storedSegmentCount = (int) sourceObjectMap.get(sourceUniqueKey).get(Constants.JSON_KEY_SEGMENT_COUNT);
         // Check if object need to be updated
         if(currentSegmentCount > storedSegmentCount) {
           sourceObjectMap.put(sourceUniqueKey, sourceObject);
@@ -163,7 +158,7 @@ public class BaseStore {
     Long ingestionTimestamp = metadataObject.has(Constants.METADATA_KEY_INGESTION_TIMESTAMP) ?  metadataObject.getLong(Constants.METADATA_KEY_INGESTION_TIMESTAMP) : null;
 
     JSONObject sourceObject = new JSONObject();
-    sourceObject.put(JSON_KEY_SEGMENT_COUNT, Integer.parseInt(index) + 1);
+    if(index != null && !index.isEmpty()) sourceObject.put(Constants.JSON_KEY_SEGMENT_COUNT, Integer.parseInt(index) + 1);
     sourceObject.put(Constants.METADATA_KEY_SOURCE_ID, sourceId);
     sourceObject.put(Constants.METADATA_KEY_ABSOLUTE_DIRECTORY_PATH, absoluteDirectoryPath);
     sourceObject.put(Constants.METADATA_KEY_SOURCE, source);
