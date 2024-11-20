@@ -86,7 +86,8 @@ public class EmbeddingOperationValidator {
               Constants.VECTOR_STORE_CHROMA,
               // Constants.VECTOR_STORE_PINECONE, // Do not support GTE with strings.
               // Constants.VECTOR_STORE_WEAVIATE, // Not Supported
-              Constants.VECTOR_STORE_AI_SEARCH
+              Constants.VECTOR_STORE_AI_SEARCH,
+              Constants.VECTOR_STORE_QDRANT
             )));
 
   }
