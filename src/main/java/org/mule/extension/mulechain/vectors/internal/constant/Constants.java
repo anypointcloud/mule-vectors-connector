@@ -39,6 +39,7 @@ public class Constants {
   public static final String VECTOR_STORE_PINECONE = "PINECONE";
   public static final String VECTOR_STORE_WEAVIATE = "WEAVIATE";
   public static final String VECTOR_STORE_AI_SEARCH = "AI_SEARCH";
+  public static final String VECTOR_STORE_QDRANT = "QDRANT";
 
   public static final String STORE_SCHEMA_METADATA_FIELD_NAME = "metadata";
   public static final String STORE_SCHEMA_VECTOR_FIELD_NAME = "vector";

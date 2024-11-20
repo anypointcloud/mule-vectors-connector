@@ -16,13 +16,14 @@ public class VectorStoreProvider implements ValueProvider {
      return ValueBuilder.getValuesFor(
             Constants.VECTOR_STORE_PGVECTOR,
             Constants.VECTOR_STORE_ELASTICSEARCH,
-             Constants.VECTOR_STORE_OPENSEARCH,
+            Constants.VECTOR_STORE_OPENSEARCH,
             Constants.VECTOR_STORE_MILVUS,
             Constants.VECTOR_STORE_CHROMA,
             Constants.VECTOR_STORE_PINECONE,
             Constants.VECTOR_STORE_WEAVIATE,
             Constants.VECTOR_STORE_AI_SEARCH,
-             Constants.VECTOR_STORE_OPENSEARCH
+            Constants.VECTOR_STORE_OPENSEARCH,
+            Constants.VECTOR_STORE_QDRANT
     ); // MuleChainVectorsConstants.VECTOR_STORE_NEO4J
   }
 
