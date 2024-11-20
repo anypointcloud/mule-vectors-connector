@@ -27,7 +27,6 @@ public class QdrantStore extends BaseStore {
     JSONObject vectorStoreConfig = config.getJSONObject(Constants.VECTOR_STORE_QDRANT);
     this.host = vectorStoreConfig.getString("QDRANT_HOST");
     this.apiKey = vectorStoreConfig.getString("QDRANT_API_KEY");
-    this.collectionName = vectorStoreConfig.getString("QDRANT_COLLECTION_NAME");
     this.port = vectorStoreConfig.getInt("QDRANT_GRPC_PORT");
     this.useTls = vectorStoreConfig.getBoolean("QDRANT_USE_TLS");
     this.payloadTextKey = vectorStoreConfig.getString("QDRANT_TEXT_KEY");
@@ -38,7 +37,7 @@ public class QdrantStore extends BaseStore {
     return QdrantEmbeddingStore.builder()
         .host(host)
         .apiKey(apiKey)
-        .collectionName(collectionName)
+        .collectionName(storeName)
         .port(port)
         .useTls(useTls)
         .payloadTextKey(payloadTextKey)
