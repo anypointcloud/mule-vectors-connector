@@ -1,4 +1,4 @@
-package org.mule.extension.mulechain.vectors.internal.store.weviate;
+package org.mule.extension.mulechain.vectors.internal.store.weaviate;
 
 import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.store.embedding.EmbeddingStore;

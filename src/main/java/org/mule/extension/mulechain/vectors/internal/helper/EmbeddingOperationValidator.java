@@ -48,7 +48,8 @@ public class EmbeddingOperationValidator {
               Constants.VECTOR_STORE_CHROMA,
               Constants.VECTOR_STORE_PINECONE,
               Constants.VECTOR_STORE_WEAVIATE,
-              Constants.VECTOR_STORE_AI_SEARCH
+              Constants.VECTOR_STORE_AI_SEARCH,
+              Constants.VECTOR_STORE_QDRANT
             )));
 
     // Weaviate not supported for FILTER_BY_METADATA operation
@@ -60,7 +61,8 @@ public class EmbeddingOperationValidator {
               Constants.VECTOR_STORE_MILVUS,
               Constants.VECTOR_STORE_CHROMA,
               Constants.VECTOR_STORE_PINECONE,
-              Constants.VECTOR_STORE_AI_SEARCH
+              Constants.VECTOR_STORE_AI_SEARCH,
+              Constants.VECTOR_STORE_QDRANT
             )));
 
     EMBEDDING_OPERATION_TYPE_TO_SUPPORTED_VECTOR_STORES.put(Constants.EMBEDDING_OPERATION_TYPE_REMOVE_EMBEDDINGS,
