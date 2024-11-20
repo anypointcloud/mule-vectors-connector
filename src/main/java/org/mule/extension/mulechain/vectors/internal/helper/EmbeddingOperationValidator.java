@@ -24,7 +24,6 @@ import java.util.*;
  *       Constants.VECTOR_STORE_MILVUS,
  *       Constants.VECTOR_STORE_CHROMA,
  *       Constants.VECTOR_STORE_PINECONE,
- *       Constants.VECTOR_STORE_WEAVIATE,
  *       Constants.VECTOR_STORE_AI_SEARCH
  *   )));
  * </pre>
@@ -47,12 +46,10 @@ public class EmbeddingOperationValidator {
               Constants.VECTOR_STORE_MILVUS,
               Constants.VECTOR_STORE_CHROMA,
               Constants.VECTOR_STORE_PINECONE,
-              Constants.VECTOR_STORE_WEAVIATE,
               Constants.VECTOR_STORE_AI_SEARCH,
               Constants.VECTOR_STORE_QDRANT
             )));
 
-    // Weaviate not supported for FILTER_BY_METADATA operation
     EMBEDDING_OPERATION_TYPE_TO_SUPPORTED_VECTOR_STORES.put(Constants.EMBEDDING_OPERATION_TYPE_FILTER_BY_METADATA,
             new HashSet<>(Arrays.asList(
               Constants.VECTOR_STORE_PGVECTOR,
@@ -73,7 +70,6 @@ public class EmbeddingOperationValidator {
               Constants.VECTOR_STORE_MILVUS,
               Constants.VECTOR_STORE_CHROMA,
               // Constants.VECTOR_STORE_PINECONE,
-              Constants.VECTOR_STORE_WEAVIATE,
               Constants.VECTOR_STORE_AI_SEARCH
             )));
 
@@ -85,7 +81,6 @@ public class EmbeddingOperationValidator {
               Constants.VECTOR_STORE_MILVUS,
               Constants.VECTOR_STORE_CHROMA,
               // Constants.VECTOR_STORE_PINECONE, // Do not support GTE with strings.
-              // Constants.VECTOR_STORE_WEAVIATE, // Not Supported
               Constants.VECTOR_STORE_AI_SEARCH,
               Constants.VECTOR_STORE_QDRANT
             )));

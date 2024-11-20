@@ -16,7 +16,6 @@ import org.mule.extension.mulechain.vectors.internal.store.opensearch.OpenSearch
 import org.mule.extension.mulechain.vectors.internal.store.pgvector.PGVectorStore;
 import org.mule.extension.mulechain.vectors.internal.store.pinecone.PineconeStore;
 import org.mule.extension.mulechain.vectors.internal.store.qdrant.QdrantStore;
-import org.mule.extension.mulechain.vectors.internal.store.weaviate.WeaviateStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -273,11 +272,6 @@ public class BaseStore {
         case Constants.VECTOR_STORE_AI_SEARCH:
 
           baseStore = new AISearchStore(storeName, configuration, queryParams, dimension);
-          break;
-
-        case Constants.VECTOR_STORE_WEAVIATE:
-
-          baseStore = new WeaviateStore(storeName, configuration, queryParams, dimension);
           break;
 
         case Constants.VECTOR_STORE_CHROMA:
