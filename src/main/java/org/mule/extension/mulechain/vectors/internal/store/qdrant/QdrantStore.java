@@ -45,6 +45,7 @@ public class QdrantStore extends BaseStore {
         return QdrantEmbeddingStore.builder()
                 .client(client)
                 .payloadTextKey(payloadTextKey)
+                .collectionName(storeName)
                 .build();
     }
 
@@ -56,7 +57,6 @@ public class QdrantStore extends BaseStore {
 
             HashMap<String, JSONObject> sourceObjectMap = new HashMap<String, JSONObject>();
             JSONObject jsonObject = new JSONObject();
-            jsonObject.put(Constants.JSON_KEY_STORE_NAME, storeName);
 
             boolean keepScrolling = true;
             Points.PointId nextOffset = null;
