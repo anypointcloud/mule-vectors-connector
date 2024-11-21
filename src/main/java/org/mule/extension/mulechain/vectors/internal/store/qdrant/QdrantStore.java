@@ -9,6 +9,7 @@ import dev.langchain4j.store.embedding.EmbeddingStore;
 import dev.langchain4j.store.embedding.qdrant.QdrantEmbeddingStore;
 import io.qdrant.client.QdrantClient;
 import io.qdrant.client.QdrantGrpcClient;
+import io.qdrant.client.grpc.Collections;
 import io.qdrant.client.grpc.JsonWithInt;
 import io.qdrant.client.grpc.Points;
 import org.json.JSONObject;
@@ -38,6 +39,17 @@ public class QdrantStore extends BaseStore {
         boolean useTls = vectorStoreConfig.getBoolean("QDRANT_USE_TLS");
         this.client = new QdrantClient(QdrantGrpcClient.newBuilder(host, port, useTls).withApiKey(apiKey).build());
         this.payloadTextKey = vectorStoreConfig.getString("QDRANT_TEXT_KEY");
+
+        try {
+            if (!this.client.collectionExistsAsync(this.storeName).get() && dimension > 0) {
+                this.client.createCollectionAsync(storeName,
+                        Collections.VectorParams.newBuilder().setDistance(Collections.Distance.Cosine)
+                                .setSize(dimension).build())
+                        .get();
+            }
+        } catch (ExecutionException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public EmbeddingStore<TextSegment> buildEmbeddingStore() {
