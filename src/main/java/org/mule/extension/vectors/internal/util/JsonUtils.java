@@ -61,7 +61,6 @@ public final class JsonUtils {
   public static JSONObject createIngestionStatusObject(String storeName) {
 
     JSONObject jsonObject = new JSONObject();
-    jsonObject.put(Constants.JSON_KEY_STORE_NAME, storeName);
     jsonObject.put(Constants.JSON_KEY_STATUS, Constants.OPERATION_STATUS_UPDATED);
     return jsonObject;
   }
