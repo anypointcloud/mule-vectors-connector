@@ -21,6 +21,7 @@ public class Constants {
   public static final String EMBEDDING_MODEL_SERVICE_MISTRAL_AI = "MISTRAL_AI";
   public static final String EMBEDDING_MODEL_SERVICE_NOMIC = "NOMIC";
   public static final String EMBEDDING_MODEL_SERVICE_HUGGING_FACE = "HUGGING_FACE";
+  public static final String EMBEDDING_MODEL_SERVICE_EINSTEIN = "EINSTEIN";
 
   public static final String EMBEDDING_MODEL_NAME_TEXT_EMBEDDING_3_SMALL = "text-embedding-3-small";
   public static final String EMBEDDING_MODEL_NAME_TEXT_EMBEDDING_3_LARGE = "text-embedding-3-large";
