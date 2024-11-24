@@ -6,6 +6,7 @@ import dev.langchain4j.store.embedding.EmbeddingStore;
 import org.json.JSONObject;
 import org.mule.extension.vectors.internal.config.Configuration;
 import org.mule.extension.vectors.internal.constant.Constants;
+import org.mule.extension.vectors.internal.error.MuleVectorsErrorType;
 import org.mule.extension.vectors.internal.helper.parameter.QueryParameters;
 import org.mule.extension.vectors.internal.store.aisearch.AISearchStore;
 import org.mule.extension.vectors.internal.store.chroma.ChromaStore;
@@ -15,6 +16,7 @@ import org.mule.extension.vectors.internal.store.opensearch.OpenSearchStore;
 import org.mule.extension.vectors.internal.store.pgvector.PGVectorStore;
 import org.mule.extension.vectors.internal.store.pinecone.PineconeStore;
 import org.mule.extension.vectors.internal.store.qdrant.QdrantStore;
+import org.mule.runtime.extension.api.exception.ModuleException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -299,8 +301,9 @@ public class BaseStore {
           break;
 
         default:
-          //throw new IllegalOperationException("Unsupported Vector Store: " + configuration.getVectorStore());
-          baseStore = null;
+          throw new ModuleException(
+              String.format("Error while initializing embedding store. \"%s\" not supported.", configuration.getVectorStore()),
+              MuleVectorsErrorType.STORE_SERVICES_FAILURE);
       }
       return baseStore;
     }

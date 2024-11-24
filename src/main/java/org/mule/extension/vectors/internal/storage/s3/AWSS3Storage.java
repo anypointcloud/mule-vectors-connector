@@ -28,7 +28,6 @@ public class AWSS3Storage extends BaseStorage {
     private final String awsAccessKeyId;
     private final String awsSecretAccessKey;
     private final String awsRegion;
-    private final String awsS3Bucket;
 
     private String continuationToken = null;
 
@@ -81,7 +80,7 @@ public class AWSS3Storage extends BaseStorage {
 
             // Build the request
             ListObjectsV2Request.Builder requestBuilder = ListObjectsV2Request.builder()
-                .bucket(awsS3Bucket);
+                .bucket(getAWSS3Bucket());
             if (continuationToken != null) {
                 requestBuilder.continuationToken(continuationToken); // Set continuation token
             }
@@ -104,7 +103,6 @@ public class AWSS3Storage extends BaseStorage {
         this.awsAccessKeyId = storageConfig.getString("AWS_ACCESS_KEY_ID");
         this.awsSecretAccessKey = storageConfig.getString("AWS_SECRET_ACCESS_KEY");
         this.awsRegion = storageConfig.getString("AWS_DEFAULT_REGION");
-        this.awsS3Bucket = storageConfig.getString("AWS_S3_BUCKET");
     }
 
     @Override
@@ -118,16 +116,43 @@ public class AWSS3Storage extends BaseStorage {
 
         S3Object object = getS3ObjectIterator().next();
         LOGGER.debug("AWS S3 Key: " + object.key());
-        Document document = getLoader().loadDocument(awsS3Bucket, object.key(), documentParser);
+        Document document = getLoader().loadDocument(getAWSS3Bucket(), object.key(), documentParser);
         MetadatatUtils.addMetadataToDocument(document, fileType, object.key());
         return document;
     }
 
     public Document getSingleDocument() {
 
-        LOGGER.debug("AWS S3 Key: " + contextPath);
-        Document document = getLoader().loadDocument(awsS3Bucket, contextPath, documentParser);
-        MetadatatUtils.addMetadataToDocument(document, fileType, contextPath);
+        LOGGER.debug("AWS S3 Key: " + getAWSS3ObjectKey());
+        Document document = getLoader().loadDocument(getAWSS3Bucket(), getAWSS3ObjectKey(), documentParser);
+        MetadatatUtils.addMetadataToDocument(document, fileType, getAWSS3ObjectKey());
         return document;
+    }
+
+    private String getAWSS3Bucket() {
+
+        String s3Url = this.contextPath;
+        // Remove the "s3://" prefix
+        if (s3Url.startsWith("s3://") || s3Url.startsWith("S3://")) {
+            s3Url = s3Url.substring(5);
+        }
+        // Extract the bucket name
+        String bucket = s3Url.contains("/") ? s3Url.substring(0, s3Url.indexOf("/")) : s3Url;
+        LOGGER.debug("AWS S3 Bucket: " + bucket);
+        return bucket;
+    }
+
+    private String getAWSS3ObjectKey() {
+
+        String s3Url = this.contextPath;
+        // Remove the "s3://" prefix
+        if (s3Url.startsWith("s3://") || s3Url.startsWith("S3://")) {
+            s3Url = s3Url.substring(5);
+        }
+        // Extract the bucket name and object key
+        int slashIndex = s3Url.indexOf("/");
+        String objectKey = slashIndex != -1 ? s3Url.substring(slashIndex + 1) : "";
+        LOGGER.debug("AWS S3 Object Key: " + objectKey);
+        return objectKey;
     }
 }

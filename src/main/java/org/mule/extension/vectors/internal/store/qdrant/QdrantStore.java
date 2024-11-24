@@ -15,9 +15,11 @@ import io.qdrant.client.grpc.Points;
 import org.json.JSONObject;
 import org.mule.extension.vectors.internal.config.Configuration;
 import org.mule.extension.vectors.internal.constant.Constants;
+import org.mule.extension.vectors.internal.error.MuleVectorsErrorType;
 import org.mule.extension.vectors.internal.helper.parameter.QueryParameters;
 import org.mule.extension.vectors.internal.store.BaseStore;
 import org.mule.extension.vectors.internal.util.JsonUtils;
+import org.mule.runtime.extension.api.exception.ModuleException;
 
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -31,24 +33,28 @@ public class QdrantStore extends BaseStore {
 
         super(storeName, configuration, queryParams, dimension);
 
-        JSONObject config = JsonUtils.readConfigFile(configuration.getConfigFilePath());
-        JSONObject vectorStoreConfig = config.getJSONObject(Constants.VECTOR_STORE_QDRANT);
-        String host = vectorStoreConfig.getString("QDRANT_HOST");
-        String apiKey = vectorStoreConfig.getString("QDRANT_API_KEY");
-        int port = vectorStoreConfig.getInt("QDRANT_GRPC_PORT");
-        boolean useTls = vectorStoreConfig.getBoolean("QDRANT_USE_TLS");
-        this.client = new QdrantClient(QdrantGrpcClient.newBuilder(host, port, useTls).withApiKey(apiKey).build());
-        this.payloadTextKey = vectorStoreConfig.getString("QDRANT_TEXT_KEY");
-
         try {
+
+            JSONObject config = JsonUtils.readConfigFile(configuration.getConfigFilePath());
+            JSONObject vectorStoreConfig = config.getJSONObject(Constants.VECTOR_STORE_QDRANT);
+            String host = vectorStoreConfig.getString("QDRANT_HOST");
+            String apiKey = vectorStoreConfig.getString("QDRANT_API_KEY");
+            int port = vectorStoreConfig.getInt("QDRANT_GRPC_PORT");
+            boolean useTls = vectorStoreConfig.getBoolean("QDRANT_USE_TLS");
+            this.client = new QdrantClient(QdrantGrpcClient.newBuilder(host, port, useTls).withApiKey(apiKey).build());
+            this.payloadTextKey = vectorStoreConfig.getString("QDRANT_TEXT_KEY");
+
             if (!this.client.collectionExistsAsync(this.storeName).get() && dimension > 0) {
                 this.client.createCollectionAsync(storeName,
                         Collections.VectorParams.newBuilder().setDistance(Collections.Distance.Cosine)
                                 .setSize(dimension).build())
                         .get();
             }
-        } catch (ExecutionException | InterruptedException e) {
-            throw new RuntimeException(e);
+        } catch (Exception e) {
+
+            throw new ModuleException(
+                String.format("Error while initializing embedding store \"%s\".", configuration.getVectorStore()),
+                MuleVectorsErrorType.STORE_SERVICES_FAILURE);
         }
     }
 
