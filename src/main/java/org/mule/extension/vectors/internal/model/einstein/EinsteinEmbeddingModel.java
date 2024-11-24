@@ -77,13 +77,16 @@ public class EinsteinEmbeddingModel extends DimensionAwareEmbeddingModel {
 
   private Response<List<Embedding>> embedTexts(List<String> texts) {
 
-    List<Embedding> embeddings = new ArrayList<Embedding>();
+    List<Embedding> embeddings = new ArrayList<>();
 
     int tokenUsage = 0;
 
-    for (String text : texts) {
+    // Loop through each array in batch of 16
+    for(int x = 0; x < texts.size(); x += 16) {
 
-      String response = generateEmbeddings(buildPayload(text));
+      List<String> batch = texts.subList(x, Math.min(x + 16, texts.size()));
+
+      String response = generateEmbeddings(buildPayload(batch));
       JSONObject jsonResponse = new JSONObject(response);
 
       tokenUsage += jsonResponse.getJSONObject("parameters")
@@ -92,21 +95,28 @@ public class EinsteinEmbeddingModel extends DimensionAwareEmbeddingModel {
 
       // Extract the 'embeddings' array
       JSONArray embeddingsArray = jsonResponse.getJSONArray("embeddings");
-      // Extract the first embedding object
-      JSONObject embeddingObject = embeddingsArray.getJSONObject(0);
-      // Get the 'embedding' array
-      JSONArray embeddingArray = embeddingObject.getJSONArray("embedding");
 
-      // Convert the 'embedding' JSONArray to a float array
-      float[] vector = new float[embeddingArray.length()];
-      for (int x = 0; x < embeddingArray.length(); x++) {
-        vector[x] = (float) embeddingArray.getDouble(x); // Convert to float
+      // Loop through each embedding object in the embeddings array
+      for (int i = 0; i < embeddingsArray.length(); i++) {
+        // Extract the individual embedding object
+        JSONObject embeddingObject = embeddingsArray.getJSONObject(i);
+
+        // Get the 'embedding' array
+        JSONArray embeddingArray = embeddingObject.getJSONArray("embedding");
+
+        // Convert the 'embedding' JSONArray to a float array
+        float[] vector = new float[embeddingArray.length()];
+        for (int y = 0; y < embeddingArray.length(); y++) {
+          vector[y] = (float) embeddingArray.getDouble(y); // Convert to float
+        }
+
+        // Create an Embedding object and add it to the list
+        Embedding embedding = Embedding.from(vector);
+        embeddings.add(embedding);
       }
-      Embedding embedding = Embedding.from(vector);
-
-      embeddings.add(embedding);
     }
 
+    LOGGER.debug("tokenUsage: " + tokenUsage);
     return Response.from(embeddings, new TokenUsage(tokenUsage));
   }
 
@@ -175,7 +185,14 @@ public class EinsteinEmbeddingModel extends DimensionAwareEmbeddingModel {
     JSONObject jsonObject = new JSONObject();
     jsonObject.put("input", input);
     return jsonObject.toString();
+  }
 
+  private static String buildPayload(List<String> texts) {
+
+    JSONArray input = new JSONArray(texts);
+    JSONObject jsonObject = new JSONObject();
+    jsonObject.put("input", input);
+    return jsonObject.toString();
   }
 
   private String generateEmbeddings(String payload) {
