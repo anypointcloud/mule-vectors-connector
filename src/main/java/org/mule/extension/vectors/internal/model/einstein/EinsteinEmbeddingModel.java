@@ -116,7 +116,6 @@ public class EinsteinEmbeddingModel extends DimensionAwareEmbeddingModel {
       }
     }
 
-    LOGGER.debug("tokenUsage: " + tokenUsage);
     return Response.from(embeddings, new TokenUsage(tokenUsage));
   }
 
@@ -128,7 +127,6 @@ public class EinsteinEmbeddingModel extends DimensionAwareEmbeddingModel {
     try {
       URL url = new URL(urlString);
 
-      LOGGER.debug("urlString:" + urlString);
       HttpURLConnection conn = (HttpURLConnection) url.openConnection();
       conn.setDoOutput(true);
       conn.setRequestMethod("POST");

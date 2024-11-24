@@ -115,7 +115,7 @@ public class AWSS3Storage extends BaseStorage {
     public Document next() {
 
         S3Object object = getS3ObjectIterator().next();
-        LOGGER.debug("AWS S3 Key: " + object.key());
+        LOGGER.debug("AWS S3 Object Key: " + object.key());
         Document document = getLoader().loadDocument(getAWSS3Bucket(), object.key(), documentParser);
         MetadatatUtils.addMetadataToDocument(document, fileType, object.key());
         return document;
@@ -123,7 +123,7 @@ public class AWSS3Storage extends BaseStorage {
 
     public Document getSingleDocument() {
 
-        LOGGER.debug("AWS S3 Key: " + getAWSS3ObjectKey());
+        LOGGER.debug("S3 URL: " + contextPath);
         Document document = getLoader().loadDocument(getAWSS3Bucket(), getAWSS3ObjectKey(), documentParser);
         MetadatatUtils.addMetadataToDocument(document, fileType, getAWSS3ObjectKey());
         return document;
@@ -138,7 +138,6 @@ public class AWSS3Storage extends BaseStorage {
         }
         // Extract the bucket name
         String bucket = s3Url.contains("/") ? s3Url.substring(0, s3Url.indexOf("/")) : s3Url;
-        LOGGER.debug("AWS S3 Bucket: " + bucket);
         return bucket;
     }
 
@@ -152,7 +151,6 @@ public class AWSS3Storage extends BaseStorage {
         // Extract the bucket name and object key
         int slashIndex = s3Url.indexOf("/");
         String objectKey = slashIndex != -1 ? s3Url.substring(slashIndex + 1) : "";
-        LOGGER.debug("AWS S3 Object Key: " + objectKey);
         return objectKey;
     }
 }
