@@ -177,7 +177,7 @@ public class EinsteinEmbeddingModel extends DimensionAwareEmbeddingModel {
     try {
 
       // Open connection
-      String urlString = URL_BASE + getModelName(modelName) + "/embeddings";
+      String urlString = URL_BASE + this.modelName + "/embeddings";
       HttpURLConnection connection;
       try {
         URL url = new URL(urlString);
