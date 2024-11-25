@@ -9,6 +9,7 @@ import dev.langchain4j.model.output.Response;
 import dev.langchain4j.model.output.TokenUsage;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.mule.extension.vectors.internal.constant.Constants;
 import org.mule.extension.vectors.internal.error.MuleVectorsErrorType;
 import org.mule.runtime.extension.api.exception.ModuleException;
 import org.slf4j.Logger;
@@ -35,7 +36,7 @@ public class EinsteinEmbeddingModel extends DimensionAwareEmbeddingModel {
 
   private EinsteinEmbeddingModel(String salesforceOrg, String clientId, String clientSecret, String modelName, Integer dimensions) {
 
-    this.modelName = Utils.getOrDefault(modelName, "sfdc_ai__DefaultOpenAITextEmbeddingAda_002");
+    this.modelName = Utils.getOrDefault(modelName, Constants.EMBEDDING_MODEL_NAME_SFDC_TEXT_EMBEDDING_ADA_002);
     this.dimensions = dimensions;
     this.accessToken = getAccessToken(salesforceOrg, clientId, clientSecret);
   }

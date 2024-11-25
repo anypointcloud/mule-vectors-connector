@@ -1,22 +1,15 @@
 package org.mule.extension.vectors.internal.model.einstein;
 
+import org.mule.extension.vectors.internal.constant.Constants;
+
 import java.util.HashMap;
 import java.util.Map;
 
 public enum EinsteinEmbeddingModelName {
 
-  ANTHROPIC_CLAUDE_3_HAIKU_ON_AMAZON("sfdc_ai__DefaultBedrockAnthropicClaude3Haiku", 0),
-  AZURE_OPENAI_ADA_002("sfdc_ai__DefaultAzureOpenAITextEmbeddingAda_002", 1536),
-  AZURE_OPENAI_GPT_3_5_TURBO("sfdc_ai__DefaultAzureOpenAIGPT35Turbo", 4096),
-  AZURE_OPENAI_GPT_3_5_TURBO_16K("sfdc_ai__DefaultAzureOpenAIGPT35Turbo_16k", 16384),
-  AZURE_OPENAI_GPT_4_TURBO("sfdc_ai__DefaultAzureOpenAIGPT4Turbo", 8192),
-  OPENAI_ADA_002("sfdc_ai__DefaultOpenAITextEmbeddingAda_002", 1536),
-  OPENAI_GPT_3_5_TURBO("sfdc_ai__DefaultOpenAIGPT35Turbo", 4096),
-  OPENAI_GPT_3_5_TURBO_16K("sfdc_ai__DefaultOpenAIGPT35Turbo_16k", 16384),
-  OPENAI_GPT_4("sfdc_ai__DefaultOpenAIGPT4", 8192),
-  OPENAI_GPT_4_32K("sfdc_ai__DefaultOpenAIGPT4_32k", 32768),
-  OPENAI_GPT_4O_OMNI("sfdc_ai__DefaultOpenAIGPT4Omni", 8192),
-  OPENAI_GPT_4_TURBO("sfdc_ai__DefaultOpenAIGPT4Turbo", 8192);
+  DEFAULT_ADA_002(Constants.EMBEDDING_MODEL_NAME_SFDC_TEXT_EMBEDDING_ADA_002, 1536),
+  AZURE_OPENAI_ADA_002(Constants.EMBEDDING_MODEL_NAME_SFDC_AZURE_TEXT_EMBEDDING_ADA_002, 1536),
+  OPENAI_ADA_002(Constants.EMBEDDING_MODEL_NAME_SFDC_OPENAI_TEXT_EMBEDDING_ADA_002, 1536);
 
   private final String stringValue;
   private final Integer dimension;
