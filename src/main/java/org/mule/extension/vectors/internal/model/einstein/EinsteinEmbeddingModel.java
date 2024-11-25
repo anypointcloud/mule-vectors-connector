@@ -140,7 +140,7 @@ public class EinsteinEmbeddingModel extends DimensionAwareEmbeddingModel {
    * @throws ModuleException if authentication fails
    */
   private String getAccessToken(String salesforceOrg, String clientId, String clientSecret) {
-    String urlString = "https://" + salesforceOrg + ".my.salesforce.com/services/oauth2/token";
+    String urlString = salesforceOrg + "/services/oauth2/token";
     String params = "grant_type=client_credentials&client_id=" + clientId + "&client_secret=" + clientSecret;
 
     try {
