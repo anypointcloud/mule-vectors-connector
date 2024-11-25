@@ -26,7 +26,7 @@ public class EinsteinModel  extends BaseModel {
     JSONObject config = readConfigFile(configuration.getConfigFilePath());
     assert config != null;
     JSONObject modelConfig = config.getJSONObject(Constants.EMBEDDING_MODEL_SERVICE_EINSTEIN);
-    this.salesforceOrg = modelConfig.getString("EINSTEIN_SFDC_ORG");;
+    this.salesforceOrg = modelConfig.getString("EINSTEIN_SFDC_ORG_URL");;
     this.clientId = modelConfig.getString("EINSTEIN_CLIENT_ID");;
     this.clientSecret = modelConfig.getString("EINSTEIN_CLIENT_SECRET");;
     this.modelName = embeddingModelParameters.getEmbeddingModelName();
