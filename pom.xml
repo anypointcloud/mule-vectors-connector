@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>cloud.anypoint</groupId>
     <artifactId>mule-vectors-connector</artifactId>
-    <version>0.2.0</version>
+    <version>0.2.1-SNAPSHOT</version>
     <packaging>mule-extension</packaging>
     <name>MuleSoft Vectors Connector - Mule 4</name>
     <description>MuleSoft Vectors Connector provides access to a broad number of external Vector Stores.</description>
@@ -281,7 +281,7 @@
 	        <connection>scm:git:git@github.com:anypointcloud/mule-vectors-connector.git</connection>
 	        <developerConnection>scm:git:git@github.com:anypointcloud/mule-vectors-connector.git</developerConnection>
 	        <url>https://github.com/anypointcloud/mule-vectors-connector</url>
-	      <tag>0.2.0</tag>
+	      <tag>HEAD</tag>
 	</scm>
 
     <distributionManagement>
