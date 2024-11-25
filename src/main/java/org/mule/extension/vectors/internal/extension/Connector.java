@@ -2,9 +2,19 @@ package org.mule.extension.vectors.internal.extension;
 
 import org.mule.extension.vectors.internal.config.Configuration;
 import org.mule.extension.vectors.internal.error.MuleVectorsErrorType;
+import org.mule.extension.vectors.internal.store.BaseStoreConfiguration;
+import org.mule.extension.vectors.internal.store.aisearch.AISearchStoreConfiguration;
+import org.mule.extension.vectors.internal.store.chroma.ChromaStoreConfiguration;
+import org.mule.extension.vectors.internal.store.elasticsearch.ElasticsearchStoreConfiguration;
+import org.mule.extension.vectors.internal.store.milvus.MilvusStoreConfiguration;
+import org.mule.extension.vectors.internal.store.opensearch.OpenSearchStoreConfiguration;
+import org.mule.extension.vectors.internal.store.pgvector.PGVectorStoreConfiguration;
+import org.mule.extension.vectors.internal.store.pinecone.PineconeStoreConfiguration;
+import org.mule.extension.vectors.internal.store.qdrant.QdrantStoreConfiguration;
 import org.mule.runtime.api.meta.Category;
 import org.mule.runtime.extension.api.annotation.Extension;
 import org.mule.runtime.extension.api.annotation.Configurations;
+import org.mule.runtime.extension.api.annotation.SubTypeMapping;
 import org.mule.runtime.extension.api.annotation.dsl.xml.Xml;
 import org.mule.runtime.extension.api.annotation.error.ErrorTypes;
 import org.mule.runtime.extension.api.annotation.license.RequiresEnterpriseLicense;
@@ -20,6 +30,16 @@ import static org.mule.sdk.api.meta.JavaVersion.JAVA_8;
 @Xml(prefix = "ms-vectors")
 @Extension(name = "MuleSoft Vectors Connector", category = Category.SELECT)
 @Configurations(Configuration.class)
+@SubTypeMapping(baseType = BaseStoreConfiguration.class,
+    subTypes = {
+        AISearchStoreConfiguration.class,
+        ChromaStoreConfiguration.class,
+        ElasticsearchStoreConfiguration.class,
+        MilvusStoreConfiguration.class,
+        OpenSearchStoreConfiguration.class,
+        PGVectorStoreConfiguration.class,
+        PineconeStoreConfiguration.class,
+        QdrantStoreConfiguration.class})
 @RequiresEnterpriseLicense(allowEvaluationLicense = true)
 @ErrorTypes(MuleVectorsErrorType.class)
 @JavaVersionSupport({JAVA_8, JAVA_11, JAVA_17})

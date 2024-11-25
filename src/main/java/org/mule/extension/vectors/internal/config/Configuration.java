@@ -4,6 +4,7 @@ import org.mule.extension.vectors.internal.helper.provider.EmbeddingModelService
 import org.mule.extension.vectors.internal.helper.provider.VectorStoreProvider;
 import org.mule.extension.vectors.internal.operation.DocumentOperations;
 import org.mule.extension.vectors.internal.operation.EmbeddingOperations;
+import org.mule.extension.vectors.internal.store.BaseStoreConfiguration;
 import org.mule.runtime.extension.api.annotation.Alias;
 import org.mule.runtime.extension.api.annotation.Operations;
 import org.mule.runtime.extension.api.annotation.param.Parameter;
@@ -33,8 +34,7 @@ public class Configuration {
   @DisplayName("Vector Store")
   @Summary("The vector store.")
   @Placement(order = 2, tab = Placement.DEFAULT_TAB)
-  @OfValues(VectorStoreProvider.class)
-  private String vectorStore;
+  private BaseStoreConfiguration storeConfiguration;
 
   @Parameter
   @Alias("configFilePath")
@@ -47,12 +47,13 @@ public class Configuration {
     return embeddingModelService;
   }
 
-  public String getVectorStore() {
-    return vectorStore;
+  public BaseStoreConfiguration getStoreConfiguration() {
+    return storeConfiguration;
   }
 
   public String getConfigFilePath() {
     return configFilePath;
   }
+
 
 }

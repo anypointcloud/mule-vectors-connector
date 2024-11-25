@@ -26,15 +26,14 @@ import static org.mule.extension.vectors.internal.util.JsonUtils.readConfigFile;
 
 public class MilvusStore extends BaseStore {
 
-  private String uri;
+  private final String uri;
 
   public MilvusStore(String storeName, Configuration configuration, QueryParameters queryParams, int dimension) {
 
     super(storeName, configuration, queryParams, dimension);
 
-    JSONObject config = readConfigFile(configuration.getConfigFilePath());
-    JSONObject vectorStoreConfig = config.getJSONObject(Constants.VECTOR_STORE_MILVUS);
-    this.uri = vectorStoreConfig.getString("MILVUS_URL");
+    MilvusStoreConfiguration milvusStoreConfiguration = (MilvusStoreConfiguration) configuration.getStoreConfiguration();
+    this.uri = milvusStoreConfiguration.getUrl();
   }
 
   public EmbeddingStore<TextSegment> buildEmbeddingStore() {

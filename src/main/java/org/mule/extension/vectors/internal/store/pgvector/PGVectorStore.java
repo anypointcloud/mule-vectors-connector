@@ -48,13 +48,12 @@ public class PGVectorStore extends BaseStore {
 
     super(storeName, configuration, queryParams, dimension);
 
-    JSONObject config = readConfigFile(configuration.getConfigFilePath());
-    JSONObject vectorStoreConfig = config.getJSONObject(Constants.VECTOR_STORE_PGVECTOR);
-    this.host = vectorStoreConfig.getString("POSTGRES_HOST");
-    this.port = vectorStoreConfig.getInt("POSTGRES_PORT");
-    this.database = vectorStoreConfig.getString("POSTGRES_DATABASE");
-    this.userName = vectorStoreConfig.getString("POSTGRES_USER");
-    this.password = vectorStoreConfig.getString("POSTGRES_PASSWORD");
+    PGVectorStoreConfiguration pgVectorStoreConfiguration = (PGVectorStoreConfiguration)configuration.getStoreConfiguration();
+    this.host = pgVectorStoreConfiguration.getHost();
+    this.port = pgVectorStoreConfiguration.getPort();
+    this.database = pgVectorStoreConfiguration.getDatabase();
+    this.userName = pgVectorStoreConfiguration.getUserName();
+    this.password = pgVectorStoreConfiguration.getPassword();
   }
 
   public EmbeddingStore<TextSegment> buildEmbeddingStore() {

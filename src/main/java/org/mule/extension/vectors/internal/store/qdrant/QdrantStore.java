@@ -35,14 +35,13 @@ public class QdrantStore extends BaseStore {
 
         try {
 
-            JSONObject config = JsonUtils.readConfigFile(configuration.getConfigFilePath());
-            JSONObject vectorStoreConfig = config.getJSONObject(Constants.VECTOR_STORE_QDRANT);
-            String host = vectorStoreConfig.getString("QDRANT_HOST");
-            String apiKey = vectorStoreConfig.getString("QDRANT_API_KEY");
-            int port = vectorStoreConfig.getInt("QDRANT_GRPC_PORT");
-            boolean useTls = vectorStoreConfig.getBoolean("QDRANT_USE_TLS");
+            QdrantStoreConfiguration qdrantStoreConfiguration = (QdrantStoreConfiguration)configuration.getStoreConfiguration();
+            String host = qdrantStoreConfiguration.getHost();
+            String apiKey = qdrantStoreConfiguration.getApiKey();
+            int port = qdrantStoreConfiguration.getGprcPort();
+            boolean useTls = qdrantStoreConfiguration.isUseTLS();
             this.client = new QdrantClient(QdrantGrpcClient.newBuilder(host, port, useTls).withApiKey(apiKey).build());
-            this.payloadTextKey = vectorStoreConfig.getString("QDRANT_TEXT_KEY");
+            this.payloadTextKey = qdrantStoreConfiguration.getTextSegmentKey();
 
             if (!this.client.collectionExistsAsync(this.storeName).get() && dimension > 0) {
                 this.client.createCollectionAsync(storeName,
@@ -53,7 +52,7 @@ public class QdrantStore extends BaseStore {
         } catch (Exception e) {
 
             throw new ModuleException(
-                String.format("Error while initializing embedding store \"%s\".", configuration.getVectorStore()),
+                String.format("Error while initializing embedding store \"%s\".", configuration.getStoreConfiguration().getVectorStore()),
                 MuleVectorsErrorType.STORE_SERVICES_FAILURE);
         }
     }

@@ -23,17 +23,16 @@ public class AISearchStore extends BaseStore {
 
   private static final String API_VERSION = "2024-07-01";
 
-  private String apiKey;
-  private String url;
+  private final String apiKey;
+  private final String url;
 
   public AISearchStore(String storeName, Configuration configuration, QueryParameters queryParams, int dimension) {
 
     super(storeName, configuration, queryParams, dimension);
 
-    JSONObject config = readConfigFile(configuration.getConfigFilePath());
-    JSONObject vectorStoreConfig = config.getJSONObject(Constants.VECTOR_STORE_AI_SEARCH);
-    this.apiKey = vectorStoreConfig.getString("AI_SEARCH_KEY");
-    this.url = vectorStoreConfig.getString("AI_SEARCH_URL");
+    AISearchStoreConfiguration aiSearchStoreConfiguration = (AISearchStoreConfiguration) configuration.getStoreConfiguration();
+    this.url = aiSearchStoreConfiguration.getUrl();
+    this.apiKey = aiSearchStoreConfiguration.getApiKey();
   }
 
   public EmbeddingStore<TextSegment> buildEmbeddingStore() {

@@ -9,6 +9,7 @@ import org.mule.extension.vectors.internal.config.Configuration;
 import org.mule.extension.vectors.internal.constant.Constants;
 import org.mule.extension.vectors.internal.helper.parameter.QueryParameters;
 import org.mule.extension.vectors.internal.store.BaseStore;
+import org.mule.extension.vectors.internal.store.aisearch.AISearchStoreConfiguration;
 import org.mule.extension.vectors.internal.util.JsonUtils;
 
 import java.io.BufferedReader;
@@ -24,7 +25,7 @@ import java.util.HashMap;
  */
 public class ChromaStore extends BaseStore {
 
-  private String url;
+  private final String url;
 
 
   /**
@@ -38,9 +39,8 @@ public class ChromaStore extends BaseStore {
 
     super(storeName, configuration, queryParams, dimension);
 
-    JSONObject config = JsonUtils.readConfigFile(configuration.getConfigFilePath());
-    JSONObject vectorStoreConfig = config.getJSONObject(Constants.VECTOR_STORE_CHROMA);
-    this.url = vectorStoreConfig.getString("CHROMA_URL");
+    ChromaStoreConfiguration chromaStoreConfiguration = (ChromaStoreConfiguration) configuration.getStoreConfiguration();
+    this.url = chromaStoreConfiguration.getUrl();
   }
 
   public EmbeddingStore<TextSegment> buildEmbeddingStore() {
