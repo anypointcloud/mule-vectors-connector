@@ -18,7 +18,8 @@ public class EmbeddingModelServiceProvider implements ValueProvider {
             Constants.EMBEDDING_MODEL_SERVICE_MISTRAL_AI,
             Constants.EMBEDDING_MODEL_SERVICE_NOMIC,
             Constants.EMBEDDING_MODEL_SERVICE_HUGGING_FACE,
-            Constants.EMBEDDING_MODEL_SERVICE_AZURE_OPENAI); //"OLLAMA", "COHERE", "AZURE_OPENAI", "HUGGING_FACE";
+            Constants.EMBEDDING_MODEL_SERVICE_AZURE_OPENAI,
+            Constants.EMBEDDING_MODEL_SERVICE_EINSTEIN);
 }
 
 }

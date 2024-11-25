@@ -6,6 +6,7 @@ import org.mule.extension.vectors.internal.constant.Constants;
 import org.mule.extension.vectors.internal.error.MuleVectorsErrorType;
 import org.mule.extension.vectors.internal.helper.parameter.EmbeddingModelParameters;
 import org.mule.extension.vectors.internal.model.azureopenai.AzureOpenAIModel;
+import org.mule.extension.vectors.internal.model.einstein.EinsteinModel;
 import org.mule.extension.vectors.internal.model.huggingface.HuggingFaceModel;
 import org.mule.extension.vectors.internal.model.mistralai.MistralAIModel;
 import org.mule.extension.vectors.internal.model.nomic.NomicModel;
@@ -81,6 +82,10 @@ public class BaseModel {
 
         case Constants.EMBEDDING_MODEL_SERVICE_HUGGING_FACE:
           baseModel = new HuggingFaceModel(configuration, embeddingModelParameters);
+          break;
+
+        case Constants.EMBEDDING_MODEL_SERVICE_EINSTEIN:
+          baseModel = new EinsteinModel(configuration, embeddingModelParameters);
           break;
 
         default:

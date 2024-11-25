@@ -21,6 +21,7 @@ public class Constants {
   public static final String EMBEDDING_MODEL_SERVICE_MISTRAL_AI = "MISTRAL_AI";
   public static final String EMBEDDING_MODEL_SERVICE_NOMIC = "NOMIC";
   public static final String EMBEDDING_MODEL_SERVICE_HUGGING_FACE = "HUGGING_FACE";
+  public static final String EMBEDDING_MODEL_SERVICE_EINSTEIN = "EINSTEIN";
 
   public static final String EMBEDDING_MODEL_NAME_TEXT_EMBEDDING_3_SMALL = "text-embedding-3-small";
   public static final String EMBEDDING_MODEL_NAME_TEXT_EMBEDDING_3_LARGE = "text-embedding-3-large";
@@ -29,6 +30,9 @@ public class Constants {
   public static final String EMBEDDING_MODEL_NAME_NOMIC_EMBED_TEXT = "nomic-embed-text";
   public static final String EMBEDDING_MODEL_NAME_FALCON_7B_INSTRUCT = "tiiuae/falcon-7b-instruct";
   public static final String EMBEDDING_MODEL_NAME_MINI_LM_L6_V2 = "sentence-transformers/all-MiniLM-L6-v2";
+  public static final String EMBEDDING_MODEL_NAME_SFDC_TEXT_EMBEDDING_ADA_002 = "sfdc_ai__DefaultTextEmbeddingAda_002";
+  public static final String EMBEDDING_MODEL_NAME_SFDC_AZURE_TEXT_EMBEDDING_ADA_002 = "sfdc_ai__DefaultAzureOpenAITextEmbeddingAda_002";
+  public static final String EMBEDDING_MODEL_NAME_SFDC_OPENAI_TEXT_EMBEDDING_ADA_002 = "sfdc_ai__DefaultOpenAITextEmbeddingAda_002";
 
   public static final String VECTOR_STORE_PGVECTOR = "PGVECTOR";
   public static final String VECTOR_STORE_ELASTICSEARCH = "ELASTICSEARCH";

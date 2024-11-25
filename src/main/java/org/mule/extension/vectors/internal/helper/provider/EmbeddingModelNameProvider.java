@@ -17,28 +17,34 @@ public class EmbeddingModelNameProvider implements ValueProvider {
   private Configuration configuration;
 
   private static final Set<Value> VALUES_FOR_AZURE_OPENAI = ValueBuilder.getValuesFor(
-          Constants.EMBEDDING_MODEL_NAME_TEXT_EMBEDDING_3_SMALL,
-          Constants.EMBEDDING_MODEL_NAME_TEXT_EMBEDDING_3_LARGE,
-          Constants.EMBEDDING_MODEL_NAME_TEXT_EMBEDDING_ADA_002
+      Constants.EMBEDDING_MODEL_NAME_TEXT_EMBEDDING_3_SMALL,
+      Constants.EMBEDDING_MODEL_NAME_TEXT_EMBEDDING_3_LARGE,
+      Constants.EMBEDDING_MODEL_NAME_TEXT_EMBEDDING_ADA_002
   );
 
   private static final Set<Value> VALUES_FOR_OPENAI = ValueBuilder.getValuesFor(
-          Constants.EMBEDDING_MODEL_NAME_TEXT_EMBEDDING_3_SMALL,
-          Constants.EMBEDDING_MODEL_NAME_TEXT_EMBEDDING_3_LARGE,
-          Constants.EMBEDDING_MODEL_NAME_TEXT_EMBEDDING_ADA_002
+      Constants.EMBEDDING_MODEL_NAME_TEXT_EMBEDDING_3_SMALL,
+      Constants.EMBEDDING_MODEL_NAME_TEXT_EMBEDDING_3_LARGE,
+      Constants.EMBEDDING_MODEL_NAME_TEXT_EMBEDDING_ADA_002
   );
 
   private static final Set<Value> VALUES_FOR_MISTRAL_AI = ValueBuilder.getValuesFor(
-          Constants.EMBEDDING_MODEL_NAME_MISTRAL_EMBED
+      Constants.EMBEDDING_MODEL_NAME_MISTRAL_EMBED
   );
 
   private static final Set<Value> VALUES_FOR_NOMIC = ValueBuilder.getValuesFor(
-          Constants.EMBEDDING_MODEL_NAME_NOMIC_EMBED_TEXT
+      Constants.EMBEDDING_MODEL_NAME_NOMIC_EMBED_TEXT
   );
 
   private static final Set<Value> VALUES_FOR_HUGGING_FACE = ValueBuilder.getValuesFor(
-          Constants.EMBEDDING_MODEL_NAME_FALCON_7B_INSTRUCT,
-          Constants.EMBEDDING_MODEL_NAME_MINI_LM_L6_V2
+      Constants.EMBEDDING_MODEL_NAME_FALCON_7B_INSTRUCT,
+      Constants.EMBEDDING_MODEL_NAME_MINI_LM_L6_V2
+  );
+
+  private static final Set<Value> VALUES_FOR_EINSTEIN = ValueBuilder.getValuesFor(
+      Constants.EMBEDDING_MODEL_NAME_SFDC_TEXT_EMBEDDING_ADA_002,
+      Constants.EMBEDDING_MODEL_NAME_SFDC_AZURE_TEXT_EMBEDDING_ADA_002,
+      Constants.EMBEDDING_MODEL_NAME_SFDC_OPENAI_TEXT_EMBEDDING_ADA_002
   );
 
   @Override
@@ -56,6 +62,8 @@ public class EmbeddingModelNameProvider implements ValueProvider {
         return VALUES_FOR_NOMIC;
       case Constants.EMBEDDING_MODEL_SERVICE_HUGGING_FACE:
         return VALUES_FOR_HUGGING_FACE;
+      case Constants.EMBEDDING_MODEL_SERVICE_EINSTEIN:
+        return VALUES_FOR_EINSTEIN;
       default:
         return Collections.emptySet();
     }
