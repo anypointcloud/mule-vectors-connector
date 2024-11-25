@@ -5,7 +5,9 @@ import org.mule.extension.vectors.internal.helper.provider.VectorStoreProvider;
 import org.mule.extension.vectors.internal.operation.DocumentOperations;
 import org.mule.extension.vectors.internal.operation.EmbeddingOperations;
 import org.mule.extension.vectors.internal.store.BaseStoreConfiguration;
+import org.mule.runtime.api.meta.ExpressionSupport;
 import org.mule.runtime.extension.api.annotation.Alias;
+import org.mule.runtime.extension.api.annotation.Expression;
 import org.mule.runtime.extension.api.annotation.Operations;
 import org.mule.runtime.extension.api.annotation.param.Parameter;
 import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
@@ -34,6 +36,7 @@ public class Configuration {
   @DisplayName("Vector Store")
   @Summary("The vector store.")
   @Placement(order = 2, tab = Placement.DEFAULT_TAB)
+  @Expression(ExpressionSupport.NOT_SUPPORTED)
   private BaseStoreConfiguration storeConfiguration;
 
   @Parameter
