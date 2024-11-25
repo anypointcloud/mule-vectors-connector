@@ -2,6 +2,7 @@ package org.mule.extension.vectors.internal.model.einstein;
 
 import dev.langchain4j.data.embedding.Embedding;
 import dev.langchain4j.data.segment.TextSegment;
+import dev.langchain4j.internal.Utils;
 import dev.langchain4j.model.Tokenizer;
 import dev.langchain4j.model.embedding.DimensionAwareEmbeddingModel;
 import dev.langchain4j.model.output.Response;
@@ -25,38 +26,16 @@ public class EinsteinEmbeddingModel extends DimensionAwareEmbeddingModel {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(EinsteinEmbeddingModel.class);
 
-  private static final Map<String, String> modelNameMapping = new HashMap<>();
-
   private static final String URL_BASE = "https://api.salesforce.com/einstein/platform/v1/models/";
 
-  static {
-    modelNameMapping.put("Anthropic Claude 3 Haiku on Amazon", "sfdc_ai__DefaultBedrockAnthropicClaude3Haiku");
-    modelNameMapping.put("Azure OpenAI Ada 002", "sfdc_ai__DefaultAzureOpenAITextEmbeddingAda_002");
-    modelNameMapping.put("Azure OpenAI GPT 3.5 Turbo", "sfdc_ai__DefaultAzureOpenAIGPT35Turbo");
-    modelNameMapping.put("Azure OpenAI GPT 3.5 Turbo 16k", "sfdc_ai__DefaultAzureOpenAIGPT35Turbo_16k");
-    modelNameMapping.put("Azure OpenAI GPT 4 Turbo", "sfdc_ai__DefaultAzureOpenAIGPT4Turbo");
-    modelNameMapping.put("OpenAI Ada 002", "sfdc_ai__DefaultOpenAITextEmbeddingAda_002");
-    modelNameMapping.put("OpenAI GPT 3.5 Turbo", "sfdc_ai__DefaultOpenAIGPT35Turbo");
-    modelNameMapping.put("OpenAI GPT 3.5 Turbo 16k", "sfdc_ai__DefaultOpenAIGPT35Turbo_16k");
-    modelNameMapping.put("OpenAI GPT 4", "sfdc_ai__DefaultOpenAIGPT4");
-    modelNameMapping.put("OpenAI GPT 4 32k", "sfdc_ai__DefaultOpenAIGPT4_32k");
-    modelNameMapping.put("OpenAI GPT 4o (Omni)", "sfdc_ai__DefaultOpenAIGPT4Omni");
-    modelNameMapping.put("OpenAI GPT 4 Turbo", "sfdc_ai__DefaultOpenAIGPT4Turbo");
-  }
-
   private final String modelName;
-
-  private static String getModelName(String input) {
-    return modelNameMapping.getOrDefault(input, "sfdc_ai__DefaultOpenAITextEmbeddingAda_002");
-  }
-
   private final Integer dimensions;
   private final String accessToken;
 
 
   private EinsteinEmbeddingModel(String salesforceOrg, String clientId, String clientSecret, String modelName, Integer dimensions) {
 
-    this.modelName = getModelName(modelName);
+    this.modelName = Utils.getOrDefault(modelName, "sfdc_ai__DefaultOpenAITextEmbeddingAda_002");
     this.dimensions = dimensions;
     this.accessToken = getAccessToken(salesforceOrg, clientId, clientSecret);
   }
