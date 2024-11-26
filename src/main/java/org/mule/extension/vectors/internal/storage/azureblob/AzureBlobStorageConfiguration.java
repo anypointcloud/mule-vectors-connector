@@ -34,4 +34,12 @@ public class AzureBlobStorageConfiguration implements BaseStorageConfiguration {
   public String getAzureKey() {
     return azureKey;
   }
+
+  public void setAzureName(String azureName) {
+    this.azureName = azureName;
+  }
+
+  public void setAzureKey(String azureKey) {
+    this.azureKey = azureKey;
+  }
 }

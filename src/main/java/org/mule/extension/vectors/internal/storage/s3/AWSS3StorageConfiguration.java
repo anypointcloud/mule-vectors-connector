@@ -45,4 +45,16 @@ public class AWSS3StorageConfiguration implements BaseStorageConfiguration {
   public String getAwsSecretAccessKey() {
     return awsSecretAccessKey;
   }
+
+  public void setAwsRegion(String awsRegion) {
+    this.awsRegion = awsRegion;
+  }
+
+  public void setAwsAccessKeyId(String awsAccessKeyId) {
+    this.awsAccessKeyId = awsAccessKeyId;
+  }
+
+  public void setAwsSecretAccessKey(String awsSecretAccessKey) {
+    this.awsSecretAccessKey = awsSecretAccessKey;
+  }
 }
