@@ -2,6 +2,7 @@ package org.mule.extension.vectors.internal.store.elasticsearch;
 
 import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.store.embedding.EmbeddingStore;
+import dev.langchain4j.store.embedding.elasticsearch.ElasticsearchConfiguration;
 import dev.langchain4j.store.embedding.elasticsearch.ElasticsearchEmbeddingStore;
 import org.json.JSONObject;
 import org.mule.extension.vectors.internal.config.Configuration;
@@ -12,19 +13,18 @@ import org.mule.extension.vectors.internal.util.JsonUtils;
 
 public class ElasticsearchStore extends BaseStore {
 
-  private String url;
-  private String userName;
-  private String password;
+  private final String url;
+  private final String userName;
+  private final String password;
 
   public ElasticsearchStore(String storeName, Configuration configuration, QueryParameters queryParams, int dimension) {
 
     super(storeName, configuration, queryParams, dimension);
 
-    JSONObject config = JsonUtils.readConfigFile(configuration.getConfigFilePath());
-    JSONObject vectorStoreConfig = config.getJSONObject(Constants.VECTOR_STORE_ELASTICSEARCH);
-    this.url = vectorStoreConfig.getString("ELASTICSEARCH_URL");
-    this.userName = vectorStoreConfig.getString("ELASTICSEARCH_USER");
-    this.password = vectorStoreConfig.getString("ELASTICSEARCH_PASSWORD");
+    ElasticsearchStoreConfiguration elasticsearchStoreConfiguration = (ElasticsearchStoreConfiguration) configuration.getStoreConfiguration();
+    this.url = elasticsearchStoreConfiguration.getUrl();
+    this.userName = elasticsearchStoreConfiguration.getUserName();
+    this.password = elasticsearchStoreConfiguration.getPassword();
   }
 
   public EmbeddingStore<TextSegment> buildEmbeddingStore() {

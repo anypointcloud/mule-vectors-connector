@@ -16,10 +16,9 @@ public class NomicModel  extends BaseModel {
   public NomicModel(Configuration configuration, EmbeddingModelParameters embeddingModelParameters) {
 
     super(configuration,embeddingModelParameters);
-    JSONObject config = readConfigFile(configuration.getConfigFilePath());
-    assert config != null;
-    JSONObject modelConfig = config.getJSONObject("NOMIC");
-    this.apiKey = modelConfig.getString("NOMIC_API_KEY");
+
+    NomicModelConfiguration nomicModelConfiguration =(NomicModelConfiguration) configuration.getModelConfiguration();
+    this.apiKey = nomicModelConfiguration.getApiKey();
   }
 
   public EmbeddingModel buildEmbeddingModel() {

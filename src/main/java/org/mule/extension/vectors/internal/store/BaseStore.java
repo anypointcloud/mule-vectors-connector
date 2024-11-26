@@ -258,7 +258,7 @@ public class BaseStore {
 
       BaseStore baseStore;
 
-      switch (configuration.getVectorStore()) {
+      switch (configuration.getStoreConfiguration().getVectorStore()) {
 
         case Constants.VECTOR_STORE_MILVUS:
 
@@ -302,7 +302,7 @@ public class BaseStore {
 
         default:
           throw new ModuleException(
-              String.format("Error while initializing embedding store. \"%s\" not supported.", configuration.getVectorStore()),
+              String.format("Error while initializing embedding store. \"%s\" not supported.", configuration.getStoreConfiguration().getVectorStore()),
               MuleVectorsErrorType.STORE_SERVICES_FAILURE);
       }
       return baseStore;

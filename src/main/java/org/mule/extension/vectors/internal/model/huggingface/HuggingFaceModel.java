@@ -16,10 +16,9 @@ public class HuggingFaceModel  extends BaseModel {
   public HuggingFaceModel(Configuration configuration, EmbeddingModelParameters embeddingModelParameters) {
 
     super(configuration,embeddingModelParameters);
-    JSONObject config = readConfigFile(configuration.getConfigFilePath());
-    assert config != null;
-    JSONObject modelConfig = config.getJSONObject("HUGGING_FACE");
-    this.apiKey = modelConfig.getString("HUGGING_FACE_API_KEY");
+
+    HuggingFaceModelConfiguration huggingFaceModelConfiguration =(HuggingFaceModelConfiguration) configuration.getModelConfiguration();
+    this.apiKey = huggingFaceModelConfiguration.getApiKey();
   }
 
   public EmbeddingModel buildEmbeddingModel() {

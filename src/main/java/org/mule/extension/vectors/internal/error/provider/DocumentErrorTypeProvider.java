@@ -12,12 +12,13 @@ import java.util.Set;
 import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableSet;
 import static org.mule.extension.vectors.internal.error.MuleVectorsErrorType.DOCUMENT_OPERATIONS_FAILURE;
+import static org.mule.extension.vectors.internal.error.MuleVectorsErrorType.STORAGE_SERVICES_FAILURE;
 
 public class DocumentErrorTypeProvider implements ErrorTypeProvider {
 
   @SuppressWarnings("rawtypes")
   @Override
   public Set<ErrorTypeDefinition> getErrorTypes() {
-    return unmodifiableSet(new HashSet<>(asList(DOCUMENT_OPERATIONS_FAILURE)));
+    return unmodifiableSet(new HashSet<>(asList(DOCUMENT_OPERATIONS_FAILURE, STORAGE_SERVICES_FAILURE)));
   }
 }

@@ -1,16 +1,19 @@
 package org.mule.extension.vectors.internal.config;
 
-import org.mule.extension.vectors.internal.helper.provider.EmbeddingModelServiceProvider;
-import org.mule.extension.vectors.internal.helper.provider.VectorStoreProvider;
+import org.mule.extension.vectors.internal.model.BaseModelConfiguration;
 import org.mule.extension.vectors.internal.operation.DocumentOperations;
 import org.mule.extension.vectors.internal.operation.EmbeddingOperations;
+import org.mule.extension.vectors.internal.storage.BaseStorageConfiguration;
+import org.mule.extension.vectors.internal.store.BaseStoreConfiguration;
+import org.mule.runtime.api.meta.ExpressionSupport;
 import org.mule.runtime.extension.api.annotation.Alias;
+import org.mule.runtime.extension.api.annotation.Expression;
 import org.mule.runtime.extension.api.annotation.Operations;
+import org.mule.runtime.extension.api.annotation.param.Optional;
 import org.mule.runtime.extension.api.annotation.param.Parameter;
 import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
 import org.mule.runtime.extension.api.annotation.param.display.Placement;
 import org.mule.runtime.extension.api.annotation.param.display.Summary;
-import org.mule.runtime.extension.api.annotation.values.OfValues;
 
 /**
  * This class represents an extension configuration, values set in this class are commonly used across multiple
@@ -25,34 +28,35 @@ public class Configuration {
   @DisplayName("Embedding Model Service")
   @Summary("The embedding model service.")
   @Placement(order = 1, tab = Placement.DEFAULT_TAB)
-  @OfValues(EmbeddingModelServiceProvider.class)
-  private String embeddingModelService;
+  private BaseModelConfiguration modelConfiguration;
 
   @Parameter
   @Alias("vectorStore")
   @DisplayName("Vector Store")
   @Summary("The vector store.")
   @Placement(order = 2, tab = Placement.DEFAULT_TAB)
-  @OfValues(VectorStoreProvider.class)
-  private String vectorStore;
+  @Expression(ExpressionSupport.NOT_SUPPORTED)
+  private BaseStoreConfiguration storeConfiguration;
 
   @Parameter
-  @Alias("configFilePath")
-  @DisplayName("Configuration File Path")
-  @Summary("The configuration file path.")
+  @Alias("storageProvider")
+  @DisplayName("Storage provider")
+  @Summary("The storage provider.")
+  @Optional
   @Placement(order = 3, tab = Placement.DEFAULT_TAB)
-  private String configFilePath;
+  private BaseStorageConfiguration storageConfiguration;
 
-  public String getEmbeddingModelService() {
-    return embeddingModelService;
+  public BaseModelConfiguration getModelConfiguration() {
+    return modelConfiguration;
   }
 
-  public String getVectorStore() {
-    return vectorStore;
+  public BaseStoreConfiguration getStoreConfiguration() {
+    return storeConfiguration;
   }
 
-  public String getConfigFilePath() {
-    return configFilePath;
+  public BaseStorageConfiguration getStorageConfiguration() {
+    return storageConfiguration;
   }
+
 
 }

@@ -21,11 +21,10 @@ public class PineconeStore extends BaseStore {
 
     super(storeName, configuration, queryParams, dimension);
 
-    JSONObject config = JsonUtils.readConfigFile(configuration.getConfigFilePath());
-    JSONObject vectorStoreConfig = config.getJSONObject(Constants.VECTOR_STORE_PINECONE);
-    this.apiKey = vectorStoreConfig.getString("PINECONE_APIKEY");
-    this.cloud = vectorStoreConfig.getString("PINECONE_SERVERLESS_CLOUD");
-    this.region = vectorStoreConfig.getString("PINECONE_SERVERLESS_REGION");
+    PineconeStoreConfiguration pineconeStoreConfiguration = (PineconeStoreConfiguration) configuration.getStoreConfiguration();
+    this.apiKey = pineconeStoreConfiguration.getApiKey();
+    this.cloud = pineconeStoreConfiguration.getCloud();
+    this.region = pineconeStoreConfiguration.getRegion();
   }
 
   public EmbeddingStore<TextSegment> buildEmbeddingStore() {

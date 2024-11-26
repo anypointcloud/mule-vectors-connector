@@ -16,10 +16,9 @@ public class OpenAIModel  extends BaseModel {
   public OpenAIModel(Configuration configuration, EmbeddingModelParameters embeddingModelParameters) {
 
     super(configuration,embeddingModelParameters);
-    JSONObject config = readConfigFile(configuration.getConfigFilePath());
-    assert config != null;
-    JSONObject modelConfig = config.getJSONObject("OPENAI");
-    this.apiKey = modelConfig.getString("OPENAI_API_KEY");
+
+    OpenAIModelConfiguration openAIModelConfiguration = (OpenAIModelConfiguration) configuration.getModelConfiguration();
+    this.apiKey = openAIModelConfiguration.getApiKey();
   }
 
   public EmbeddingModel buildEmbeddingModel() {

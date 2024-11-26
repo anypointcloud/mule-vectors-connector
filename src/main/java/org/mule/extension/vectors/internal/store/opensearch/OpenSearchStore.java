@@ -12,19 +12,18 @@ import org.mule.extension.vectors.internal.util.JsonUtils;
 
 public class OpenSearchStore extends BaseStore {
 
-  private String url;
-  private String userName;
-  private String password;
+  private final String url;
+  private final String userName;
+  private final String password;
 
   public OpenSearchStore(String storeName, Configuration configuration, QueryParameters queryParams, int dimension) {
 
     super(storeName, configuration, queryParams, dimension);
 
-    JSONObject config = JsonUtils.readConfigFile(configuration.getConfigFilePath());
-    JSONObject vectorStoreConfig = config.getJSONObject(Constants.VECTOR_STORE_OPENSEARCH);
-    this.url = vectorStoreConfig.getString("OPENSEARCH_URL");
-    this.userName = vectorStoreConfig.getString("OPENSEARCH_USER");
-    this.password = vectorStoreConfig.getString("OPENSEARCH_PASSWORD");
+    OpenSearchStoreConfiguration openSearchStoreConfiguration = (OpenSearchStoreConfiguration) configuration.getStoreConfiguration();
+    this.url = openSearchStoreConfiguration.getUrl();
+    this.userName = openSearchStoreConfiguration.getUserName();
+    this.password = openSearchStoreConfiguration.getPassword();
   }
 
   public EmbeddingStore<TextSegment> buildEmbeddingStore() {

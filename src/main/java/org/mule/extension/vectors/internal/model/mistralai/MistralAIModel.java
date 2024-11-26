@@ -16,10 +16,9 @@ public class MistralAIModel  extends BaseModel {
   public MistralAIModel(Configuration configuration, EmbeddingModelParameters embeddingModelParameters) {
 
     super(configuration,embeddingModelParameters);
-    JSONObject config = readConfigFile(configuration.getConfigFilePath());
-    assert config != null;
-    JSONObject modelConfig = config.getJSONObject("MISTRAL_AI");
-    this.apiKey = modelConfig.getString("MISTRAL_AI_API_KEY");
+
+    MistralAIModelConfiguration mistralAIModelConfiguration = (MistralAIModelConfiguration) configuration.getModelConfiguration();
+    this.apiKey = mistralAIModelConfiguration.getApiKey();
   }
 
   public EmbeddingModel buildEmbeddingModel() {

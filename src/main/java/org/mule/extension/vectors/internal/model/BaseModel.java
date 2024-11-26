@@ -61,8 +61,8 @@ public class BaseModel {
 
       BaseModel baseModel;
 
-      LOGGER.debug("Embedding Model Service: " + configuration.getEmbeddingModelService());
-      switch (configuration.getEmbeddingModelService()) {
+      LOGGER.debug("Embedding Model Service: " + configuration.getModelConfiguration().getEmbeddingModelService());
+      switch (configuration.getModelConfiguration().getEmbeddingModelService()) {
 
         case Constants.EMBEDDING_MODEL_SERVICE_AZURE_OPENAI:
           baseModel = new AzureOpenAIModel(configuration, embeddingModelParameters);
@@ -90,7 +90,7 @@ public class BaseModel {
 
         default:
           throw new ModuleException(
-              String.format("Error while initializing embedding model service. \"%s\" is not supported.", configuration.getEmbeddingModelService()),
+              String.format("Error while initializing embedding model service. \"%s\" is not supported.", configuration.getModelConfiguration().getEmbeddingModelService()),
               MuleVectorsErrorType.AI_SERVICES_FAILURE);
       }
       return baseModel;

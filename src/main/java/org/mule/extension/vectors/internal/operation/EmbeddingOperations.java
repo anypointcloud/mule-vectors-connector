@@ -199,7 +199,7 @@ public class EmbeddingOperations {
     try {
 
       EmbeddingOperationValidator.validateOperationType(
-              Constants.EMBEDDING_OPERATION_TYPE_STORE_METADATA,configuration.getVectorStore());
+              Constants.EMBEDDING_OPERATION_TYPE_STORE_METADATA,configuration.getStoreConfiguration().getVectorStore());
 
       BaseModel baseModel = BaseModel.builder()
           .configuration(configuration)
@@ -279,7 +279,7 @@ public class EmbeddingOperations {
     try {
 
       EmbeddingOperationValidator.validateOperationType(
-              Constants.EMBEDDING_OPERATION_TYPE_STORE_METADATA,configuration.getVectorStore());
+              Constants.EMBEDDING_OPERATION_TYPE_STORE_METADATA,configuration.getStoreConfiguration().getVectorStore());
 
       BaseModel baseModel = BaseModel.builder()
           .configuration(configuration)
@@ -451,7 +451,7 @@ public class EmbeddingOperations {
     try {
 
       EmbeddingOperationValidator.validateOperationType(
-              Constants.EMBEDDING_OPERATION_TYPE_FILTER_BY_METADATA,configuration.getVectorStore());
+              Constants.EMBEDDING_OPERATION_TYPE_FILTER_BY_METADATA,configuration.getStoreConfiguration().getVectorStore());
 
       int maximumResults = (int) maxResults;
       if (minScore == null) { //|| minScore == 0) {
@@ -570,9 +570,9 @@ public class EmbeddingOperations {
     try {
 
       EmbeddingOperationValidator.validateOperationType(
-          Constants.EMBEDDING_OPERATION_TYPE_QUERY_ALL,configuration.getVectorStore());
+          Constants.EMBEDDING_OPERATION_TYPE_QUERY_ALL,configuration.getStoreConfiguration().getVectorStore());
       EmbeddingOperationValidator.validateOperationType(
-              Constants.EMBEDDING_OPERATION_TYPE_FILTER_BY_METADATA,configuration.getVectorStore());
+              Constants.EMBEDDING_OPERATION_TYPE_FILTER_BY_METADATA,configuration.getStoreConfiguration().getVectorStore());
 
       BaseStore baseStore = BaseStore.builder()
           .storeName(storeName)
@@ -616,9 +616,9 @@ public class EmbeddingOperations {
 
     try {
       EmbeddingOperationValidator.validateOperationType(
-              Constants.EMBEDDING_OPERATION_TYPE_REMOVE_EMBEDDINGS,configuration.getVectorStore());
+              Constants.EMBEDDING_OPERATION_TYPE_REMOVE_EMBEDDINGS,configuration.getStoreConfiguration().getVectorStore());
       EmbeddingOperationValidator.validateOperationType(
-              Constants.EMBEDDING_OPERATION_TYPE_FILTER_BY_METADATA,configuration.getVectorStore());
+              Constants.EMBEDDING_OPERATION_TYPE_FILTER_BY_METADATA,configuration.getStoreConfiguration().getVectorStore());
 
       BaseModel baseModel = BaseModel.builder()
           .configuration(configuration)

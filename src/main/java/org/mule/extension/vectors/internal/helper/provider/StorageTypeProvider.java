@@ -16,8 +16,7 @@ public class StorageTypeProvider implements ValueProvider {
 
     return ValueBuilder.getValuesFor(
         Constants.STORAGE_TYPE_LOCAL,
-        Constants.STORAGE_TYPE_S3,
-        Constants.STORAGE_TYPE_AZURE_BLOB);
+        Constants.STORAGE_TYPE_CLOUD);
   }
 
 }

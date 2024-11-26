@@ -11,8 +11,7 @@ import java.util.Set;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableSet;
-import static org.mule.extension.vectors.internal.error.MuleVectorsErrorType.AI_SERVICES_FAILURE;
-import static org.mule.extension.vectors.internal.error.MuleVectorsErrorType.EMBEDDING_OPERATIONS_FAILURE;
+import static org.mule.extension.vectors.internal.error.MuleVectorsErrorType.*;
 
 public class EmbeddingErrorTypeProvider implements ErrorTypeProvider {
 
@@ -21,6 +20,8 @@ public class EmbeddingErrorTypeProvider implements ErrorTypeProvider {
   public Set<ErrorTypeDefinition> getErrorTypes() {
     return unmodifiableSet(new HashSet<>(asList(
         EMBEDDING_OPERATIONS_FAILURE,
-        AI_SERVICES_FAILURE)));
+        AI_SERVICES_FAILURE,
+        STORE_SERVICES_FAILURE,
+        STORAGE_SERVICES_FAILURE)));
   }
 }

@@ -41,17 +41,17 @@ public class EinsteinEmbeddingModel extends DimensionAwareEmbeddingModel {
    * Private constructor used by the builder pattern.
    * Initializes the embedding model with Salesforce credentials and model configuration.
    *
-   * @param salesforceOrg The Salesforce organization identifier
+   * @param salesforceOrgUrl The Salesforce organization identifier
    * @param clientId OAuth client ID for authentication
    * @param clientSecret OAuth client secret for authentication
    * @param modelName Name of the Einstein embedding model to use
    * @param dimensions Number of dimensions for the embeddings
    */
-  private EinsteinEmbeddingModel(String salesforceOrg, String clientId, String clientSecret, String modelName, Integer dimensions) {
+  private EinsteinEmbeddingModel(String salesforceOrgUrl, String clientId, String clientSecret, String modelName, Integer dimensions) {
     // Default to SFDC text embedding model if none specified
     this.modelName = Utils.getOrDefault(modelName, Constants.EMBEDDING_MODEL_NAME_SFDC_TEXT_EMBEDDING_ADA_002);
     this.dimensions = dimensions;
-    this.accessToken = getAccessToken(salesforceOrg, clientId, clientSecret);
+    this.accessToken = getAccessToken(salesforceOrgUrl, clientId, clientSecret);
   }
 
   /**
@@ -299,7 +299,7 @@ public class EinsteinEmbeddingModel extends DimensionAwareEmbeddingModel {
    * Implements the Builder pattern for constructing EinsteinEmbeddingModel instances.
    */
   public static class EinsteinEmbeddingModelBuilder {
-    private String salesforceOrg;
+    private String salesforceOrgUrl;
     private String clientId;
     private String clientSecret;
     private String modelName;
@@ -310,8 +310,8 @@ public class EinsteinEmbeddingModel extends DimensionAwareEmbeddingModel {
     public EinsteinEmbeddingModelBuilder() {
     }
 
-    public EinsteinEmbeddingModel.EinsteinEmbeddingModelBuilder salesforceOrg(String salesforceOrg) {
-      this.salesforceOrg = salesforceOrg;
+    public EinsteinEmbeddingModel.EinsteinEmbeddingModelBuilder salesforceOrgUrl(String salesforceOrg) {
+      this.salesforceOrgUrl = salesforceOrg;
       return this;
     }
 
@@ -346,7 +346,7 @@ public class EinsteinEmbeddingModel extends DimensionAwareEmbeddingModel {
      * @return A new EinsteinEmbeddingModel configured with the builder's parameters
      */
     public EinsteinEmbeddingModel build() {
-      return new EinsteinEmbeddingModel(this.salesforceOrg, this.clientId, this.clientSecret, this.modelName, this.dimensions);
+      return new EinsteinEmbeddingModel(this.salesforceOrgUrl, this.clientId, this.clientSecret, this.modelName, this.dimensions);
     }
   }
 }

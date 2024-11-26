@@ -97,12 +97,12 @@ public class AWSS3Storage extends BaseStorage {
     public AWSS3Storage(Configuration configuration, String contextPath, String fileType) {
 
         super(configuration, contextPath, fileType);
-        JSONObject config = JsonUtils.readConfigFile(configuration.getConfigFilePath());
-        assert config != null;
-        JSONObject storageConfig = config.getJSONObject("S3");
-        this.awsAccessKeyId = storageConfig.getString("AWS_ACCESS_KEY_ID");
-        this.awsSecretAccessKey = storageConfig.getString("AWS_SECRET_ACCESS_KEY");
-        this.awsRegion = storageConfig.getString("AWS_DEFAULT_REGION");
+
+        AWSS3StorageConfiguration awsS3StorageConfiguration = (AWSS3StorageConfiguration) configuration.getStorageConfiguration();
+
+        this.awsAccessKeyId = awsS3StorageConfiguration.getAwsAccessKeyId();
+        this.awsSecretAccessKey = awsS3StorageConfiguration.getAwsSecretAccessKey();
+        this.awsRegion = awsS3StorageConfiguration.getAwsRegion();
     }
 
     @Override
