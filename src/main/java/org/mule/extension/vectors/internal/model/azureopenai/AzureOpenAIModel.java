@@ -12,17 +12,16 @@ import static org.mule.extension.vectors.internal.util.JsonUtils.readConfigFile;
 
 public class AzureOpenAIModel extends BaseModel {
 
-  private final String apiKey;
   private final String endpoint;
+  private final String apiKey;
 
   public AzureOpenAIModel(Configuration configuration, EmbeddingModelParameters embeddingModelParameters) {
 
     super(configuration,embeddingModelParameters);
-    JSONObject config = readConfigFile(configuration.getConfigFilePath());
-    assert config != null;
-    JSONObject modelConfig = config.getJSONObject(Constants.EMBEDDING_MODEL_SERVICE_AZURE_OPENAI);
-    this.apiKey = modelConfig.getString("AZURE_OPENAI_KEY");
-    this.endpoint = modelConfig.getString("AZURE_OPENAI_ENDPOINT");
+
+    AzureOpenAIModelConfiguration azureOpenAIModelConfiguration = (AzureOpenAIModelConfiguration) configuration.getModelConfiguration();
+    this.endpoint = azureOpenAIModelConfiguration.getEndpoint();
+    this.apiKey = azureOpenAIModelConfiguration.getApiKey();
   }
 
   public EmbeddingModel buildEmbeddingModel() {

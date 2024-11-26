@@ -1,7 +1,6 @@
 package org.mule.extension.vectors.internal.config;
 
-import org.mule.extension.vectors.internal.helper.provider.EmbeddingModelServiceProvider;
-import org.mule.extension.vectors.internal.helper.provider.VectorStoreProvider;
+import org.mule.extension.vectors.internal.model.BaseModelConfiguration;
 import org.mule.extension.vectors.internal.operation.DocumentOperations;
 import org.mule.extension.vectors.internal.operation.EmbeddingOperations;
 import org.mule.extension.vectors.internal.store.BaseStoreConfiguration;
@@ -13,7 +12,6 @@ import org.mule.runtime.extension.api.annotation.param.Parameter;
 import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
 import org.mule.runtime.extension.api.annotation.param.display.Placement;
 import org.mule.runtime.extension.api.annotation.param.display.Summary;
-import org.mule.runtime.extension.api.annotation.values.OfValues;
 
 /**
  * This class represents an extension configuration, values set in this class are commonly used across multiple
@@ -28,8 +26,7 @@ public class Configuration {
   @DisplayName("Embedding Model Service")
   @Summary("The embedding model service.")
   @Placement(order = 1, tab = Placement.DEFAULT_TAB)
-  @OfValues(EmbeddingModelServiceProvider.class)
-  private String embeddingModelService;
+  private BaseModelConfiguration modelConfiguration;
 
   @Parameter
   @Alias("vectorStore")
@@ -46,8 +43,8 @@ public class Configuration {
   @Placement(order = 3, tab = Placement.DEFAULT_TAB)
   private String configFilePath;
 
-  public String getEmbeddingModelService() {
-    return embeddingModelService;
+  public BaseModelConfiguration getModelConfiguration() {
+    return modelConfiguration;
   }
 
   public BaseStoreConfiguration getStoreConfiguration() {

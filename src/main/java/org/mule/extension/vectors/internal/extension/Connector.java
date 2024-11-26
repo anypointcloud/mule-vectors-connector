@@ -2,6 +2,13 @@ package org.mule.extension.vectors.internal.extension;
 
 import org.mule.extension.vectors.internal.config.Configuration;
 import org.mule.extension.vectors.internal.error.MuleVectorsErrorType;
+import org.mule.extension.vectors.internal.model.BaseModelConfiguration;
+import org.mule.extension.vectors.internal.model.azureopenai.AzureOpenAIModelConfiguration;
+import org.mule.extension.vectors.internal.model.einstein.EinsteinModelConfiguration;
+import org.mule.extension.vectors.internal.model.huggingface.HuggingFaceModelConfiguration;
+import org.mule.extension.vectors.internal.model.mistralai.MistralAIModelConfiguration;
+import org.mule.extension.vectors.internal.model.nomic.NomicModelConfiguration;
+import org.mule.extension.vectors.internal.model.openai.OpenAIModelConfiguration;
 import org.mule.extension.vectors.internal.store.BaseStoreConfiguration;
 import org.mule.extension.vectors.internal.store.aisearch.AISearchStoreConfiguration;
 import org.mule.extension.vectors.internal.store.chroma.ChromaStoreConfiguration;
@@ -40,6 +47,14 @@ import static org.mule.sdk.api.meta.JavaVersion.JAVA_8;
         PGVectorStoreConfiguration.class,
         PineconeStoreConfiguration.class,
         QdrantStoreConfiguration.class})
+@SubTypeMapping(baseType = BaseModelConfiguration.class,
+    subTypes = {
+        AzureOpenAIModelConfiguration.class,
+        EinsteinModelConfiguration.class,
+        HuggingFaceModelConfiguration.class,
+        MistralAIModelConfiguration.class,
+        NomicModelConfiguration.class,
+        OpenAIModelConfiguration.class})
 @RequiresEnterpriseLicense(allowEvaluationLicense = true)
 @ErrorTypes(MuleVectorsErrorType.class)
 @JavaVersionSupport({JAVA_8, JAVA_11, JAVA_17})
