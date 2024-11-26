@@ -46,9 +46,9 @@ public class LocalStorage extends BaseStorage {
     return pathIterator;
   }
 
-  public LocalStorage(Configuration configuration, String contextPath, String fileType) {
+  public LocalStorage(String contextPath, String fileType) {
 
-    super(configuration, contextPath, fileType);
+    super(null, contextPath, fileType);
   }
 
   // Override hasNext to check if there are files left to process

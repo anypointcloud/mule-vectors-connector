@@ -94,12 +94,9 @@ public class AWSS3Storage extends BaseStorage {
         return s3ObjectIterator;
     }
 
-    public AWSS3Storage(Configuration configuration, String contextPath, String fileType) {
+    public AWSS3Storage(AWSS3StorageConfiguration awsS3StorageConfiguration, String contextPath, String fileType) {
 
-        super(configuration, contextPath, fileType);
-
-        AWSS3StorageConfiguration awsS3StorageConfiguration = (AWSS3StorageConfiguration) configuration.getStorageConfiguration();
-
+        super(awsS3StorageConfiguration, contextPath, fileType);
         this.awsAccessKeyId = awsS3StorageConfiguration.getAwsAccessKeyId();
         this.awsSecretAccessKey = awsS3StorageConfiguration.getAwsSecretAccessKey();
         this.awsRegion = awsS3StorageConfiguration.getAwsRegion();

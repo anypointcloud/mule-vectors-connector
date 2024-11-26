@@ -24,6 +24,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.mule.extension.vectors.internal.model.BaseModel;
 import org.mule.extension.vectors.internal.storage.BaseStorage;
+import org.mule.extension.vectors.internal.storage.BaseStorageConfiguration;
 import org.mule.extension.vectors.internal.store.BaseStore;
 import org.mule.extension.vectors.internal.util.MetadatatUtils;
 import org.mule.extension.vectors.internal.util.JsonUtils;
@@ -40,6 +41,7 @@ import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.model.embedding.EmbeddingModel;
 
 import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
+import org.mule.runtime.extension.api.annotation.param.display.Placement;
 import org.mule.runtime.extension.api.exception.ModuleException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -194,7 +196,9 @@ public class EmbeddingOperations {
                         @Alias("storeName") @DisplayName("Store Name") String storeName,
                         @ParameterGroup(name = "Documents") DocumentParameters documentParameters,
                         @ParameterGroup(name = "Segmentation") SegmentationParameters segmentationParameters,
-                        @ParameterGroup(name = "Embedding Model") EmbeddingModelParameters embeddingModelParameters){
+                        @ParameterGroup(name = "Embedding Model") EmbeddingModelParameters embeddingModelParameters,
+                        @ConfigOverride @Alias("storageProvider") @Placement(order = 1,tab = Constants.TAB_NAME_STORAGE)
+                            BaseStorageConfiguration storageConfiguration){
 
     try {
 
@@ -223,7 +227,7 @@ public class EmbeddingOperations {
           .build();
 
       BaseStorage baseStorage = BaseStorage.builder()
-          .configuration(configuration)
+          .storageConfiguration(storageConfiguration)
           .storageType(documentParameters.getStorageType())
           .contextPath(documentParameters.getContextPath())
           .fileType(documentParameters.getFileType())
@@ -274,7 +278,9 @@ public class EmbeddingOperations {
                         @Alias("storeName") @DisplayName("Store Name") String storeName,
                         @ParameterGroup(name = "Document")  DocumentParameters documentParameters,
                         @ParameterGroup(name = "Segmentation") SegmentationParameters segmentationParameters,
-                        @ParameterGroup(name = "Embedding Model") EmbeddingModelParameters embeddingModelParameters) {
+                        @ParameterGroup(name = "Embedding Model") EmbeddingModelParameters embeddingModelParameters,
+                        @ConfigOverride @Alias("storageProvider") @Placement(order = 1,tab = Constants.TAB_NAME_STORAGE)
+                            BaseStorageConfiguration storageConfiguration) {
 
     try {
 
@@ -303,7 +309,7 @@ public class EmbeddingOperations {
           .build();
 
       BaseStorage baseStorage = BaseStorage.builder()
-          .configuration(configuration)
+          .storageConfiguration(storageConfiguration)
           .storageType(documentParameters.getStorageType())
           .contextPath(documentParameters.getContextPath())
           .fileType(documentParameters.getFileType())

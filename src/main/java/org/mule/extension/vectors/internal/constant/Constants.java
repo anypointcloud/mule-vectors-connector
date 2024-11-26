@@ -93,4 +93,6 @@ public class Constants {
   public static final String OPERATION_STATUS_ADDED = "added";
   public static final String OPERATION_STATUS_UPDATED = "updated";
   public static final String OPERATION_STATUS_DELETED = "deleted";
+
+  public static final String TAB_NAME_STORAGE = "Storage";
 }

@@ -8,8 +8,10 @@ import org.mule.extension.vectors.internal.config.Configuration;
 import org.mule.extension.vectors.internal.constant.Constants;
 import org.mule.extension.vectors.internal.error.MuleVectorsErrorType;
 import org.mule.extension.vectors.internal.storage.azureblob.AzureBlobStorage;
+import org.mule.extension.vectors.internal.storage.azureblob.AzureBlobStorageConfiguration;
 import org.mule.extension.vectors.internal.storage.local.LocalStorage;
 import org.mule.extension.vectors.internal.storage.s3.AWSS3Storage;
+import org.mule.extension.vectors.internal.storage.s3.AWSS3StorageConfiguration;
 import org.mule.runtime.extension.api.exception.ModuleException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,14 +22,14 @@ public abstract class BaseStorage implements Iterator<Document> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BaseStorage.class);
 
-  protected Configuration configuration;
+  protected BaseStorageConfiguration storageConfiguration;
   protected String contextPath;
   protected String fileType;
   protected DocumentParser documentParser;
 
-  public BaseStorage(Configuration configuration, String contextPath, String fileType) {
+  public BaseStorage(BaseStorageConfiguration storageConfiguration, String contextPath, String fileType) {
 
-    this.configuration = configuration;
+    this.storageConfiguration = storageConfiguration;
     this.contextPath = contextPath;
     this.fileType = fileType;
     this.documentParser = getDocumentParser(fileType);
@@ -73,7 +75,7 @@ public abstract class BaseStorage implements Iterator<Document> {
 
   public static class Builder {
 
-    private Configuration configuration;
+    private BaseStorageConfiguration storageConfiguration;
     private String storageType;
     private String contextPath;
     private String fileType;
@@ -82,8 +84,8 @@ public abstract class BaseStorage implements Iterator<Document> {
 
     }
 
-    public BaseStorage.Builder configuration(Configuration configuration) {
-      this.configuration = configuration;
+    public BaseStorage.Builder storageConfiguration(BaseStorageConfiguration storageConfiguration) {
+      this.storageConfiguration = storageConfiguration;
       return this;
     }
 
@@ -113,29 +115,29 @@ public abstract class BaseStorage implements Iterator<Document> {
 
           case Constants.STORAGE_TYPE_LOCAL:
 
-            baseStorage = new LocalStorage(configuration, contextPath, fileType);
+            baseStorage = new LocalStorage(contextPath, fileType);
             break;
 
           case Constants.STORAGE_TYPE_CLOUD:
 
-            LOGGER.debug("Storage Provider: " + configuration.getStorageConfiguration().getStorageProvider());
-            switch (configuration.getStorageConfiguration().getStorageProvider()) {
+            LOGGER.debug("Storage Provider: " + storageConfiguration.getStorageProvider());
+            switch (storageConfiguration.getStorageProvider()) {
 
               case Constants.STORAGE_PROVIDER_AWS_S3:
 
-                baseStorage = new AWSS3Storage(configuration, contextPath, fileType);
+                baseStorage = new AWSS3Storage((AWSS3StorageConfiguration)storageConfiguration, contextPath, fileType);
                 break;
 
               case Constants.STORAGE_PROVIDER_AZURE_BLOB:
 
-                baseStorage = new AzureBlobStorage(configuration, contextPath, fileType);
+                baseStorage = new AzureBlobStorage((AzureBlobStorageConfiguration) storageConfiguration, contextPath, fileType);
                 break;
 
               default:
 
                 throw new ModuleException(
                     String.format("Error while initializing storage. Provider \"%s\" is not supported.",
-                                  configuration.getStorageConfiguration().getStorageProvider()),
+                                  storageConfiguration.getStorageProvider()),
                     MuleVectorsErrorType.STORAGE_SERVICES_FAILURE);
 
             }
