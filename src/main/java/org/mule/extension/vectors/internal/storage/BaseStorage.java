@@ -6,9 +6,11 @@ import dev.langchain4j.data.document.parser.TextDocumentParser;
 import dev.langchain4j.data.document.parser.apache.tika.ApacheTikaDocumentParser;
 import org.mule.extension.vectors.internal.config.Configuration;
 import org.mule.extension.vectors.internal.constant.Constants;
+import org.mule.extension.vectors.internal.error.MuleVectorsErrorType;
 import org.mule.extension.vectors.internal.storage.azureblob.AzureBlobStorage;
 import org.mule.extension.vectors.internal.storage.local.LocalStorage;
 import org.mule.extension.vectors.internal.storage.s3.AWSS3Storage;
+import org.mule.runtime.extension.api.exception.ModuleException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -104,26 +106,57 @@ public abstract class BaseStorage implements Iterator<Document> {
 
       BaseStorage baseStorage;
 
-      LOGGER.debug("Storage Type: " + storageType);
-      switch (storageType) {
+      try {
 
-        case Constants.STORAGE_TYPE_LOCAL:
+        LOGGER.debug("Storage Type: " + storageType);
+        switch (storageType) {
 
-          baseStorage = new LocalStorage(configuration, contextPath, fileType);
-          break;
-        case Constants.STORAGE_TYPE_S3:
+          case Constants.STORAGE_TYPE_LOCAL:
 
-          baseStorage = new AWSS3Storage(configuration, contextPath, fileType);
-          break;
+            baseStorage = new LocalStorage(configuration, contextPath, fileType);
+            break;
 
-        case Constants.STORAGE_TYPE_AZURE_BLOB:
+          case Constants.STORAGE_TYPE_CLOUD:
 
-          baseStorage = new AzureBlobStorage(configuration, contextPath, fileType);
-          break;
+            LOGGER.debug("Storage Provider: " + configuration.getStorageConfiguration().getStorageProvider());
+            switch (configuration.getStorageConfiguration().getStorageProvider()) {
 
-        default:
-          //throw new IllegalOperationException("Unsupported Vector Store: " + configuration.getVectorStore());
-          baseStorage = null;
+              case Constants.STORAGE_PROVIDER_AWS_S3:
+
+                baseStorage = new AWSS3Storage(configuration, contextPath, fileType);
+                break;
+
+              case Constants.STORAGE_PROVIDER_AZURE_BLOB:
+
+                baseStorage = new AzureBlobStorage(configuration, contextPath, fileType);
+                break;
+
+              default:
+
+                throw new ModuleException(
+                    String.format("Error while initializing storage. Provider \"%s\" is not supported.",
+                                  configuration.getStorageConfiguration().getStorageProvider()),
+                    MuleVectorsErrorType.STORAGE_SERVICES_FAILURE);
+
+            }
+            break;
+
+          default:
+
+            throw new ModuleException(
+                String.format("Error while initializing storage. Type \"%s\" is not supported.", storageType),
+                MuleVectorsErrorType.STORAGE_SERVICES_FAILURE);
+        }
+      } catch (ModuleException e) {
+
+        throw e;
+
+      } catch (Exception e) {
+
+        throw new ModuleException(
+            String.format("Error while initializing storage type \"%s\".", storageType),
+            MuleVectorsErrorType.STORAGE_SERVICES_FAILURE,
+            e);
       }
       return baseStorage;
     }

@@ -3,11 +3,13 @@ package org.mule.extension.vectors.internal.config;
 import org.mule.extension.vectors.internal.model.BaseModelConfiguration;
 import org.mule.extension.vectors.internal.operation.DocumentOperations;
 import org.mule.extension.vectors.internal.operation.EmbeddingOperations;
+import org.mule.extension.vectors.internal.storage.BaseStorageConfiguration;
 import org.mule.extension.vectors.internal.store.BaseStoreConfiguration;
 import org.mule.runtime.api.meta.ExpressionSupport;
 import org.mule.runtime.extension.api.annotation.Alias;
 import org.mule.runtime.extension.api.annotation.Expression;
 import org.mule.runtime.extension.api.annotation.Operations;
+import org.mule.runtime.extension.api.annotation.param.Optional;
 import org.mule.runtime.extension.api.annotation.param.Parameter;
 import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
 import org.mule.runtime.extension.api.annotation.param.display.Placement;
@@ -37,11 +39,12 @@ public class Configuration {
   private BaseStoreConfiguration storeConfiguration;
 
   @Parameter
-  @Alias("configFilePath")
-  @DisplayName("Configuration File Path")
-  @Summary("The configuration file path.")
+  @Alias("storageProvider")
+  @DisplayName("Storage provider")
+  @Summary("The storage provider.")
+  @Optional
   @Placement(order = 3, tab = Placement.DEFAULT_TAB)
-  private String configFilePath;
+  private BaseStorageConfiguration storageConfiguration;
 
   public BaseModelConfiguration getModelConfiguration() {
     return modelConfiguration;
@@ -51,8 +54,8 @@ public class Configuration {
     return storeConfiguration;
   }
 
-  public String getConfigFilePath() {
-    return configFilePath;
+  public BaseStorageConfiguration getStorageConfiguration() {
+    return storageConfiguration;
   }
 
 

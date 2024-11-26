@@ -13,8 +13,10 @@ public class Constants {
   public static final String FILE_TYPE_URL = "url";
 
   public static final String STORAGE_TYPE_LOCAL = "Local";
-  public static final String STORAGE_TYPE_S3 = "S3";
-  public static final String STORAGE_TYPE_AZURE_BLOB = "AZURE_BLOB";
+  public static final String STORAGE_TYPE_CLOUD = "Cloud";
+
+  public static final String STORAGE_PROVIDER_AWS_S3 = "S3";
+  public static final String STORAGE_PROVIDER_AZURE_BLOB = "AZURE_BLOB";
 
   public static final String EMBEDDING_MODEL_SERVICE_OPENAI = "OPENAI";
   public static final String EMBEDDING_MODEL_SERVICE_AZURE_OPENAI = "AZURE_OPENAI";

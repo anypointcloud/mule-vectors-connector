@@ -73,11 +73,10 @@ public class AzureBlobStorage extends BaseStorage {
     public AzureBlobStorage(Configuration configuration, String contextPath, String fileType) {
 
         super(configuration, contextPath, fileType);
-        JSONObject config = JsonUtils.readConfigFile(configuration.getConfigFilePath());
-        assert config != null;
-        JSONObject storageConfig = config.getJSONObject("AZURE_BLOB");
-        this.azureName = storageConfig.getString("AZURE_BLOB_ACCOUNT_NAME");
-        this.azureKey = storageConfig.getString("AZURE_BLOB_ACCOUNT_KEY");
+
+        AzureBlobStorageConfiguration azureBlobStorageDocumentLoader = (AzureBlobStorageConfiguration) configuration.getStorageConfiguration();
+        this.azureName = azureBlobStorageDocumentLoader.getAzureName();
+        this.azureKey = azureBlobStorageDocumentLoader.getAzureKey();
     }
 
     @Override
