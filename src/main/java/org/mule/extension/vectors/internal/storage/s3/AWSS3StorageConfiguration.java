@@ -30,8 +30,8 @@ public class AWSS3StorageConfiguration implements BaseStorageConfiguration {
   private String awsSecretAccessKey;
 
   @Override
-  public String getStorageProvider() {
-    return Constants.STORAGE_PROVIDER_AWS_S3;
+  public String getStorageType() {
+    return Constants.STORAGE_TYPE_AWS_S3;
   }
 
   public String getAwsRegion() {
@@ -44,5 +44,17 @@ public class AWSS3StorageConfiguration implements BaseStorageConfiguration {
 
   public String getAwsSecretAccessKey() {
     return awsSecretAccessKey;
+  }
+
+  public void setAwsRegion(String awsRegion) {
+    this.awsRegion = awsRegion;
+  }
+
+  public void setAwsAccessKeyId(String awsAccessKeyId) {
+    this.awsAccessKeyId = awsAccessKeyId;
+  }
+
+  public void setAwsSecretAccessKey(String awsSecretAccessKey) {
+    this.awsSecretAccessKey = awsSecretAccessKey;
   }
 }

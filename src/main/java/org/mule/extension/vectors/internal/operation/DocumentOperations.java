@@ -14,12 +14,14 @@ import org.mule.extension.vectors.internal.error.provider.DocumentErrorTypeProvi
 import org.mule.extension.vectors.internal.helper.parameter.DocumentParameters;
 import org.mule.extension.vectors.internal.helper.parameter.SegmentationParameters;
 import org.mule.extension.vectors.internal.storage.BaseStorage;
+import org.mule.extension.vectors.internal.storage.BaseStorageConfiguration;
 import org.mule.runtime.extension.api.annotation.Alias;
 import org.mule.runtime.extension.api.annotation.error.Throws;
 import org.mule.runtime.extension.api.annotation.metadata.fixed.OutputJsonType;
-import org.mule.runtime.extension.api.annotation.param.Config;
-import org.mule.runtime.extension.api.annotation.param.MediaType;
-import org.mule.runtime.extension.api.annotation.param.ParameterGroup;
+import org.mule.runtime.extension.api.annotation.param.*;
+import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
+import org.mule.runtime.extension.api.annotation.param.display.Placement;
+import org.mule.runtime.extension.api.annotation.param.display.Summary;
 import org.mule.runtime.extension.api.exception.ModuleException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +33,7 @@ import java.util.stream.IntStream;
 
 import static org.mule.extension.vectors.internal.helper.ResponseHelper.createDocumentResponse;
 import static org.mule.runtime.extension.api.annotation.param.MediaType.APPLICATION_JSON;
+import static org.mule.runtime.extension.api.annotation.param.display.Placement.ADVANCED_TAB;
 
 public class DocumentOperations {
 
@@ -44,15 +47,17 @@ public class DocumentOperations {
   @Throws(DocumentErrorTypeProvider.class)
   @OutputJsonType(schema = "api/response/DocumentSplitResponse.json")
   public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, DocumentResponseAttributes>
-      documentSplitter(@Config Configuration configuration,
-                       @ParameterGroup(name = "Document") DocumentParameters documentParameters,
-                       @ParameterGroup(name = "Segmentation") SegmentationParameters segmentationParameters){
+      documentSplitter( @Config Configuration configuration,
+                        @ParameterGroup(name = "Document") DocumentParameters documentParameters,
+                        @ConfigOverride @Alias("storage") @DisplayName(Constants.PARAM_DISPLAY_NAME_STORAGE_OVERRIDE)
+                            BaseStorageConfiguration storageConfiguration,
+                        @ParameterGroup(name = "Segmentation") SegmentationParameters segmentationParameters
+  ){
 
     try {
 
       BaseStorage baseStorage = BaseStorage.builder()
-          .configuration(configuration)
-          .storageType(documentParameters.getStorageType())
+          .storageConfiguration(storageConfiguration)
           .contextPath(documentParameters.getContextPath())
           .fileType(documentParameters.getFileType())
           .build();
@@ -100,13 +105,15 @@ public class DocumentOperations {
   @OutputJsonType(schema = "api/response/DocumentParseResponse.json")
   public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, DocumentResponseAttributes>
       documentParser( @Config Configuration configuration,
-                      @ParameterGroup(name = "Document") DocumentParameters documentParameters){
+                      @ConfigOverride @Alias("storage") @DisplayName(Constants.PARAM_DISPLAY_NAME_STORAGE_OVERRIDE)
+                          BaseStorageConfiguration storageConfiguration,
+                      @ParameterGroup(name = "Document") DocumentParameters documentParameters
+  ){
 
     try {
 
       BaseStorage baseStorage = BaseStorage.builder()
-          .configuration(configuration)
-          .storageType(documentParameters.getStorageType())
+          .storageConfiguration(storageConfiguration)
           .contextPath(documentParameters.getContextPath())
           .fileType(documentParameters.getFileType())
           .build();

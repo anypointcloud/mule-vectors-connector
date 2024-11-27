@@ -24,6 +24,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.mule.extension.vectors.internal.model.BaseModel;
 import org.mule.extension.vectors.internal.storage.BaseStorage;
+import org.mule.extension.vectors.internal.storage.BaseStorageConfiguration;
 import org.mule.extension.vectors.internal.store.BaseStore;
 import org.mule.extension.vectors.internal.util.MetadatatUtils;
 import org.mule.extension.vectors.internal.util.JsonUtils;
@@ -40,6 +41,7 @@ import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.model.embedding.EmbeddingModel;
 
 import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
+import org.mule.runtime.extension.api.annotation.param.display.Placement;
 import org.mule.runtime.extension.api.exception.ModuleException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -192,6 +194,8 @@ public class EmbeddingOperations {
   public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, EmbeddingResponseAttributes>
       addFolderToStore( @Config Configuration configuration,
                         @Alias("storeName") @DisplayName("Store Name") String storeName,
+                        @ConfigOverride @Alias("storage") @DisplayName(Constants.PARAM_DISPLAY_NAME_STORAGE_OVERRIDE)
+                        BaseStorageConfiguration storageConfiguration,
                         @ParameterGroup(name = "Documents") DocumentParameters documentParameters,
                         @ParameterGroup(name = "Segmentation") SegmentationParameters segmentationParameters,
                         @ParameterGroup(name = "Embedding Model") EmbeddingModelParameters embeddingModelParameters){
@@ -223,8 +227,7 @@ public class EmbeddingOperations {
           .build();
 
       BaseStorage baseStorage = BaseStorage.builder()
-          .configuration(configuration)
-          .storageType(documentParameters.getStorageType())
+          .storageConfiguration(storageConfiguration)
           .contextPath(documentParameters.getContextPath())
           .fileType(documentParameters.getFileType())
           .build();
@@ -244,7 +247,7 @@ public class EmbeddingOperations {
           new HashMap<String, Object>() {{
             put("documentCount", finalDocumentNumber);
             put("storeName", storeName);
-            put("storageType", documentParameters.getStorageType());
+            put("storageType", baseStorage.getStorageType());
             put("fileType", documentParameters.getFileType());
             put("contextPath", documentParameters.getContextPath());
           }});
@@ -272,6 +275,8 @@ public class EmbeddingOperations {
   public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, EmbeddingResponseAttributes>
       addFileEmbedding( @Config Configuration configuration,
                         @Alias("storeName") @DisplayName("Store Name") String storeName,
+                        @ConfigOverride @Alias("storage") @DisplayName(Constants.PARAM_DISPLAY_NAME_STORAGE_OVERRIDE)
+                            BaseStorageConfiguration storageConfiguration,
                         @ParameterGroup(name = "Document")  DocumentParameters documentParameters,
                         @ParameterGroup(name = "Segmentation") SegmentationParameters segmentationParameters,
                         @ParameterGroup(name = "Embedding Model") EmbeddingModelParameters embeddingModelParameters) {
@@ -303,8 +308,7 @@ public class EmbeddingOperations {
           .build();
 
       BaseStorage baseStorage = BaseStorage.builder()
-          .configuration(configuration)
-          .storageType(documentParameters.getStorageType())
+          .storageConfiguration(storageConfiguration)
           .contextPath(documentParameters.getContextPath())
           .fileType(documentParameters.getFileType())
           .build();
@@ -318,7 +322,7 @@ public class EmbeddingOperations {
           jsonObject.toString(),
           new HashMap<String, Object>() {{
             put("storeName", storeName);
-            put("storageType", documentParameters.getStorageType());
+            put("storageType", baseStorage.getStorageType());
             put("fileType", documentParameters.getFileType());
             put("contextPath", documentParameters.getContextPath());
           }});

@@ -4,11 +4,14 @@ import dev.langchain4j.data.document.Document;
 import dev.langchain4j.data.document.DocumentParser;
 import dev.langchain4j.data.document.loader.UrlDocumentLoader;
 import dev.langchain4j.data.document.transformer.jsoup.HtmlToTextDocumentTransformer;
+import okhttp3.internal.Util;
 import org.mule.extension.vectors.internal.config.Configuration;
 import org.mule.extension.vectors.internal.constant.Constants;
 import org.mule.extension.vectors.internal.storage.BaseStorage;
 import org.mule.extension.vectors.internal.util.MetadatatUtils;
 import org.mule.extension.vectors.internal.util.Utils;
+import org.mule.runtime.extension.api.annotation.Alias;
+import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,12 +32,14 @@ public class LocalStorage extends BaseStorage {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(LocalStorage.class);
 
+  private final String fullPath;
+
   private List<Path> pathList;
   private Iterator<Path> pathIterator;
 
   private Iterator<Path> getPathIterator() {
     if (pathList == null) {  // Only load files if not already loaded
-      try (Stream<Path> paths = Files.walk(Paths.get(contextPath))) {
+      try (Stream<Path> paths = Files.walk(Paths.get(fullPath))) {
         // Collect all files as a list
         pathList = paths.filter(Files::isRegularFile).collect(Collectors.toList());
         // Create an iterator for the list of files
@@ -46,9 +51,17 @@ public class LocalStorage extends BaseStorage {
     return pathIterator;
   }
 
-  public LocalStorage(Configuration configuration, String contextPath, String fileType) {
+  public LocalStorage(LocalStorageConfiguration localStorageConfiguration, String contextPath, String fileType) {
 
-    super(configuration, contextPath, fileType);
+    super(localStorageConfiguration, contextPath, fileType);
+    this.fullPath = dev.langchain4j.internal.Utils.getOrDefault(localStorageConfiguration.getWorkingDirectory(), "") +
+        contextPath;
+  }
+
+  public LocalStorage(String contextPath, String fileType) {
+
+    super(null, contextPath, fileType);
+    this.fullPath = contextPath;
   }
 
   // Override hasNext to check if there are files left to process
@@ -72,7 +85,7 @@ public class LocalStorage extends BaseStorage {
 
   public Document getSingleDocument() {
 
-    Path path = Paths.get(contextPath);
+    Path path = Paths.get(fullPath);
 
     DocumentParser documentParser = getDocumentParser(fileType);
 
@@ -82,7 +95,7 @@ public class LocalStorage extends BaseStorage {
       case Constants.FILE_TYPE_TEXT:
       case Constants.FILE_TYPE_ANY:
         document = loadDocument(path.toString(), documentParser);
-        MetadatatUtils.addMetadataToDocument(document, fileType, Utils.getFileNameFromPath(contextPath));
+        MetadatatUtils.addMetadataToDocument(document, fileType, Utils.getFileNameFromPath(fullPath));
         break;
       case Constants.FILE_TYPE_URL:
         document = loadUrlDocument(contextPath);

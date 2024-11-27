@@ -70,11 +70,9 @@ public class AzureBlobStorage extends BaseStorage {
         return blobIterator;
     }
 
-    public AzureBlobStorage(Configuration configuration, String contextPath, String fileType) {
+    public AzureBlobStorage(AzureBlobStorageConfiguration azureBlobStorageDocumentLoader, String contextPath, String fileType) {
 
-        super(configuration, contextPath, fileType);
-
-        AzureBlobStorageConfiguration azureBlobStorageDocumentLoader = (AzureBlobStorageConfiguration) configuration.getStorageConfiguration();
+        super(azureBlobStorageDocumentLoader, contextPath, fileType);
         this.azureName = azureBlobStorageDocumentLoader.getAzureName();
         this.azureKey = azureBlobStorageDocumentLoader.getAzureKey();
     }

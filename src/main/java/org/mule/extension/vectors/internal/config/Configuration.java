@@ -35,13 +35,12 @@ public class Configuration {
   @DisplayName("Vector Store")
   @Summary("The vector store.")
   @Placement(order = 2, tab = Placement.DEFAULT_TAB)
-  @Expression(ExpressionSupport.NOT_SUPPORTED)
   private BaseStoreConfiguration storeConfiguration;
 
   @Parameter
-  @Alias("storageProvider")
-  @DisplayName("Storage provider")
-  @Summary("The storage provider.")
+  @Alias("storage")
+  @DisplayName("Storage")
+  @Summary("The storage type.")
   @Optional
   @Placement(order = 3, tab = Placement.DEFAULT_TAB)
   private BaseStorageConfiguration storageConfiguration;
@@ -57,6 +56,4 @@ public class Configuration {
   public BaseStorageConfiguration getStorageConfiguration() {
     return storageConfiguration;
   }
-
-
 }

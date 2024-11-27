@@ -11,6 +11,7 @@ import org.mule.extension.vectors.internal.model.nomic.NomicModelConfiguration;
 import org.mule.extension.vectors.internal.model.openai.OpenAIModelConfiguration;
 import org.mule.extension.vectors.internal.storage.BaseStorageConfiguration;
 import org.mule.extension.vectors.internal.storage.azureblob.AzureBlobStorageConfiguration;
+import org.mule.extension.vectors.internal.storage.local.LocalStorageConfiguration;
 import org.mule.extension.vectors.internal.storage.s3.AWSS3StorageConfiguration;
 import org.mule.extension.vectors.internal.store.BaseStoreConfiguration;
 import org.mule.extension.vectors.internal.store.aisearch.AISearchStoreConfiguration;
@@ -60,6 +61,7 @@ import static org.mule.sdk.api.meta.JavaVersion.JAVA_8;
         OpenAIModelConfiguration.class})
 @SubTypeMapping(baseType = BaseStorageConfiguration.class,
     subTypes = {
+        LocalStorageConfiguration.class,
         AWSS3StorageConfiguration.class,
         AzureBlobStorageConfiguration.class})
 @RequiresEnterpriseLicense(allowEvaluationLicense = true)
