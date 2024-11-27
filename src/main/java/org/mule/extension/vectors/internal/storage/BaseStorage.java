@@ -4,12 +4,12 @@ import dev.langchain4j.data.document.Document;
 import dev.langchain4j.data.document.DocumentParser;
 import dev.langchain4j.data.document.parser.TextDocumentParser;
 import dev.langchain4j.data.document.parser.apache.tika.ApacheTikaDocumentParser;
-import org.mule.extension.vectors.internal.config.Configuration;
 import org.mule.extension.vectors.internal.constant.Constants;
 import org.mule.extension.vectors.internal.error.MuleVectorsErrorType;
 import org.mule.extension.vectors.internal.storage.azureblob.AzureBlobStorage;
 import org.mule.extension.vectors.internal.storage.azureblob.AzureBlobStorageConfiguration;
 import org.mule.extension.vectors.internal.storage.local.LocalStorage;
+import org.mule.extension.vectors.internal.storage.local.LocalStorageConfiguration;
 import org.mule.extension.vectors.internal.storage.s3.AWSS3Storage;
 import org.mule.extension.vectors.internal.storage.s3.AWSS3StorageConfiguration;
 import org.mule.runtime.extension.api.exception.ModuleException;
@@ -49,6 +49,11 @@ public abstract class BaseStorage implements Iterator<Document> {
     throw new UnsupportedOperationException("This method should be overridden by subclasses");
   }
 
+  public String getStorageType() {
+
+    return storageConfiguration == null ? Constants.STORAGE_TYPE_LOCAL : storageConfiguration.getStorageType();
+  }
+
   protected DocumentParser getDocumentParser(String fileType) {
 
     DocumentParser documentParser = null;
@@ -76,7 +81,6 @@ public abstract class BaseStorage implements Iterator<Document> {
   public static class Builder {
 
     private BaseStorageConfiguration storageConfiguration;
-    private String storageType;
     private String contextPath;
     private String fileType;
 
@@ -86,11 +90,6 @@ public abstract class BaseStorage implements Iterator<Document> {
 
     public BaseStorage.Builder storageConfiguration(BaseStorageConfiguration storageConfiguration) {
       this.storageConfiguration = storageConfiguration;
-      return this;
-    }
-
-    public BaseStorage.Builder storageType(String storageType) {
-      this.storageType = storageType;
       return this;
     }
 
@@ -108,39 +107,26 @@ public abstract class BaseStorage implements Iterator<Document> {
 
       BaseStorage baseStorage;
 
+      String storageType = storageConfiguration == null ? Constants.STORAGE_TYPE_LOCAL : storageConfiguration.getStorageType();
+
       try {
 
-        LOGGER.debug("Storage Type: " + storageType);
+        LOGGER.debug("Storage Type: " + storageConfiguration.getStorageType());
         switch (storageType) {
 
           case Constants.STORAGE_TYPE_LOCAL:
 
-            baseStorage = new LocalStorage(contextPath, fileType);
+            baseStorage = new LocalStorage((LocalStorageConfiguration) storageConfiguration, contextPath, fileType);
             break;
 
-          case Constants.STORAGE_TYPE_CLOUD:
+          case Constants.STORAGE_TYPE_AWS_S3:
 
-            LOGGER.debug("Storage Provider: " + storageConfiguration.getStorageProvider());
-            switch (storageConfiguration.getStorageProvider()) {
+            baseStorage = new AWSS3Storage((AWSS3StorageConfiguration) storageConfiguration, contextPath, fileType);
+            break;
 
-              case Constants.STORAGE_PROVIDER_AWS_S3:
+          case Constants.STORAGE_TYPE_AZURE_BLOB:
 
-                baseStorage = new AWSS3Storage((AWSS3StorageConfiguration)storageConfiguration, contextPath, fileType);
-                break;
-
-              case Constants.STORAGE_PROVIDER_AZURE_BLOB:
-
-                baseStorage = new AzureBlobStorage((AzureBlobStorageConfiguration) storageConfiguration, contextPath, fileType);
-                break;
-
-              default:
-
-                throw new ModuleException(
-                    String.format("Error while initializing storage. Provider \"%s\" is not supported.",
-                                  storageConfiguration.getStorageProvider()),
-                    MuleVectorsErrorType.STORAGE_SERVICES_FAILURE);
-
-            }
+            baseStorage = new AzureBlobStorage((AzureBlobStorageConfiguration) storageConfiguration, contextPath, fileType);
             break;
 
           default:
@@ -149,6 +135,7 @@ public abstract class BaseStorage implements Iterator<Document> {
                 String.format("Error while initializing storage. Type \"%s\" is not supported.", storageType),
                 MuleVectorsErrorType.STORAGE_SERVICES_FAILURE);
         }
+
       } catch (ModuleException e) {
 
         throw e;

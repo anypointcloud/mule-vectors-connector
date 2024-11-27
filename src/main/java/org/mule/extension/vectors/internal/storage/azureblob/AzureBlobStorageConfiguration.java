@@ -25,7 +25,7 @@ public class AzureBlobStorageConfiguration implements BaseStorageConfiguration {
   private String azureKey;
 
   @Override
-  public String getStorageProvider() { return Constants.STORAGE_PROVIDER_AZURE_BLOB; }
+  public String getStorageType() { return Constants.STORAGE_TYPE_AZURE_BLOB; }
 
   public String getAzureName() {
     return azureName;

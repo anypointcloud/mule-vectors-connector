@@ -194,11 +194,11 @@ public class EmbeddingOperations {
   public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, EmbeddingResponseAttributes>
       addFolderToStore( @Config Configuration configuration,
                         @Alias("storeName") @DisplayName("Store Name") String storeName,
+                        @ConfigOverride @Alias("storage") @DisplayName(Constants.PARAM_DISPLAY_NAME_STORAGE_OVERRIDE)
+                        BaseStorageConfiguration storageConfiguration,
                         @ParameterGroup(name = "Documents") DocumentParameters documentParameters,
                         @ParameterGroup(name = "Segmentation") SegmentationParameters segmentationParameters,
-                        @ParameterGroup(name = "Embedding Model") EmbeddingModelParameters embeddingModelParameters,
-                        @ConfigOverride @Alias("storageProvider") @Placement(order = 1,tab = Constants.TAB_NAME_STORAGE)
-                            BaseStorageConfiguration storageConfiguration){
+                        @ParameterGroup(name = "Embedding Model") EmbeddingModelParameters embeddingModelParameters){
 
     try {
 
@@ -228,7 +228,6 @@ public class EmbeddingOperations {
 
       BaseStorage baseStorage = BaseStorage.builder()
           .storageConfiguration(storageConfiguration)
-          .storageType(documentParameters.getStorageType())
           .contextPath(documentParameters.getContextPath())
           .fileType(documentParameters.getFileType())
           .build();
@@ -248,7 +247,7 @@ public class EmbeddingOperations {
           new HashMap<String, Object>() {{
             put("documentCount", finalDocumentNumber);
             put("storeName", storeName);
-            put("storageType", documentParameters.getStorageType());
+            put("storageType", baseStorage.getStorageType());
             put("fileType", documentParameters.getFileType());
             put("contextPath", documentParameters.getContextPath());
           }});
@@ -276,11 +275,11 @@ public class EmbeddingOperations {
   public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, EmbeddingResponseAttributes>
       addFileEmbedding( @Config Configuration configuration,
                         @Alias("storeName") @DisplayName("Store Name") String storeName,
+                        @ConfigOverride @Alias("storage") @DisplayName(Constants.PARAM_DISPLAY_NAME_STORAGE_OVERRIDE)
+                            BaseStorageConfiguration storageConfiguration,
                         @ParameterGroup(name = "Document")  DocumentParameters documentParameters,
                         @ParameterGroup(name = "Segmentation") SegmentationParameters segmentationParameters,
-                        @ParameterGroup(name = "Embedding Model") EmbeddingModelParameters embeddingModelParameters,
-                        @ConfigOverride @Alias("storageProvider") @Placement(order = 1,tab = Constants.TAB_NAME_STORAGE)
-                            BaseStorageConfiguration storageConfiguration) {
+                        @ParameterGroup(name = "Embedding Model") EmbeddingModelParameters embeddingModelParameters) {
 
     try {
 
@@ -310,7 +309,6 @@ public class EmbeddingOperations {
 
       BaseStorage baseStorage = BaseStorage.builder()
           .storageConfiguration(storageConfiguration)
-          .storageType(documentParameters.getStorageType())
           .contextPath(documentParameters.getContextPath())
           .fileType(documentParameters.getFileType())
           .build();
@@ -324,7 +322,7 @@ public class EmbeddingOperations {
           jsonObject.toString(),
           new HashMap<String, Object>() {{
             put("storeName", storeName);
-            put("storageType", documentParameters.getStorageType());
+            put("storageType", baseStorage.getStorageType());
             put("fileType", documentParameters.getFileType());
             put("contextPath", documentParameters.getContextPath());
           }});

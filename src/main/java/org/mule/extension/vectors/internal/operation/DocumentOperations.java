@@ -49,16 +49,15 @@ public class DocumentOperations {
   public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, DocumentResponseAttributes>
       documentSplitter( @Config Configuration configuration,
                         @ParameterGroup(name = "Document") DocumentParameters documentParameters,
-                        @ParameterGroup(name = "Segmentation") SegmentationParameters segmentationParameters,
-                        @ConfigOverride @Alias("storageProvider") @Placement(order = 1,tab = Constants.TAB_NAME_STORAGE)
-                            BaseStorageConfiguration storageConfiguration
+                        @ConfigOverride @Alias("storage") @DisplayName(Constants.PARAM_DISPLAY_NAME_STORAGE_OVERRIDE)
+                            BaseStorageConfiguration storageConfiguration,
+                        @ParameterGroup(name = "Segmentation") SegmentationParameters segmentationParameters
   ){
 
     try {
 
       BaseStorage baseStorage = BaseStorage.builder()
           .storageConfiguration(storageConfiguration)
-          .storageType(documentParameters.getStorageType())
           .contextPath(documentParameters.getContextPath())
           .fileType(documentParameters.getFileType())
           .build();
@@ -106,16 +105,15 @@ public class DocumentOperations {
   @OutputJsonType(schema = "api/response/DocumentParseResponse.json")
   public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, DocumentResponseAttributes>
       documentParser( @Config Configuration configuration,
-                      @ParameterGroup(name = "Document") DocumentParameters documentParameters,
-                      @ConfigOverride @Alias("storageProvider") @Placement(order = 1,tab = Constants.TAB_NAME_STORAGE)
-                          BaseStorageConfiguration storageConfiguration
+                      @ConfigOverride @Alias("storage") @DisplayName(Constants.PARAM_DISPLAY_NAME_STORAGE_OVERRIDE)
+                          BaseStorageConfiguration storageConfiguration,
+                      @ParameterGroup(name = "Document") DocumentParameters documentParameters
   ){
 
     try {
 
       BaseStorage baseStorage = BaseStorage.builder()
           .storageConfiguration(storageConfiguration)
-          .storageType(documentParameters.getStorageType())
           .contextPath(documentParameters.getContextPath())
           .fileType(documentParameters.getFileType())
           .build();

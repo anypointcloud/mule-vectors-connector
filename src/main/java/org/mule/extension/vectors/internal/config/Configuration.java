@@ -39,9 +39,9 @@ public class Configuration {
   private BaseStoreConfiguration storeConfiguration;
 
   @Parameter
-  @Alias("storageProvider")
-  @DisplayName("Storage provider")
-  @Summary("The storage provider.")
+  @Alias("storage")
+  @DisplayName("Storage")
+  @Summary("The storage type.")
   @Optional
   @Placement(order = 3, tab = Placement.DEFAULT_TAB)
   private BaseStorageConfiguration storageConfiguration;
@@ -57,6 +57,4 @@ public class Configuration {
   public BaseStorageConfiguration getStorageConfiguration() {
     return storageConfiguration;
   }
-
-
 }
