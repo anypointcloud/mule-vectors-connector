@@ -10,6 +10,8 @@ import org.mule.extension.vectors.internal.constant.Constants;
 import org.mule.extension.vectors.internal.storage.BaseStorage;
 import org.mule.extension.vectors.internal.util.MetadatatUtils;
 import org.mule.extension.vectors.internal.util.Utils;
+import org.mule.runtime.extension.api.annotation.Alias;
+import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

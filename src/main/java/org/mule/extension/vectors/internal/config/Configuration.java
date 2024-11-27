@@ -35,7 +35,6 @@ public class Configuration {
   @DisplayName("Vector Store")
   @Summary("The vector store.")
   @Placement(order = 2, tab = Placement.DEFAULT_TAB)
-  @Expression(ExpressionSupport.NOT_SUPPORTED)
   private BaseStoreConfiguration storeConfiguration;
 
   @Parameter

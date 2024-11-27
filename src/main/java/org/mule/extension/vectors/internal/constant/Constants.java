@@ -88,9 +88,8 @@ public class Constants {
   public static final String JSON_KEY_METADATA = "metadata";
   public static final String JSON_KEY_INDEX = "index";
 
-  public static final String OPERATION_STATUS_ADDED = "added";
   public static final String OPERATION_STATUS_UPDATED = "updated";
   public static final String OPERATION_STATUS_DELETED = "deleted";
 
-  public static final String PARAM_DISPLAY_NAME_STORAGE_OVERRIDE = "Storage (Override)";
+  public static final String PARAM_DISPLAY_NAME_STORAGE_OVERRIDE = "Storage (Override Module Configuration)";
 }
