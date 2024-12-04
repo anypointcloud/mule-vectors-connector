@@ -19,7 +19,6 @@ import org.mule.runtime.extension.api.annotation.connectivity.ConnectionProvider
     MistralAIModelConnectionProvider.class,
     NomicModelConnectionProvider.class,
     OpenAIModelConnectionProvider.class})
-@Operations({EmbeddingOperations.class})
 public class EmbeddingConfiguration {
 
 }

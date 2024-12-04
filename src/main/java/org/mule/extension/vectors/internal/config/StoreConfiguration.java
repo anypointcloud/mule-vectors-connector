@@ -24,7 +24,6 @@ import org.mule.runtime.extension.api.annotation.connectivity.ConnectionProvider
     PGVectorStoreConnectionProvider.class,
     PineconeStoreConnectionProvider.class,
     QdrantStoreConnectionProvider.class})
-@Operations({StoreOperations.class})
 public class StoreConfiguration {
 
 }

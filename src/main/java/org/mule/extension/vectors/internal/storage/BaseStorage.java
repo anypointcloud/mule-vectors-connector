@@ -4,6 +4,9 @@ import dev.langchain4j.data.document.Document;
 import dev.langchain4j.data.document.DocumentParser;
 import dev.langchain4j.data.document.parser.TextDocumentParser;
 import dev.langchain4j.data.document.parser.apache.tika.ApacheTikaDocumentParser;
+import org.mule.extension.vectors.internal.connection.storage.BaseStorageConnection;
+import org.mule.extension.vectors.internal.connection.storage.amazons3.AmazonS3StorageConnection;
+import org.mule.extension.vectors.internal.connection.storage.azureblob.AzureBlobStorageConnection;
 import org.mule.extension.vectors.internal.constant.Constants;
 import org.mule.extension.vectors.internal.error.MuleVectorsErrorType;
 import org.mule.extension.vectors.internal.storage.amazons3.AmazonS3StorageConfiguration;
@@ -22,14 +25,21 @@ public abstract class BaseStorage implements Iterator<Document> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BaseStorage.class);
 
-  protected BaseStorageConfiguration storageConfiguration;
+  protected BaseStorageConnection storageConnection;
   protected String contextPath;
   protected String fileType;
   protected DocumentParser documentParser;
 
-  public BaseStorage(BaseStorageConfiguration storageConfiguration, String contextPath, String fileType) {
+  public BaseStorage(BaseStorageConnection storageConnection, String contextPath, String fileType) {
 
-    this.storageConfiguration = storageConfiguration;
+    this.storageConnection = storageConnection;
+    this.contextPath = contextPath;
+    this.fileType = fileType;
+    this.documentParser = getDocumentParser(fileType);
+  }
+
+  public BaseStorage(String contextPath, String fileType) {
+
     this.contextPath = contextPath;
     this.fileType = fileType;
     this.documentParser = getDocumentParser(fileType);
@@ -51,7 +61,7 @@ public abstract class BaseStorage implements Iterator<Document> {
 
   public String getStorageType() {
 
-    return storageConfiguration == null ? Constants.STORAGE_TYPE_LOCAL : storageConfiguration.getStorageType();
+    return storageConnection == null ? Constants.STORAGE_TYPE_LOCAL : storageConnection.getStorageType();
   }
 
   protected DocumentParser getDocumentParser(String fileType) {
@@ -80,7 +90,7 @@ public abstract class BaseStorage implements Iterator<Document> {
 
   public static class Builder {
 
-    private BaseStorageConfiguration storageConfiguration;
+    private BaseStorageConnection storageConnection;
     private String contextPath;
     private String fileType;
 
@@ -88,8 +98,8 @@ public abstract class BaseStorage implements Iterator<Document> {
 
     }
 
-    public BaseStorage.Builder storageConfiguration(BaseStorageConfiguration storageConfiguration) {
-      this.storageConfiguration = storageConfiguration;
+    public BaseStorage.Builder connection(BaseStorageConnection storageConnection) {
+      this.storageConnection = storageConnection;
       return this;
     }
 
@@ -107,26 +117,26 @@ public abstract class BaseStorage implements Iterator<Document> {
 
       BaseStorage baseStorage;
 
-      String storageType = storageConfiguration == null ? Constants.STORAGE_TYPE_LOCAL : storageConfiguration.getStorageType();
+      String storageType = storageConnection == null ? Constants.STORAGE_TYPE_LOCAL : storageConnection.getStorageType();
 
       try {
 
-        LOGGER.debug("Storage Type: " + storageConfiguration.getStorageType());
+        LOGGER.debug("Storage Type: " + storageConnection.getStorageType());
         switch (storageType) {
 
           case Constants.STORAGE_TYPE_LOCAL:
 
-            baseStorage = new LocalStorage((LocalStorageConfiguration) storageConfiguration, contextPath, fileType);
+            baseStorage = new LocalStorage(contextPath, fileType);
             break;
 
           case Constants.STORAGE_TYPE_AWS_S3:
 
-            baseStorage = new AmazonS3Storage((AmazonS3StorageConfiguration) storageConfiguration, contextPath, fileType);
+            baseStorage = new AmazonS3Storage((AmazonS3StorageConnection) storageConnection, contextPath, fileType);
             break;
 
           case Constants.STORAGE_TYPE_AZURE_BLOB:
 
-            baseStorage = new AzureBlobStorage((AzureBlobStorageConfiguration) storageConfiguration, contextPath, fileType);
+            baseStorage = new AzureBlobStorage((AzureBlobStorageConnection) storageConnection, contextPath, fileType);
             break;
 
           default:

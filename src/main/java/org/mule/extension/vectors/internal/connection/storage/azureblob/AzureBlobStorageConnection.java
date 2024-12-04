@@ -11,8 +11,6 @@ import org.mule.runtime.extension.api.annotation.param.display.Example;
 import org.mule.runtime.extension.api.annotation.param.display.Password;
 import org.mule.runtime.extension.api.annotation.param.display.Placement;
 
-@Alias("azureBlob")
-@DisplayName("Azure Blob")
 public class AzureBlobStorageConnection implements BaseStorageConnection {
 
   private String azureName;

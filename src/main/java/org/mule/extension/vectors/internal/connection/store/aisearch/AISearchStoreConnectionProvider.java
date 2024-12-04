@@ -5,11 +5,15 @@ import org.mule.extension.vectors.internal.connection.store.BaseStoreConnectionP
 import org.mule.extension.vectors.internal.connection.store.milvus.MilvusStoreConnectionProvider;
 import org.mule.runtime.api.connection.ConnectionException;
 import org.mule.runtime.api.connection.ConnectionValidationResult;
+import org.mule.runtime.extension.api.annotation.Alias;
 import org.mule.runtime.extension.api.annotation.param.ParameterGroup;
+import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
 import org.mule.runtime.extension.api.annotation.param.display.Placement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Alias("aiSearch")
+@DisplayName("AI Search")
 public class AISearchStoreConnectionProvider  extends BaseStoreConnectionProvider {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AISearchStoreConnectionProvider.class);

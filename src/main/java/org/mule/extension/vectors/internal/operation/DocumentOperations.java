@@ -8,6 +8,8 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.mule.extension.vectors.api.metadata.DocumentResponseAttributes;
 import org.mule.extension.vectors.internal.config.CompositeConfiguration;
+import org.mule.extension.vectors.internal.config.DocumentConfiguration;
+import org.mule.extension.vectors.internal.connection.storage.BaseStorageConnection;
 import org.mule.extension.vectors.internal.constant.Constants;
 import org.mule.extension.vectors.internal.error.MuleVectorsErrorType;
 import org.mule.extension.vectors.internal.error.provider.DocumentErrorTypeProvider;
@@ -44,17 +46,16 @@ public class DocumentOperations {
   @Throws(DocumentErrorTypeProvider.class)
   @OutputJsonType(schema = "api/response/DocumentSplitResponse.json")
   public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, DocumentResponseAttributes>
-      documentSplitter( @Config CompositeConfiguration compositeConfiguration,
+      documentSplitter( @Config DocumentConfiguration documentConfiguration,
+                        @Connection BaseStorageConnection storageConnection,
                         @ParameterGroup(name = "Document") DocumentParameters documentParameters,
-                        @ConfigOverride @Alias("storage") @DisplayName(Constants.PARAM_DISPLAY_NAME_STORAGE_OVERRIDE)
-                            BaseStorageConfiguration storageConfiguration,
                         @ParameterGroup(name = "Segmentation") SegmentationParameters segmentationParameters
   ){
 
     try {
 
       BaseStorage baseStorage = BaseStorage.builder()
-          .storageConfiguration(storageConfiguration)
+          .connection(storageConnection)
           .contextPath(documentParameters.getContextPath())
           .fileType(documentParameters.getFileType())
           .build();
@@ -101,16 +102,15 @@ public class DocumentOperations {
   @Throws(DocumentErrorTypeProvider.class)
   @OutputJsonType(schema = "api/response/DocumentParseResponse.json")
   public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, DocumentResponseAttributes>
-      documentParser( @Config CompositeConfiguration compositeConfiguration,
-                      @ConfigOverride @Alias("storage") @DisplayName(Constants.PARAM_DISPLAY_NAME_STORAGE_OVERRIDE)
-                          BaseStorageConfiguration storageConfiguration,
+      documentParser( @Config DocumentConfiguration documentConfiguration,
+                      @Connection BaseStorageConnection storageConnection,
                       @ParameterGroup(name = "Document") DocumentParameters documentParameters
   ){
 
     try {
 
       BaseStorage baseStorage = BaseStorage.builder()
-          .storageConfiguration(storageConfiguration)
+          .connection(storageConnection)
           .contextPath(documentParameters.getContextPath())
           .fileType(documentParameters.getFileType())
           .build();

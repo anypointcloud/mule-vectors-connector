@@ -1,5 +1,8 @@
 package org.mule.extension.vectors.internal.storage.amazons3;
 
+import org.mule.extension.vectors.internal.connection.storage.BaseStorageConnection;
+import org.mule.extension.vectors.internal.connection.storage.amazons3.AmazonS3StorageConnection;
+import org.mule.extension.vectors.internal.connection.storage.azureblob.AzureBlobStorageConnection;
 import org.mule.extension.vectors.internal.constant.Constants;
 import org.mule.extension.vectors.internal.storage.BaseStorageConfiguration;
 import org.mule.runtime.api.meta.ExpressionSupport;
@@ -34,8 +37,9 @@ public class AmazonS3StorageConfiguration implements BaseStorageConfiguration {
   private String awsSecretAccessKey;
 
   @Override
-  public String getStorageType() {
-    return Constants.STORAGE_TYPE_AWS_S3;
+  public BaseStorageConnection getConnection() {
+
+    return new AmazonS3StorageConnection(awsRegion, awsAccessKeyId, awsSecretAccessKey);
   }
 
   public String getAwsRegion() {

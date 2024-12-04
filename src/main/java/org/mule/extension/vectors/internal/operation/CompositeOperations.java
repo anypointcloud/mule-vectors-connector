@@ -158,7 +158,7 @@ public class CompositeOperations {
           .build();
 
       BaseStorage baseStorage = BaseStorage.builder()
-          .storageConfiguration(storageConfiguration)
+          .connection(storageConfiguration.getConnection())
           .contextPath(documentParameters.getContextPath())
           .fileType(documentParameters.getFileType())
           .build();
@@ -239,7 +239,7 @@ public class CompositeOperations {
           .build();
 
       BaseStorage baseStorage = BaseStorage.builder()
-          .storageConfiguration(storageConfiguration)
+          .connection(storageConfiguration.getConnection())
           .contextPath(documentParameters.getContextPath())
           .fileType(documentParameters.getFileType())
           .build();

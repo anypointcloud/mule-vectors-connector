@@ -1,5 +1,7 @@
 package org.mule.extension.vectors.internal.storage.azureblob;
 
+import org.mule.extension.vectors.internal.connection.storage.BaseStorageConnection;
+import org.mule.extension.vectors.internal.connection.storage.azureblob.AzureBlobStorageConnection;
 import org.mule.extension.vectors.internal.constant.Constants;
 import org.mule.extension.vectors.internal.storage.BaseStorageConfiguration;
 import org.mule.runtime.api.meta.ExpressionSupport;
@@ -28,7 +30,10 @@ public class AzureBlobStorageConfiguration implements BaseStorageConfiguration {
   private String azureKey;
 
   @Override
-  public String getStorageType() { return Constants.STORAGE_TYPE_AZURE_BLOB; }
+  public BaseStorageConnection getConnection() {
+
+    return new AzureBlobStorageConnection(azureName, azureKey);
+  }
 
   public String getAzureName() {
     return azureName;

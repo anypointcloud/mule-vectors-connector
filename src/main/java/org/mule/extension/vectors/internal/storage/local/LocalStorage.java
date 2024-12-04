@@ -47,13 +47,6 @@ public class LocalStorage extends BaseStorage {
     return pathIterator;
   }
 
-  public LocalStorage(LocalStorageConfiguration localStorageConfiguration, String contextPath, String fileType) {
-
-    super(localStorageConfiguration, contextPath, fileType);
-    this.fullPath = dev.langchain4j.internal.Utils.getOrDefault(localStorageConfiguration.getWorkingDirectory(), "") +
-        contextPath;
-  }
-
   public LocalStorage(String contextPath, String fileType) {
 
     super(null, contextPath, fileType);

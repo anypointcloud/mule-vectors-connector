@@ -5,8 +5,6 @@ import org.mule.extension.vectors.internal.constant.Constants;
 import org.mule.runtime.extension.api.annotation.Alias;
 import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
 
-@Alias("amazonS3")
-@DisplayName("Amazon S3")
 public class AmazonS3StorageConnection implements BaseStorageConnection {
 
   private String awsRegion;

@@ -4,11 +4,15 @@ import org.mule.extension.vectors.internal.connection.storage.BaseStorageConnect
 import org.mule.extension.vectors.internal.connection.storage.BaseStorageConnectionProvider;
 import org.mule.runtime.api.connection.ConnectionException;
 import org.mule.runtime.api.connection.ConnectionValidationResult;
+import org.mule.runtime.extension.api.annotation.Alias;
 import org.mule.runtime.extension.api.annotation.param.ParameterGroup;
+import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
 import org.mule.runtime.extension.api.annotation.param.display.Placement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Alias("azureBlob")
+@DisplayName("Azure Blob")
 public class AzureBlobStorageConnectionProvider extends BaseStorageConnectionProvider {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AzureBlobStorageConnectionProvider.class);

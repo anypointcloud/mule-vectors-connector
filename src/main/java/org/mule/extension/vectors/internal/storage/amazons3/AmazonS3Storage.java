@@ -1,5 +1,6 @@
 package org.mule.extension.vectors.internal.storage.amazons3;
 
+import org.mule.extension.vectors.internal.connection.storage.amazons3.AmazonS3StorageConnection;
 import org.mule.extension.vectors.internal.storage.BaseStorage;
 import org.mule.extension.vectors.internal.util.MetadatatUtils;
 import software.amazon.awssdk.regions.Region;
@@ -91,12 +92,12 @@ public class AmazonS3Storage extends BaseStorage {
         return s3ObjectIterator;
     }
 
-    public AmazonS3Storage(AmazonS3StorageConfiguration awsS3StorageConfiguration, String contextPath, String fileType) {
+    public AmazonS3Storage(AmazonS3StorageConnection amazonS3StorageConnection, String contextPath, String fileType) {
 
-        super(awsS3StorageConfiguration, contextPath, fileType);
-        this.awsAccessKeyId = awsS3StorageConfiguration.getAwsAccessKeyId();
-        this.awsSecretAccessKey = awsS3StorageConfiguration.getAwsSecretAccessKey();
-        this.awsRegion = awsS3StorageConfiguration.getAwsRegion();
+        super(amazonS3StorageConnection, contextPath, fileType);
+        this.awsAccessKeyId = amazonS3StorageConnection.getAwsAccessKeyId();
+        this.awsSecretAccessKey = amazonS3StorageConnection.getAwsSecretAccessKey();
+        this.awsRegion = amazonS3StorageConnection.getAwsRegion();
     }
 
     @Override
