@@ -98,7 +98,6 @@ public class AmazonS3Storage extends BaseStorage {
         this.awsAccessKeyId = amazonS3StorageConnection.getAwsAccessKeyId();
         this.awsSecretAccessKey = amazonS3StorageConnection.getAwsSecretAccessKey();
         this.awsRegion = amazonS3StorageConnection.getAwsRegion();
-        this.s3Client = amazonS3StorageConnection.getS3Client();
     }
 
     @Override
