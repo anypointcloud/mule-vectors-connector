@@ -4,16 +4,14 @@ import dev.langchain4j.data.document.Document;
 import dev.langchain4j.data.document.DocumentParser;
 import dev.langchain4j.data.document.parser.TextDocumentParser;
 import dev.langchain4j.data.document.parser.apache.tika.ApacheTikaDocumentParser;
+import org.mule.extension.vectors.internal.config.DocumentConfiguration;
 import org.mule.extension.vectors.internal.connection.storage.BaseStorageConnection;
 import org.mule.extension.vectors.internal.connection.storage.amazons3.AmazonS3StorageConnection;
 import org.mule.extension.vectors.internal.connection.storage.azureblob.AzureBlobStorageConnection;
 import org.mule.extension.vectors.internal.constant.Constants;
 import org.mule.extension.vectors.internal.error.MuleVectorsErrorType;
-import org.mule.extension.vectors.internal.storage.amazons3.AmazonS3StorageConfiguration;
 import org.mule.extension.vectors.internal.storage.azureblob.AzureBlobStorage;
-import org.mule.extension.vectors.internal.storage.azureblob.AzureBlobStorageConfiguration;
 import org.mule.extension.vectors.internal.storage.local.LocalStorage;
-import org.mule.extension.vectors.internal.storage.local.LocalStorageConfiguration;
 import org.mule.extension.vectors.internal.storage.amazons3.AmazonS3Storage;
 import org.mule.runtime.extension.api.exception.ModuleException;
 import org.slf4j.Logger;
@@ -25,21 +23,24 @@ public abstract class BaseStorage implements Iterator<Document> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BaseStorage.class);
 
+  protected DocumentConfiguration documentConfiguration;
   protected BaseStorageConnection storageConnection;
   protected String contextPath;
   protected String fileType;
   protected DocumentParser documentParser;
 
-  public BaseStorage(BaseStorageConnection storageConnection, String contextPath, String fileType) {
+  public BaseStorage(DocumentConfiguration documentConfiguration, BaseStorageConnection storageConnection, String contextPath, String fileType) {
 
+    this.documentConfiguration = documentConfiguration;
     this.storageConnection = storageConnection;
     this.contextPath = contextPath;
     this.fileType = fileType;
     this.documentParser = getDocumentParser(fileType);
   }
 
-  public BaseStorage(String contextPath, String fileType) {
+  public BaseStorage(DocumentConfiguration documentConfiguration, String contextPath, String fileType) {
 
+    this.documentConfiguration = documentConfiguration;
     this.contextPath = contextPath;
     this.fileType = fileType;
     this.documentParser = getDocumentParser(fileType);
@@ -90,12 +91,18 @@ public abstract class BaseStorage implements Iterator<Document> {
 
   public static class Builder {
 
+    private DocumentConfiguration documentConfiguration;
     private BaseStorageConnection storageConnection;
     private String contextPath;
     private String fileType;
 
     public Builder() {
 
+    }
+
+    public BaseStorage.Builder configuration(DocumentConfiguration documentConfiguration) {
+      this.documentConfiguration = documentConfiguration;
+      return this;
     }
 
     public BaseStorage.Builder connection(BaseStorageConnection storageConnection) {
@@ -126,17 +133,17 @@ public abstract class BaseStorage implements Iterator<Document> {
 
           case Constants.STORAGE_TYPE_LOCAL:
 
-            baseStorage = new LocalStorage(contextPath, fileType);
+            baseStorage = new LocalStorage(documentConfiguration, contextPath, fileType);
             break;
 
           case Constants.STORAGE_TYPE_AWS_S3:
 
-            baseStorage = new AmazonS3Storage((AmazonS3StorageConnection) storageConnection, contextPath, fileType);
+            baseStorage = new AmazonS3Storage(documentConfiguration, (AmazonS3StorageConnection) storageConnection, contextPath, fileType);
             break;
 
           case Constants.STORAGE_TYPE_AZURE_BLOB:
 
-            baseStorage = new AzureBlobStorage((AzureBlobStorageConnection) storageConnection, contextPath, fileType);
+            baseStorage = new AzureBlobStorage(documentConfiguration, (AzureBlobStorageConnection) storageConnection, contextPath, fileType);
             break;
 
           default:

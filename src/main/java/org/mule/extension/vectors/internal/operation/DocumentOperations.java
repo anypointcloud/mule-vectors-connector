@@ -55,6 +55,7 @@ public class DocumentOperations {
     try {
 
       BaseStorage baseStorage = BaseStorage.builder()
+          .configuration(documentConfiguration)
           .connection(storageConnection)
           .contextPath(documentParameters.getContextPath())
           .fileType(documentParameters.getFileType())
@@ -110,6 +111,7 @@ public class DocumentOperations {
     try {
 
       BaseStorage baseStorage = BaseStorage.builder()
+          .configuration(documentConfiguration)
           .connection(storageConnection)
           .contextPath(documentParameters.getContextPath())
           .fileType(documentParameters.getFileType())

@@ -10,8 +10,10 @@ import dev.langchain4j.data.document.loader.azure.storage.blob.AzureBlobStorageD
 import java.util.Iterator;
 
 import dev.langchain4j.data.document.Document;
+import org.mule.extension.vectors.internal.config.DocumentConfiguration;
 import org.mule.extension.vectors.internal.connection.storage.azureblob.AzureBlobStorageConnection;
 import org.mule.extension.vectors.internal.storage.BaseStorage;
+import org.mule.extension.vectors.internal.storage.BaseStorageConfiguration;
 import org.mule.extension.vectors.internal.util.MetadatatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,9 +70,9 @@ public class AzureBlobStorage extends BaseStorage {
         return blobIterator;
     }
 
-    public AzureBlobStorage(AzureBlobStorageConnection azureBlobStorageConnection, String contextPath, String fileType) {
+    public AzureBlobStorage(DocumentConfiguration documentConfiguration, AzureBlobStorageConnection azureBlobStorageConnection, String contextPath, String fileType) {
 
-        super(azureBlobStorageConnection, contextPath, fileType);
+        super(documentConfiguration, azureBlobStorageConnection, contextPath, fileType);
         this.azureName = azureBlobStorageConnection.getAzureName();
         this.azureKey = azureBlobStorageConnection.getAzureKey();
     }
