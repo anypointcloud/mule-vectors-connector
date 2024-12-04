@@ -3,7 +3,7 @@ package org.mule.extension.vectors.internal.helper.provider;
 import java.util.Collections;
 import java.util.Set;
 
-import org.mule.extension.vectors.internal.config.Configuration;
+import org.mule.extension.vectors.internal.config.CompositeConfiguration;
 import org.mule.extension.vectors.internal.constant.Constants;
 import org.mule.runtime.api.value.Value;
 import org.mule.runtime.extension.api.annotation.param.Config;
@@ -14,7 +14,7 @@ import org.mule.runtime.extension.api.values.ValueResolvingException;
 public class EmbeddingModelNameProvider implements ValueProvider {
 
   @Config
-  private Configuration configuration;
+  private CompositeConfiguration compositeConfiguration;
 
   private static final Set<Value> VALUES_FOR_AZURE_OPENAI = ValueBuilder.getValuesFor(
       Constants.EMBEDDING_MODEL_NAME_TEXT_EMBEDDING_3_SMALL,
@@ -50,7 +50,7 @@ public class EmbeddingModelNameProvider implements ValueProvider {
   @Override
   public Set<Value> resolve() throws ValueResolvingException {
 
-    String embeddingModelService = configuration.getModelConfiguration().getEmbeddingModelService();
+    String embeddingModelService = compositeConfiguration.getModelConfiguration().getEmbeddingModelService();
     switch (embeddingModelService) {
       case Constants.EMBEDDING_MODEL_SERVICE_OPENAI:
         return VALUES_FOR_OPENAI;

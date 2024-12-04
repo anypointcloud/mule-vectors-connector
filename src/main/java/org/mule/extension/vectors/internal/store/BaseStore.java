@@ -4,7 +4,7 @@ import dev.langchain4j.data.embedding.Embedding;
 import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.store.embedding.EmbeddingStore;
 import org.json.JSONObject;
-import org.mule.extension.vectors.internal.config.Configuration;
+import org.mule.extension.vectors.internal.config.CompositeConfiguration;
 import org.mule.extension.vectors.internal.constant.Constants;
 import org.mule.extension.vectors.internal.error.MuleVectorsErrorType;
 import org.mule.extension.vectors.internal.helper.parameter.QueryParameters;
@@ -32,14 +32,14 @@ public class BaseStore {
   protected static final Logger LOGGER = LoggerFactory.getLogger(BaseStore.class);
 
   protected String storeName;
-  protected Configuration configuration;
+  protected CompositeConfiguration compositeConfiguration;
   protected QueryParameters queryParams;
   protected int dimension;
 
-  public BaseStore(String storeName, Configuration configuration, QueryParameters queryParams, int dimension) {
+  public BaseStore(String storeName, CompositeConfiguration compositeConfiguration, QueryParameters queryParams, int dimension) {
 
     this.storeName = storeName;
-    this.configuration = configuration;
+    this.compositeConfiguration = compositeConfiguration;
     this.queryParams = queryParams;
     this.dimension = dimension;
   }
@@ -197,7 +197,7 @@ public class BaseStore {
   public static class Builder {
 
     private String storeName;
-    private Configuration configuration;
+    private CompositeConfiguration compositeConfiguration;
     private QueryParameters queryParams;
     private int dimension;
 
@@ -219,11 +219,11 @@ public class BaseStore {
     /**
      * Sets the configuration for the {@code BaseStore}.
      *
-     * @param configuration the configuration parameters.
+     * @param compositeConfiguration the configuration parameters.
      * @return the {@code Builder} instance, for method chaining.
      */
-    public Builder configuration(Configuration configuration) {
-      this.configuration = configuration;
+    public Builder configuration(CompositeConfiguration compositeConfiguration) {
+      this.compositeConfiguration = compositeConfiguration;
       return this;
     }
 
@@ -258,52 +258,52 @@ public class BaseStore {
 
       BaseStore baseStore;
 
-      LOGGER.debug("Vector Store: " + configuration.getStoreConfiguration().getVectorStore());
-      switch (configuration.getStoreConfiguration().getVectorStore()) {
+      LOGGER.debug("Vector Store: " + compositeConfiguration.getStoreConfiguration().getVectorStore());
+      switch (compositeConfiguration.getStoreConfiguration().getVectorStore()) {
 
         case Constants.VECTOR_STORE_MILVUS:
 
-          baseStore = new MilvusStore(storeName, configuration, queryParams, dimension);
+          baseStore = new MilvusStore(storeName, compositeConfiguration, queryParams, dimension);
           break;
 
         case Constants.VECTOR_STORE_PGVECTOR:
 
-          baseStore = new PGVectorStore(storeName, configuration, queryParams, dimension);
+          baseStore = new PGVectorStore(storeName, compositeConfiguration, queryParams, dimension);
           break;
 
         case Constants.VECTOR_STORE_AI_SEARCH:
 
-          baseStore = new AISearchStore(storeName, configuration, queryParams, dimension);
+          baseStore = new AISearchStore(storeName, compositeConfiguration, queryParams, dimension);
           break;
 
         case Constants.VECTOR_STORE_CHROMA:
 
-          baseStore = new ChromaStore(storeName, configuration, queryParams, dimension);
+          baseStore = new ChromaStore(storeName, compositeConfiguration, queryParams, dimension);
           break;
 
         case Constants.VECTOR_STORE_PINECONE:
 
-          baseStore = new PineconeStore(storeName, configuration, queryParams, dimension);
+          baseStore = new PineconeStore(storeName, compositeConfiguration, queryParams, dimension);
           break;
 
         case Constants.VECTOR_STORE_ELASTICSEARCH:
 
-          baseStore = new ElasticsearchStore(storeName, configuration, queryParams, dimension);
+          baseStore = new ElasticsearchStore(storeName, compositeConfiguration, queryParams, dimension);
           break;
 
         case Constants.VECTOR_STORE_OPENSEARCH:
 
-          baseStore = new OpenSearchStore(storeName, configuration, queryParams, dimension);
+          baseStore = new OpenSearchStore(storeName, compositeConfiguration, queryParams, dimension);
           break;
 
         case Constants.VECTOR_STORE_QDRANT:
 
-          baseStore = new QdrantStore(storeName, configuration, queryParams, dimension);
+          baseStore = new QdrantStore(storeName, compositeConfiguration, queryParams, dimension);
           break;
 
         default:
           throw new ModuleException(
-              String.format("Error while initializing embedding store. \"%s\" not supported.", configuration.getStoreConfiguration().getVectorStore()),
+              String.format("Error while initializing embedding store. \"%s\" not supported.", compositeConfiguration.getStoreConfiguration().getVectorStore()),
               MuleVectorsErrorType.STORE_SERVICES_FAILURE);
       }
       return baseStore;

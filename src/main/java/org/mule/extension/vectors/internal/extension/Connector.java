@@ -1,6 +1,6 @@
 package org.mule.extension.vectors.internal.extension;
 
-import org.mule.extension.vectors.internal.config.Configuration;
+import org.mule.extension.vectors.internal.config.CompositeConfiguration;
 import org.mule.extension.vectors.internal.error.MuleVectorsErrorType;
 import org.mule.extension.vectors.internal.model.BaseModelConfiguration;
 import org.mule.extension.vectors.internal.model.azureopenai.AzureOpenAIModelConfiguration;
@@ -10,9 +10,9 @@ import org.mule.extension.vectors.internal.model.mistralai.MistralAIModelConfigu
 import org.mule.extension.vectors.internal.model.nomic.NomicModelConfiguration;
 import org.mule.extension.vectors.internal.model.openai.OpenAIModelConfiguration;
 import org.mule.extension.vectors.internal.storage.BaseStorageConfiguration;
+import org.mule.extension.vectors.internal.storage.amazons3.AmazonS3StorageConfiguration;
 import org.mule.extension.vectors.internal.storage.azureblob.AzureBlobStorageConfiguration;
 import org.mule.extension.vectors.internal.storage.local.LocalStorageConfiguration;
-import org.mule.extension.vectors.internal.storage.s3.AWSS3StorageConfiguration;
 import org.mule.extension.vectors.internal.store.BaseStoreConfiguration;
 import org.mule.extension.vectors.internal.store.aisearch.AISearchStoreConfiguration;
 import org.mule.extension.vectors.internal.store.chroma.ChromaStoreConfiguration;
@@ -40,7 +40,7 @@ import static org.mule.sdk.api.meta.JavaVersion.JAVA_8;
  */
 @Xml(prefix = "ms-vectors")
 @Extension(name = "MuleSoft Vectors Connector", category = Category.SELECT)
-@Configurations(Configuration.class)
+@Configurations(CompositeConfiguration.class)
 @SubTypeMapping(baseType = BaseStoreConfiguration.class,
     subTypes = {
         AISearchStoreConfiguration.class,
@@ -62,7 +62,7 @@ import static org.mule.sdk.api.meta.JavaVersion.JAVA_8;
 @SubTypeMapping(baseType = BaseStorageConfiguration.class,
     subTypes = {
         LocalStorageConfiguration.class,
-        AWSS3StorageConfiguration.class,
+        AmazonS3StorageConfiguration.class,
         AzureBlobStorageConfiguration.class})
 @RequiresEnterpriseLicense(allowEvaluationLicense = true)
 @ErrorTypes(MuleVectorsErrorType.class)

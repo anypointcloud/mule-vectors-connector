@@ -13,7 +13,7 @@ import io.qdrant.client.grpc.Collections;
 import io.qdrant.client.grpc.JsonWithInt;
 import io.qdrant.client.grpc.Points;
 import org.json.JSONObject;
-import org.mule.extension.vectors.internal.config.Configuration;
+import org.mule.extension.vectors.internal.config.CompositeConfiguration;
 import org.mule.extension.vectors.internal.constant.Constants;
 import org.mule.extension.vectors.internal.error.MuleVectorsErrorType;
 import org.mule.extension.vectors.internal.helper.parameter.QueryParameters;
@@ -29,13 +29,13 @@ public class QdrantStore extends BaseStore {
     private final QdrantClient client;
     private final String payloadTextKey;
 
-    public QdrantStore(String storeName, Configuration configuration, QueryParameters queryParams, int dimension) {
+    public QdrantStore(String storeName, CompositeConfiguration compositeConfiguration, QueryParameters queryParams, int dimension) {
 
-        super(storeName, configuration, queryParams, dimension);
+        super(storeName, compositeConfiguration, queryParams, dimension);
 
         try {
 
-            QdrantStoreConfiguration qdrantStoreConfiguration = (QdrantStoreConfiguration)configuration.getStoreConfiguration();
+            QdrantStoreConfiguration qdrantStoreConfiguration = (QdrantStoreConfiguration) compositeConfiguration.getStoreConfiguration();
             String host = qdrantStoreConfiguration.getHost();
             String apiKey = qdrantStoreConfiguration.getApiKey();
             int port = qdrantStoreConfiguration.getGprcPort();
@@ -52,7 +52,7 @@ public class QdrantStore extends BaseStore {
         } catch (Exception e) {
 
             throw new ModuleException(
-                String.format("Error while initializing embedding store \"%s\".", configuration.getStoreConfiguration().getVectorStore()),
+                String.format("Error while initializing embedding store \"%s\".", compositeConfiguration.getStoreConfiguration().getVectorStore()),
                 MuleVectorsErrorType.STORE_SERVICES_FAILURE);
         }
     }

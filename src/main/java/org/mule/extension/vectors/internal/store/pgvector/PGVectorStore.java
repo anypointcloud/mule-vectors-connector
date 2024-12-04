@@ -4,7 +4,7 @@ import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.store.embedding.EmbeddingStore;
 import dev.langchain4j.store.embedding.pgvector.PgVectorEmbeddingStore;
 import org.json.JSONObject;
-import org.mule.extension.vectors.internal.config.Configuration;
+import org.mule.extension.vectors.internal.config.CompositeConfiguration;
 import org.mule.extension.vectors.internal.constant.Constants;
 import org.mule.extension.vectors.internal.helper.parameter.QueryParameters;
 import org.mule.extension.vectors.internal.store.BaseStore;
@@ -20,8 +20,6 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-
-import static org.mule.extension.vectors.internal.util.JsonUtils.readConfigFile;
 
 /**
  * Represents a store for vector data using PostgreSQL with PGVector extension.
@@ -41,14 +39,14 @@ public class PGVectorStore extends BaseStore {
    * Constructs a PGVectorVectorStore instance using configuration and query parameters.
    *
    * @param storeName The name of the store.
-   * @param configuration The configuration for connecting to the store.
+   * @param compositeConfiguration The configuration for connecting to the store.
    * @param queryParams Parameters related to query configurations.
    */
-  public PGVectorStore(String storeName, Configuration configuration, QueryParameters queryParams, int dimension) {
+  public PGVectorStore(String storeName, CompositeConfiguration compositeConfiguration, QueryParameters queryParams, int dimension) {
 
-    super(storeName, configuration, queryParams, dimension);
+    super(storeName, compositeConfiguration, queryParams, dimension);
 
-    PGVectorStoreConfiguration pgVectorStoreConfiguration = (PGVectorStoreConfiguration)configuration.getStoreConfiguration();
+    PGVectorStoreConfiguration pgVectorStoreConfiguration = (PGVectorStoreConfiguration) compositeConfiguration.getStoreConfiguration();
     this.host = pgVectorStoreConfiguration.getHost();
     this.port = pgVectorStoreConfiguration.getPort();
     this.database = pgVectorStoreConfiguration.getDatabase();

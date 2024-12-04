@@ -1,8 +1,6 @@
-package org.mule.extension.vectors.internal.storage.s3;
+package org.mule.extension.vectors.internal.storage.amazons3;
 
-import org.mule.extension.vectors.internal.config.Configuration;
 import org.mule.extension.vectors.internal.storage.BaseStorage;
-import org.mule.extension.vectors.internal.util.JsonUtils;
 import org.mule.extension.vectors.internal.util.MetadatatUtils;
 import software.amazon.awssdk.regions.Region;
 import dev.langchain4j.data.document.loader.amazon.s3.AmazonS3DocumentLoader;
@@ -10,7 +8,6 @@ import dev.langchain4j.data.document.loader.amazon.s3.AwsCredentials;
 
 import java.util.Iterator;
 
-import org.json.JSONObject;
 import dev.langchain4j.data.document.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,9 +18,9 @@ import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
 import software.amazon.awssdk.services.s3.model.S3Object;
 
-public class AWSS3Storage extends BaseStorage {
+public class AmazonS3Storage extends BaseStorage {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AWSS3Storage.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AmazonS3Storage.class);
 
     private final String awsAccessKeyId;
     private final String awsSecretAccessKey;
@@ -94,7 +91,7 @@ public class AWSS3Storage extends BaseStorage {
         return s3ObjectIterator;
     }
 
-    public AWSS3Storage(AWSS3StorageConfiguration awsS3StorageConfiguration, String contextPath, String fileType) {
+    public AmazonS3Storage(AmazonS3StorageConfiguration awsS3StorageConfiguration, String contextPath, String fileType) {
 
         super(awsS3StorageConfiguration, contextPath, fileType);
         this.awsAccessKeyId = awsS3StorageConfiguration.getAwsAccessKeyId();

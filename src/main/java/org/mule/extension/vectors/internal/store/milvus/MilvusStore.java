@@ -11,7 +11,7 @@ import io.milvus.param.dml.QueryIteratorParam;
 import io.milvus.param.R;
 import io.milvus.response.QueryResultsWrapper;
 import org.json.JSONObject;
-import org.mule.extension.vectors.internal.config.Configuration;
+import org.mule.extension.vectors.internal.config.CompositeConfiguration;
 import org.mule.extension.vectors.internal.constant.Constants;
 import org.mule.extension.vectors.internal.helper.parameter.QueryParameters;
 import org.mule.extension.vectors.internal.store.BaseStore;
@@ -22,17 +22,15 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
-import static org.mule.extension.vectors.internal.util.JsonUtils.readConfigFile;
-
 public class MilvusStore extends BaseStore {
 
   private final String uri;
 
-  public MilvusStore(String storeName, Configuration configuration, QueryParameters queryParams, int dimension) {
+  public MilvusStore(String storeName, CompositeConfiguration compositeConfiguration, QueryParameters queryParams, int dimension) {
 
-    super(storeName, configuration, queryParams, dimension);
+    super(storeName, compositeConfiguration, queryParams, dimension);
 
-    MilvusStoreConfiguration milvusStoreConfiguration = (MilvusStoreConfiguration) configuration.getStoreConfiguration();
+    MilvusStoreConfiguration milvusStoreConfiguration = (MilvusStoreConfiguration) compositeConfiguration.getStoreConfiguration();
     this.uri = milvusStoreConfiguration.getUrl();
   }
 

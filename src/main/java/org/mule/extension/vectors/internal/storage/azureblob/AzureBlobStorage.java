@@ -9,12 +9,9 @@ import dev.langchain4j.data.document.loader.azure.storage.blob.AzureBlobStorageD
 
 import java.util.Iterator;
 
-import org.json.JSONObject;
-import org.mule.extension.vectors.internal.config.Configuration;
 import dev.langchain4j.data.document.Document;
 import org.mule.extension.vectors.internal.storage.BaseStorage;
 import org.mule.extension.vectors.internal.util.MetadatatUtils;
-import org.mule.extension.vectors.internal.util.JsonUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

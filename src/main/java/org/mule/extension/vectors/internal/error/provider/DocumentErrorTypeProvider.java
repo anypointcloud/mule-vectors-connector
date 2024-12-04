@@ -19,6 +19,8 @@ public class DocumentErrorTypeProvider implements ErrorTypeProvider {
   @SuppressWarnings("rawtypes")
   @Override
   public Set<ErrorTypeDefinition> getErrorTypes() {
-    return unmodifiableSet(new HashSet<>(asList(DOCUMENT_OPERATIONS_FAILURE, STORAGE_SERVICES_FAILURE)));
+    return unmodifiableSet(new HashSet<>(asList(
+        DOCUMENT_OPERATIONS_FAILURE,
+        STORAGE_SERVICES_FAILURE)));
   }
 }

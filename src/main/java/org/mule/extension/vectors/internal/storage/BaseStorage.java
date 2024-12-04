@@ -6,12 +6,12 @@ import dev.langchain4j.data.document.parser.TextDocumentParser;
 import dev.langchain4j.data.document.parser.apache.tika.ApacheTikaDocumentParser;
 import org.mule.extension.vectors.internal.constant.Constants;
 import org.mule.extension.vectors.internal.error.MuleVectorsErrorType;
+import org.mule.extension.vectors.internal.storage.amazons3.AmazonS3StorageConfiguration;
 import org.mule.extension.vectors.internal.storage.azureblob.AzureBlobStorage;
 import org.mule.extension.vectors.internal.storage.azureblob.AzureBlobStorageConfiguration;
 import org.mule.extension.vectors.internal.storage.local.LocalStorage;
 import org.mule.extension.vectors.internal.storage.local.LocalStorageConfiguration;
-import org.mule.extension.vectors.internal.storage.s3.AWSS3Storage;
-import org.mule.extension.vectors.internal.storage.s3.AWSS3StorageConfiguration;
+import org.mule.extension.vectors.internal.storage.amazons3.AmazonS3Storage;
 import org.mule.runtime.extension.api.exception.ModuleException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -121,7 +121,7 @@ public abstract class BaseStorage implements Iterator<Document> {
 
           case Constants.STORAGE_TYPE_AWS_S3:
 
-            baseStorage = new AWSS3Storage((AWSS3StorageConfiguration) storageConfiguration, contextPath, fileType);
+            baseStorage = new AmazonS3Storage((AmazonS3StorageConfiguration) storageConfiguration, contextPath, fileType);
             break;
 
           case Constants.STORAGE_TYPE_AZURE_BLOB:

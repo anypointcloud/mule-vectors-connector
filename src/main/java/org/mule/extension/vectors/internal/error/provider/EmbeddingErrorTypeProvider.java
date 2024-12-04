@@ -20,8 +20,6 @@ public class EmbeddingErrorTypeProvider implements ErrorTypeProvider {
   public Set<ErrorTypeDefinition> getErrorTypes() {
     return unmodifiableSet(new HashSet<>(asList(
         EMBEDDING_OPERATIONS_FAILURE,
-        AI_SERVICES_FAILURE,
-        STORE_SERVICES_FAILURE,
-        STORAGE_SERVICES_FAILURE)));
+        AI_SERVICES_FAILURE)));
   }
 }
