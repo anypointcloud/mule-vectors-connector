@@ -1,5 +1,9 @@
 package org.mule.extension.vectors.internal.model.azureopenai;
 
+import org.mule.extension.vectors.internal.connection.model.BaseModelConnection;
+import org.mule.extension.vectors.internal.connection.model.azureopenai.AzureOpenAIModelConnection;
+import org.mule.extension.vectors.internal.connection.storage.BaseStorageConnection;
+import org.mule.extension.vectors.internal.connection.storage.amazons3.AmazonS3StorageConnection;
 import org.mule.extension.vectors.internal.constant.Constants;
 import org.mule.extension.vectors.internal.model.BaseModelConfiguration;
 import org.mule.extension.vectors.internal.store.BaseStoreConfiguration;
@@ -30,8 +34,9 @@ public class AzureOpenAIModelConfiguration implements BaseModelConfiguration {
   private String apiKey;
 
   @Override
-  public String getEmbeddingModelService() {
-    return Constants.EMBEDDING_MODEL_SERVICE_AZURE_OPENAI;
+  public BaseModelConnection getConnection() {
+
+    return new AzureOpenAIModelConnection(endpoint, apiKey);
   }
 
   public String getEndpoint() {

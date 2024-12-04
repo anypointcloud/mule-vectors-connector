@@ -3,6 +3,8 @@ package org.mule.extension.vectors.internal.model.huggingface;
 import dev.langchain4j.model.embedding.EmbeddingModel;
 import dev.langchain4j.model.huggingface.HuggingFaceEmbeddingModel;
 import org.mule.extension.vectors.internal.config.CompositeConfiguration;
+import org.mule.extension.vectors.internal.config.EmbeddingConfiguration;
+import org.mule.extension.vectors.internal.connection.model.huggingface.HuggingFaceModelConnection;
 import org.mule.extension.vectors.internal.helper.parameter.EmbeddingModelParameters;
 import org.mule.extension.vectors.internal.model.BaseModel;
 
@@ -10,12 +12,11 @@ public class HuggingFaceModel  extends BaseModel {
 
   private final String apiKey;
 
-  public HuggingFaceModel(CompositeConfiguration compositeConfiguration, EmbeddingModelParameters embeddingModelParameters) {
+  public HuggingFaceModel(EmbeddingConfiguration embeddingConfiguration, HuggingFaceModelConnection huggingFaceModelConnection, EmbeddingModelParameters embeddingModelParameters) {
 
-    super(compositeConfiguration, embeddingModelParameters);
+    super(embeddingConfiguration, huggingFaceModelConnection, embeddingModelParameters);
 
-    HuggingFaceModelConfiguration huggingFaceModelConfiguration =(HuggingFaceModelConfiguration) compositeConfiguration.getModelConfiguration();
-    this.apiKey = huggingFaceModelConfiguration.getApiKey();
+    this.apiKey = huggingFaceModelConnection.getApiKey();
   }
 
   public EmbeddingModel buildEmbeddingModel() {

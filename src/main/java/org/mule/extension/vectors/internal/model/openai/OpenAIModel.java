@@ -3,6 +3,8 @@ package org.mule.extension.vectors.internal.model.openai;
 import dev.langchain4j.model.embedding.EmbeddingModel;
 import dev.langchain4j.model.openai.OpenAiEmbeddingModel;
 import org.mule.extension.vectors.internal.config.CompositeConfiguration;
+import org.mule.extension.vectors.internal.config.EmbeddingConfiguration;
+import org.mule.extension.vectors.internal.connection.model.openai.OpenAIModelConnection;
 import org.mule.extension.vectors.internal.helper.parameter.EmbeddingModelParameters;
 import org.mule.extension.vectors.internal.model.BaseModel;
 
@@ -10,12 +12,11 @@ public class OpenAIModel  extends BaseModel {
 
   private final String apiKey;
 
-  public OpenAIModel(CompositeConfiguration compositeConfiguration, EmbeddingModelParameters embeddingModelParameters) {
+  public OpenAIModel(EmbeddingConfiguration embeddingConfiguration, OpenAIModelConnection openAIModelConnection, EmbeddingModelParameters embeddingModelParameters) {
 
-    super(compositeConfiguration, embeddingModelParameters);
+    super(embeddingConfiguration, openAIModelConnection, embeddingModelParameters);
 
-    OpenAIModelConfiguration openAIModelConfiguration = (OpenAIModelConfiguration) compositeConfiguration.getModelConfiguration();
-    this.apiKey = openAIModelConfiguration.getApiKey();
+    this.apiKey = openAIModelConnection.getApiKey();
   }
 
   public EmbeddingModel buildEmbeddingModel() {

@@ -3,6 +3,9 @@ package org.mule.extension.vectors.internal.model.azureopenai;
 import dev.langchain4j.model.azure.AzureOpenAiEmbeddingModel;
 import dev.langchain4j.model.embedding.EmbeddingModel;
 import org.mule.extension.vectors.internal.config.CompositeConfiguration;
+import org.mule.extension.vectors.internal.config.EmbeddingConfiguration;
+import org.mule.extension.vectors.internal.connection.model.BaseModelConnection;
+import org.mule.extension.vectors.internal.connection.model.azureopenai.AzureOpenAIModelConnection;
 import org.mule.extension.vectors.internal.helper.parameter.EmbeddingModelParameters;
 import org.mule.extension.vectors.internal.model.BaseModel;
 
@@ -11,13 +14,14 @@ public class AzureOpenAIModel extends BaseModel {
   private final String endpoint;
   private final String apiKey;
 
-  public AzureOpenAIModel(CompositeConfiguration compositeConfiguration, EmbeddingModelParameters embeddingModelParameters) {
+  public AzureOpenAIModel(EmbeddingConfiguration embeddingConfiguration,
+                          AzureOpenAIModelConnection azureOpenAIModelConnection,
+                          EmbeddingModelParameters embeddingModelParameters) {
 
-    super(compositeConfiguration, embeddingModelParameters);
+    super(embeddingConfiguration, azureOpenAIModelConnection, embeddingModelParameters);
 
-    AzureOpenAIModelConfiguration azureOpenAIModelConfiguration = (AzureOpenAIModelConfiguration) compositeConfiguration.getModelConfiguration();
-    this.endpoint = azureOpenAIModelConfiguration.getEndpoint();
-    this.apiKey = azureOpenAIModelConfiguration.getApiKey();
+    this.endpoint = azureOpenAIModelConnection.getEndpoint();
+    this.apiKey = azureOpenAIModelConnection.getApiKey();
   }
 
   public EmbeddingModel buildEmbeddingModel() {

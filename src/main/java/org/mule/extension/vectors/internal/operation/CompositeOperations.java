@@ -69,7 +69,7 @@ public class CompositeOperations {
       LOGGER.debug(String.format("Adding text %s to store %s", text, storeName));
 
       BaseModel baseModel = BaseModel.builder()
-          .configuration(compositeConfiguration)
+          .connection(compositeConfiguration.getModelConfiguration().getConnection())
           .embeddingModelParameters(embeddingModelParameters)
           .build();
 
@@ -137,7 +137,7 @@ public class CompositeOperations {
           Constants.EMBEDDING_OPERATION_TYPE_STORE_METADATA, compositeConfiguration.getStoreConfiguration().getVectorStore());
 
       BaseModel baseModel = BaseModel.builder()
-          .configuration(compositeConfiguration)
+          .connection(compositeConfiguration.getModelConfiguration().getConnection())
           .embeddingModelParameters(embeddingModelParameters)
           .build();
 
@@ -218,7 +218,7 @@ public class CompositeOperations {
           Constants.EMBEDDING_OPERATION_TYPE_STORE_METADATA, compositeConfiguration.getStoreConfiguration().getVectorStore());
 
       BaseModel baseModel = BaseModel.builder()
-          .configuration(compositeConfiguration)
+          .connection(compositeConfiguration.getModelConfiguration().getConnection())
           .embeddingModelParameters(embeddingModelParameters)
           .build();
 
@@ -292,7 +292,7 @@ public class CompositeOperations {
       }
 
       BaseModel baseModel = BaseModel.builder()
-          .configuration(compositeConfiguration)
+          .connection(compositeConfiguration.getModelConfiguration().getConnection())
           .embeddingModelParameters(embeddingModelParameters)
           .build();
 
@@ -394,7 +394,7 @@ public class CompositeOperations {
       }
 
       BaseModel baseModel = BaseModel.builder()
-          .configuration(compositeConfiguration)
+          .connection(compositeConfiguration.getModelConfiguration().getConnection())
           .embeddingModelParameters(embeddingModelParameters)
           .build();
 

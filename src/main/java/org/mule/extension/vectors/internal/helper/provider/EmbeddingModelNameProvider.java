@@ -50,7 +50,7 @@ public class EmbeddingModelNameProvider implements ValueProvider {
   @Override
   public Set<Value> resolve() throws ValueResolvingException {
 
-    String embeddingModelService = compositeConfiguration.getModelConfiguration().getEmbeddingModelService();
+    String embeddingModelService = compositeConfiguration.getModelConfiguration().getConnection().getEmbeddingModelService();
     switch (embeddingModelService) {
       case Constants.EMBEDDING_MODEL_SERVICE_OPENAI:
         return VALUES_FOR_OPENAI;

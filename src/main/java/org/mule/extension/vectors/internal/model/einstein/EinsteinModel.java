@@ -2,6 +2,8 @@ package org.mule.extension.vectors.internal.model.einstein;
 
 import dev.langchain4j.model.embedding.EmbeddingModel;
 import org.mule.extension.vectors.internal.config.CompositeConfiguration;
+import org.mule.extension.vectors.internal.config.EmbeddingConfiguration;
+import org.mule.extension.vectors.internal.connection.model.einstein.EinsteinModelConnection;
 import org.mule.extension.vectors.internal.helper.parameter.EmbeddingModelParameters;
 import org.mule.extension.vectors.internal.model.BaseModel;
 import org.slf4j.Logger;
@@ -16,14 +18,13 @@ public class EinsteinModel  extends BaseModel {
   private final String clientSecret;
   private final String modelName;
 
-  public EinsteinModel(CompositeConfiguration compositeConfiguration, EmbeddingModelParameters embeddingModelParameters) {
+  public EinsteinModel(EmbeddingConfiguration embeddingConfiguration, EinsteinModelConnection einsteinModelConnection, EmbeddingModelParameters embeddingModelParameters) {
 
-    super(compositeConfiguration, embeddingModelParameters);
+    super(embeddingConfiguration, einsteinModelConnection, embeddingModelParameters);
 
-    EinsteinModelConfiguration einsteinModelConfiguration = (EinsteinModelConfiguration) compositeConfiguration.getModelConfiguration();
-    this.salesforceOrgUrl = einsteinModelConfiguration.getSalesforceOrgUrl();
-    this.clientId = einsteinModelConfiguration.getClientId();
-    this.clientSecret = einsteinModelConfiguration.getClientSecret();
+    this.salesforceOrgUrl = einsteinModelConnection.getSalesforceOrg();
+    this.clientId = einsteinModelConnection.getClientId();
+    this.clientSecret = einsteinModelConnection.getClientSecret();
     this.modelName = embeddingModelParameters.getEmbeddingModelName();
   }
 

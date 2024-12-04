@@ -12,6 +12,8 @@ import java.util.stream.IntStream;
 import dev.langchain4j.data.document.Document;
 import dev.langchain4j.data.document.DocumentSplitter;
 import org.mule.extension.vectors.api.metadata.EmbeddingResponseAttributes;
+import org.mule.extension.vectors.internal.config.EmbeddingConfiguration;
+import org.mule.extension.vectors.internal.connection.model.BaseModelConnection;
 import org.mule.extension.vectors.internal.constant.Constants;
 import org.mule.extension.vectors.internal.error.MuleVectorsErrorType;
 import org.mule.extension.vectors.internal.error.provider.CompositeErrorTypeProvider;
@@ -57,7 +59,8 @@ public class EmbeddingOperations {
   @Throws(EmbeddingErrorTypeProvider.class)
   @OutputJsonType(schema = "api/response/EmbeddingGenerateFromTextResponse.json")
   public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, EmbeddingResponseAttributes>
-      generateEmbedding(@Config CompositeConfiguration compositeConfiguration,
+      generateEmbedding(@Config EmbeddingConfiguration embeddingConfiguration,
+                        @Connection BaseModelConnection modelConnection,
                         @Alias("text") @DisplayName("Text")  String text,
                         @ParameterGroup(name = "Segmentation") SegmentationParameters segmentationParameters,
                         @ParameterGroup(name = "Embedding Model") EmbeddingModelParameters embeddingModelParameters){
@@ -65,7 +68,8 @@ public class EmbeddingOperations {
     try {
 
       BaseModel baseModel = BaseModel.builder()
-          .configuration(compositeConfiguration)
+          .configuration(embeddingConfiguration)
+          .connection(modelConnection)
           .embeddingModelParameters(embeddingModelParameters)
           .build();
 

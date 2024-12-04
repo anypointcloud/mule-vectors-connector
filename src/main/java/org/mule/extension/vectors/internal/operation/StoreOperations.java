@@ -114,7 +114,7 @@ public class StoreOperations {
           Constants.EMBEDDING_OPERATION_TYPE_FILTER_BY_METADATA, compositeConfiguration.getStoreConfiguration().getVectorStore());
 
       BaseModel baseModel = BaseModel.builder()
-          .configuration(compositeConfiguration)
+          .connection(compositeConfiguration.getModelConfiguration().getConnection())
           .embeddingModelParameters(embeddingModelParameters)
           .build();
 

@@ -1,5 +1,7 @@
 package org.mule.extension.vectors.internal.model.nomic;
 
+import org.mule.extension.vectors.internal.connection.model.BaseModelConnection;
+import org.mule.extension.vectors.internal.connection.model.nomic.NomicModelConnection;
 import org.mule.extension.vectors.internal.constant.Constants;
 import org.mule.extension.vectors.internal.model.BaseModelConfiguration;
 import org.mule.runtime.api.meta.ExpressionSupport;
@@ -23,8 +25,9 @@ public class NomicModelConfiguration implements BaseModelConfiguration {
   private String apiKey;
 
   @Override
-  public String getEmbeddingModelService() {
-    return Constants.EMBEDDING_MODEL_SERVICE_NOMIC;
+  public BaseModelConnection getConnection() {
+
+    return new NomicModelConnection(apiKey);
   }
 
   public String getApiKey() {
