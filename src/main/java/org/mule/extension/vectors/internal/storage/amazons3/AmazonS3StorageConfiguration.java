@@ -39,7 +39,7 @@ public class AmazonS3StorageConfiguration implements BaseStorageConfiguration {
   @Override
   public BaseStorageConnection getConnection() {
 
-    return new AmazonS3StorageConnection(awsRegion, awsAccessKeyId, awsSecretAccessKey);
+    return new AmazonS3StorageConnection(awsRegion, awsAccessKeyId, awsSecretAccessKey, null);
   }
 
   public String getAwsRegion() {
