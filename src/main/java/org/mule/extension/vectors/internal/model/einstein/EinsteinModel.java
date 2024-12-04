@@ -30,7 +30,7 @@ public class EinsteinModel  extends BaseModel {
   public EmbeddingModel buildEmbeddingModel() {
 
     return EinsteinEmbeddingModel.builder()
-        .salesforceOrgUrl(salesforceOrgUrl)
+        .salesforceOrg(salesforceOrgUrl)
         .clientId(clientId)
         .clientSecret(clientSecret)
         .modelName(modelName)
