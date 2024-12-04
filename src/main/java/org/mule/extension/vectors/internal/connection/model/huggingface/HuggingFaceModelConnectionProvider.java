@@ -29,11 +29,27 @@ public class HuggingFaceModelConnectionProvider extends BaseModelConnectionProvi
   @Override
   public void disconnect(BaseModelConnection connection) {
 
+    try {
+
+      connection.disconnect();
+    } catch (Exception e) {
+
+      LOGGER.error("Failed to close connection", e);
+    }
   }
 
   @Override
   public ConnectionValidationResult validate(BaseModelConnection connection) {
 
-    return ConnectionValidationResult.failure("Failed to validate connection to Hugging Face", null);
+    try {
+
+      if (connection.isValid()) {
+        return ConnectionValidationResult.success();
+      } else {
+        return ConnectionValidationResult.failure("Failed to validate connection to Hugging Face", null);
+      }
+    } catch (Exception e) {
+      return ConnectionValidationResult.failure("Failed to validate connection to Hugging Face", e);
+    }
   }
 }

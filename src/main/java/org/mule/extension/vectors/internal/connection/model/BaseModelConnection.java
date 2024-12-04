@@ -11,4 +11,10 @@ import java.util.Objects;
 public interface BaseModelConnection {
 
   String getEmbeddingModelService();
+
+  void connect() throws ConnectionException;
+
+  void disconnect();
+
+  boolean isValid();
 }

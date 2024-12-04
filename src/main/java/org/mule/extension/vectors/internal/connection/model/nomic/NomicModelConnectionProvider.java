@@ -23,17 +23,33 @@ public class NomicModelConnectionProvider  extends BaseModelConnectionProvider {
   @Override
   public BaseModelConnection connect() throws ConnectionException {
 
-    throw new ConnectionException("Failed to connect to Mistral AI. Test Connection not supported yet.", null);
+    throw new ConnectionException("Failed to connect to Nomic. Test Connection not supported yet.", null);
   }
 
   @Override
   public void disconnect(BaseModelConnection connection) {
 
+    try {
+
+      connection.disconnect();
+    } catch (Exception e) {
+
+      LOGGER.error("Failed to close connection", e);
+    }
   }
 
   @Override
   public ConnectionValidationResult validate(BaseModelConnection connection) {
 
-    return ConnectionValidationResult.failure("Failed to validate connection", null);
+    try {
+
+      if (connection.isValid()) {
+        return ConnectionValidationResult.success();
+      } else {
+        return ConnectionValidationResult.failure("Failed to validate connection to Nomic", null);
+      }
+    } catch (Exception e) {
+      return ConnectionValidationResult.failure("Failed to validate connection to Nomic", e);
+    }
   }
 }

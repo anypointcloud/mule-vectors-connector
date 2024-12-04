@@ -75,6 +75,7 @@ public class AzureBlobStorage extends BaseStorage {
         super(documentConfiguration, azureBlobStorageConnection, contextPath, fileType);
         this.azureName = azureBlobStorageConnection.getAzureName();
         this.azureKey = azureBlobStorageConnection.getAzureKey();
+        this.blobServiceClient = azureBlobStorageConnection.getBlobServiceClient();
     }
 
     @Override

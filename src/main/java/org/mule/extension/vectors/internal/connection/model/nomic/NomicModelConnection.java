@@ -2,6 +2,7 @@ package org.mule.extension.vectors.internal.connection.model.nomic;
 
 import org.mule.extension.vectors.internal.connection.model.BaseModelConnection;
 import org.mule.extension.vectors.internal.constant.Constants;
+import org.mule.runtime.api.connection.ConnectionException;
 import org.mule.runtime.extension.api.annotation.Alias;
 import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
 
@@ -22,5 +23,20 @@ public class NomicModelConnection implements BaseModelConnection {
   @Override
   public String getEmbeddingModelService() {
     return Constants.EMBEDDING_MODEL_SERVICE_NOMIC;
+  }
+
+  @Override
+  public void connect() throws ConnectionException {
+
+  }
+
+  @Override
+  public void disconnect() {
+
+  }
+
+  @Override
+  public boolean isValid() {
+    return false;
   }
 }

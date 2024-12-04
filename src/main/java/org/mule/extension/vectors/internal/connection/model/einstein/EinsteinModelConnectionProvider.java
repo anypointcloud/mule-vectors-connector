@@ -42,17 +42,20 @@ public class EinsteinModelConnectionProvider extends BaseModelConnectionProvider
 
     try {
 
-      int responseCode = getConnectionResponseCode(einsteinModelConnectionParameters.getSalesforceOrg(),
-                                                   einsteinModelConnectionParameters.getClientId(),
-                                                   einsteinModelConnectionParameters.getClientSecret());
-      if (responseCode == 200) {
-        return new EinsteinModelConnection(einsteinModelConnectionParameters.getSalesforceOrg(),
-                                           einsteinModelConnectionParameters.getClientId(),
-                                           einsteinModelConnectionParameters.getClientSecret());
-      } else {
-        throw new ConnectionException("Failed to connect to Salesforce: HTTP " + responseCode);
-      }
-    } catch (IOException e) {
+      EinsteinModelConnection einsteinModelConnection =
+          new EinsteinModelConnection(einsteinModelConnectionParameters.getSalesforceOrg(),
+                                      einsteinModelConnectionParameters.getClientId(),
+                                      einsteinModelConnectionParameters.getClientSecret());
+
+      einsteinModelConnection.connect();
+      return einsteinModelConnection;
+
+    } catch (ConnectionException e) {
+
+      throw e;
+
+    } catch (Exception e) {
+
       throw new ConnectionException("Failed to connect to Salesforce", e);
     }
   }
@@ -60,61 +63,27 @@ public class EinsteinModelConnectionProvider extends BaseModelConnectionProvider
   @Override
   public void disconnect(BaseModelConnection connection) {
 
-    EinsteinModelConnection einsteinModelConnection = (EinsteinModelConnection) connection;
     try {
-      // Add logic to invalidate the connection if necessary
+
+      connection.disconnect();
     } catch (Exception e) {
 
-      LOGGER.error("Error while disconnecting [{}]: {}", einsteinModelConnection.getClientId(), e.getMessage(), e);
+      LOGGER.error("Failed to close connection", e);
     }
   }
 
   @Override
   public ConnectionValidationResult validate(BaseModelConnection connection) {
 
-    EinsteinModelConnection einsteinModelConnection = (EinsteinModelConnection) connection;
     try {
-      int responseCode =
-          getConnectionResponseCode(einsteinModelConnection.getSalesforceOrg(), einsteinModelConnection.getClientId(), einsteinModelConnection.getClientSecret());
 
-      if (responseCode == 200) {
+      if (connection.isValid()) {
         return ConnectionValidationResult.success();
       } else {
-        return ConnectionValidationResult.failure("Failed to validate connection: HTTP " + responseCode, null);
+        return ConnectionValidationResult.failure("Failed to validate connection to Einstein", null);
       }
-    } catch (IOException e) {
-      return ConnectionValidationResult.failure("Failed to validate connection", e);
+    } catch (Exception e) {
+      return ConnectionValidationResult.failure("Failed to validate connection to Einstein", e);
     }
-  }
-
-
-  private int getConnectionResponseCode(String salesforceOrg, String clientId, String clientSecret) throws IOException {
-
-    LOGGER.debug("Preparing request for connection for salesforce org:{}", salesforceOrg);
-
-    String urlStr = getOAuthURL(salesforceOrg);
-    String urlParameters = getOAuthParams(clientId, clientSecret);
-
-    byte[] postData = urlParameters.getBytes(StandardCharsets.UTF_8);
-
-    URL url = new URL(urlStr);
-    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-    conn.setDoOutput(true);
-    conn.setRequestMethod(Constants.HTTP_METHOD_POST);
-    conn.getOutputStream().write(postData);
-    int respCode = conn.getResponseCode();
-
-    LOGGER.debug("Response code for connection request:{}", respCode);
-    return respCode;
-  }
-
-  public static String getOAuthURL(String salesforceOrg) {
-    return Constants.URI_HTTPS_PREFIX + salesforceOrg + URI_OAUTH_TOKEN;
-  }
-
-  public static String getOAuthParams(String clientId, String clientSecret) {
-    return QUERY_PARAM_GRANT_TYPE + "=" + GRANT_TYPE_CLIENT_CREDENTIALS
-        + "&" + QUERY_PARAM_CLIENT_ID + "=" + clientId
-        + "&" + QUERY_PARAM_CLIENT_SECRET + "=" + clientSecret;
   }
 }

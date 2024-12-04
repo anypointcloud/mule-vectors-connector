@@ -41,10 +41,7 @@ public class AmazonS3Storage extends BaseStorage {
 
         if(loader == null) {
 
-            loader = AmazonS3DocumentLoader.builder()
-                .region(awsRegion)
-                .awsCredentials(getCredentials())
-                .build();
+            loader = new AmazonS3DocumentLoader(s3Client);
         }
         return loader;
     }
@@ -100,6 +97,7 @@ public class AmazonS3Storage extends BaseStorage {
         this.awsAccessKeyId = amazonS3StorageConnection.getAwsAccessKeyId();
         this.awsSecretAccessKey = amazonS3StorageConnection.getAwsSecretAccessKey();
         this.awsRegion = amazonS3StorageConnection.getAwsRegion();
+        this.s3Client = amazonS3StorageConnection.getS3Client();
     }
 
     @Override

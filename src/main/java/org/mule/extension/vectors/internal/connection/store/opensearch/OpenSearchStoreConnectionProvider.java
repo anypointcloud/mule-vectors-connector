@@ -37,5 +37,4 @@ public class OpenSearchStoreConnectionProvider  extends BaseStoreConnectionProvi
 
     return ConnectionValidationResult.failure("Failed to validate connection to OpenSearch", null);
   }
-
 }

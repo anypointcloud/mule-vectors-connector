@@ -31,4 +31,19 @@ public class ElasticsearchStoreConnection implements BaseStoreConnection {
   public String getVectorStore() {
     return Constants.VECTOR_STORE_ELASTICSEARCH;
   }
+
+  @Override
+  public void connect() {
+
+  }
+
+  @Override
+  public void disconnect() {
+
+  }
+
+  @Override
+  public boolean isValid() {
+    return false;
+  }
 }

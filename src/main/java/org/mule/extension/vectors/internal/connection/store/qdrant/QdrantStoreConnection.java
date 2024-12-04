@@ -50,4 +50,19 @@ public class QdrantStoreConnection implements BaseStoreConnection {
   public String getVectorStore() {
     return Constants.VECTOR_STORE_QDRANT;
   }
+
+  @Override
+  public void connect() {
+
+  }
+
+  @Override
+  public void disconnect() {
+
+  }
+
+  @Override
+  public boolean isValid() {
+    return false;
+  }
 }

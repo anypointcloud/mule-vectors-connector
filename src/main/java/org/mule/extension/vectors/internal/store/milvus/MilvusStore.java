@@ -16,6 +16,10 @@ import org.mule.extension.vectors.internal.constant.Constants;
 import org.mule.extension.vectors.internal.helper.parameter.QueryParameters;
 import org.mule.extension.vectors.internal.store.BaseStore;
 import org.mule.extension.vectors.internal.util.JsonUtils;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3Client;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,6 +29,21 @@ import java.util.List;
 public class MilvusStore extends BaseStore {
 
   private final String uri;
+  private MilvusServiceClient client;
+
+  private MilvusServiceClient getClient() {
+
+    if(this.client == null || !this.client.clientIsReady()) {
+
+      // Create S3 client with your credentials
+      this.client = new MilvusServiceClient(
+          ConnectParam.newBuilder()
+              .withUri(this.uri)
+              .build()
+      );
+    }
+    return client;
+  }
 
   public MilvusStore(String storeName, CompositeConfiguration compositeConfiguration, QueryParameters queryParams, int dimension) {
 
@@ -32,6 +51,7 @@ public class MilvusStore extends BaseStore {
 
     MilvusStoreConfiguration milvusStoreConfiguration = (MilvusStoreConfiguration) compositeConfiguration.getStoreConfiguration();
     this.uri = milvusStoreConfiguration.getUrl();
+    //this.client =
   }
 
   public EmbeddingStore<TextSegment> buildEmbeddingStore() {
@@ -50,13 +70,6 @@ public class MilvusStore extends BaseStore {
     JSONObject jsonObject = new JSONObject();
     jsonObject.put(Constants.JSON_KEY_STORE_NAME, storeName);
 
-    // Specify the host and port for the Milvus server
-    ConnectParam connectParam = ConnectParam.newBuilder()
-        .withUri(this.uri)
-        .build();
-
-    MilvusServiceClient client = new MilvusServiceClient(connectParam);
-
     try {
 
       boolean hasMore = true;
@@ -68,7 +81,7 @@ public class MilvusStore extends BaseStore {
           .withOutFields(Arrays.asList(Constants.STORE_SCHEMA_METADATA_FIELD_NAME))
           .build();
 
-      R<QueryIterator> queryIteratorRes = client.queryIterator(iteratorParam);
+      R<QueryIterator> queryIteratorRes = getClient().queryIterator(iteratorParam);
 
       if (queryIteratorRes.getStatus() != R.Status.Success.getCode()) {
         System.err.println(queryIteratorRes.getMessage());
@@ -97,7 +110,7 @@ public class MilvusStore extends BaseStore {
         }
       }
     } finally {
-      client.close();
+      getClient().close();
     }
 
     jsonObject.put(Constants.JSON_KEY_SOURCES, JsonUtils.jsonObjectCollectionToJsonArray(sourceObjectMap.values()));

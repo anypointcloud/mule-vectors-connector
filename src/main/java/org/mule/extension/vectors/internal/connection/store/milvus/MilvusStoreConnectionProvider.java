@@ -1,5 +1,7 @@
 package org.mule.extension.vectors.internal.connection.store.milvus;
 
+import io.milvus.client.MilvusServiceClient;
+import io.milvus.param.ConnectParam;
 import org.mule.extension.vectors.internal.connection.store.BaseStoreConnection;
 import org.mule.extension.vectors.internal.connection.store.BaseStoreConnectionProvider;
 import org.mule.runtime.api.connection.ConnectionException;
@@ -23,17 +25,36 @@ public class MilvusStoreConnectionProvider extends BaseStoreConnectionProvider {
   @Override
   public BaseStoreConnection connect() throws ConnectionException {
 
-    throw new ConnectionException("Failed to connect to Milvus. Test Connection not supported yet.", null);
+    try {
+
+      MilvusStoreConnection milvusStoreConnection = new MilvusStoreConnection(milvusStoreConnectionParameters.getUrl());
+      milvusStoreConnection.connect();
+      return milvusStoreConnection;
+
+    } catch (Exception e) {
+
+      throw new ConnectionException("Failed to connect to Milvus.", e);
+    }
   }
 
   @Override
   public void disconnect(BaseStoreConnection connection) {
 
+    connection.disconnect();
   }
 
   @Override
   public ConnectionValidationResult validate(BaseStoreConnection connection) {
 
-    return ConnectionValidationResult.failure("Failed to validate connection to Milvus", null);
+    try {
+
+      if (connection.isValid()) {
+        return ConnectionValidationResult.success();
+      } else {
+        return ConnectionValidationResult.failure("Failed to validate connection to Milvus", null);
+      }
+    } catch (Exception e) {
+      return ConnectionValidationResult.failure("Failed to validate connection to Milvus", e);
+    }
   }
 }

@@ -25,4 +25,19 @@ public class AISearchStoreConnection implements BaseStoreConnection {
   public String getVectorStore() {
     return Constants.VECTOR_STORE_AI_SEARCH;
   }
+
+  @Override
+  public void connect() {
+
+  }
+
+  @Override
+  public void disconnect() {
+
+  }
+
+  @Override
+  public boolean isValid() {
+    return false;
+  }
 }
