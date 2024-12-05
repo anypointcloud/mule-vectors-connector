@@ -34,6 +34,7 @@ import org.mule.runtime.extension.api.annotation.param.ConfigOverride;
 import org.mule.runtime.extension.api.annotation.param.MediaType;
 import org.mule.runtime.extension.api.annotation.param.ParameterGroup;
 import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
+import org.mule.runtime.extension.api.annotation.param.display.Text;
 import org.mule.runtime.extension.api.exception.ModuleException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,6 +56,7 @@ public class CompositeOperations {
    */
   @MediaType(value = APPLICATION_JSON, strict = false)
   @Alias("Composite-add-text-to-store")
+  @DisplayName("[Composite] Add text to store")
   @Throws(CompositeErrorTypeProvider.class)
   @OutputJsonType(schema = "api/response/StoreAddToStoreResponse.json")
   public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, EmbeddingResponseAttributes>
@@ -120,6 +122,7 @@ public class CompositeOperations {
    */
   @MediaType(value = APPLICATION_JSON, strict = false)
   @Alias("Composite-add-folder-to-store")
+  @DisplayName("[Composite] Add folder to store")
   @Throws(CompositeErrorTypeProvider.class)
   @OutputJsonType(schema = "api/response/StoreAddToStoreResponse.json")
   public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, EmbeddingResponseAttributes>
@@ -202,6 +205,7 @@ public class CompositeOperations {
    */
   @MediaType(value = APPLICATION_JSON, strict = false)
   @Alias("Composite-add-document-to-store")
+  @DisplayName("[Composite] Add document to store")
   @Throws(CompositeErrorTypeProvider.class)
   @OutputJsonType(schema = "api/response/StoreAddToStoreResponse.json")
   public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, EmbeddingResponseAttributes>
@@ -277,15 +281,16 @@ public class CompositeOperations {
    */
   @MediaType(value = APPLICATION_JSON, strict = false)
   @Alias("Composite-query-text-from-store")
+  @DisplayName("[Composite] Query text from store")
   @Throws(CompositeErrorTypeProvider.class)
   @OutputJsonType(schema = "api/response/StoreQueryResponse.json")
   public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, EmbeddingResponseAttributes>
   queryTextFromEmbedding( @Config CompositeConfiguration compositeConfiguration,
-                      @Alias("storeName") @DisplayName("Store Name") String storeName,
-                      String question,
-                      Number maxResults,
-                      Double minScore,
-                      @ParameterGroup(name = "Embedding Model") EmbeddingModelParameters embeddingModelParameters) {
+                          @Alias("storeName") @DisplayName("Store Name") String storeName,
+                          @Text String question,
+                          Number maxResults,
+                          Double minScore,
+                          @ParameterGroup(name = "Embedding Model") EmbeddingModelParameters embeddingModelParameters) {
     try {
 
       int maximumResults = maxResults.intValue();
@@ -374,16 +379,17 @@ public class CompositeOperations {
    */
   @MediaType(value = APPLICATION_JSON, strict = false)
   @Alias("Composite-query-text-from-store-with-filter")
+  @DisplayName("[Composite] Query text from store with filter")
   @Throws(CompositeErrorTypeProvider.class)
   @OutputJsonType(schema = "api/response/StoreQueryResponse.json")
   public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, EmbeddingResponseAttributes>
-  queryTextByFilterFromEmbedding( String storeName,
-                              String question,
-                              Number maxResults,
-                              Double minScore,
-                              @Config CompositeConfiguration compositeConfiguration,
-                              @ParameterGroup(name = "Filter") MetadataFilterParameters.SearchFilterParameters searchFilterParams,
-                              @ParameterGroup(name = "Embedding Model") EmbeddingModelParameters embeddingModelParameters) {
+  queryTextWithFilterFromEmbedding( String storeName,
+                                    @Text String question,
+                                    Number maxResults,
+                                    Double minScore,
+                                    @Config CompositeConfiguration compositeConfiguration,
+                                    @ParameterGroup(name = "Filter") MetadataFilterParameters.SearchFilterParameters searchFilterParams,
+                                    @ParameterGroup(name = "Embedding Model") EmbeddingModelParameters embeddingModelParameters) {
 
     try {
 

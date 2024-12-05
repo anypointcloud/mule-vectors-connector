@@ -23,6 +23,7 @@ import org.mule.runtime.extension.api.annotation.metadata.fixed.OutputJsonType;
 import org.mule.runtime.extension.api.annotation.param.Config;
 import org.mule.runtime.extension.api.annotation.param.MediaType;
 import org.mule.runtime.extension.api.annotation.param.ParameterGroup;
+import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
 import org.mule.runtime.extension.api.exception.ModuleException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,6 +53,7 @@ public class StoreOperations {
    */
   @MediaType(value = APPLICATION_JSON, strict = false)
   @Alias("Store-list-sources")
+  @DisplayName("[Store] List sources")
   @Throws(StoreErrorTypeProvider.class)
   @OutputJsonType(schema = "api/response/StoreListSourcesResponse.json")
   public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, EmbeddingResponseAttributes>
@@ -99,6 +101,7 @@ public class StoreOperations {
    */
   @MediaType(value = APPLICATION_JSON, strict = false)
   @Alias("Store-remove-from-store-by-filter")
+  @DisplayName("[Store] Remove from store by filter")
   @Throws(StoreErrorTypeProvider.class)
   @OutputJsonType(schema = "api/response/StoreRemoveFromStoreResponse.json")
   public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, EmbeddingResponseAttributes>

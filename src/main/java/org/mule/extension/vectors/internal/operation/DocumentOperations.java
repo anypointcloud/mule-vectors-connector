@@ -44,6 +44,7 @@ public class DocumentOperations {
    */
   @MediaType(value = APPLICATION_JSON, strict = false)
   @Alias("Document-split-into-chunks")
+  @DisplayName("[Document] Split document into chunks")
   @Throws(DocumentErrorTypeProvider.class)
   @OutputJsonType(schema = "api/response/DocumentSplitResponse.json")
   public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, DocumentResponseAttributes>
@@ -106,6 +107,7 @@ public class DocumentOperations {
    */
   @MediaType(value = APPLICATION_JSON, strict = false)
   @Alias("Document-parser")
+  @DisplayName("[Document] Parse document")
   @Throws(DocumentErrorTypeProvider.class)
   @OutputJsonType(schema = "api/response/DocumentParseResponse.json")
   public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, DocumentResponseAttributes>
@@ -151,6 +153,7 @@ public class DocumentOperations {
    */
   @MediaType(value = APPLICATION_JSON, strict = false)
   @Alias("Document-load-document")
+  @DisplayName("[Document] Load document")
   @Throws(DocumentErrorTypeProvider.class)
   @OutputJsonType(schema = "api/response/DocumentLoadDocumentResponse.json")
   public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, DocumentResponseAttributes>

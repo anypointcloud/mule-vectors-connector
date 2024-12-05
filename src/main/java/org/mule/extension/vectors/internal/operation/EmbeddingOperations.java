@@ -41,6 +41,7 @@ import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.model.embedding.EmbeddingModel;
 
 import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
+import org.mule.runtime.extension.api.annotation.param.display.Text;
 import org.mule.runtime.extension.api.exception.ModuleException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,12 +58,13 @@ public class EmbeddingOperations {
    */
   @MediaType(value = APPLICATION_JSON, strict = false)
   @Alias("Embedding-generate-from-text")
+  @DisplayName("[Embedding] Generate embeddings from text")
   @Throws(EmbeddingErrorTypeProvider.class)
   @OutputJsonType(schema = "api/response/EmbeddingGenerateFromTextResponse.json")
   public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, EmbeddingResponseAttributes>
       generateEmbedding(@Config EmbeddingConfiguration embeddingConfiguration,
                         @Connection BaseModelConnection modelConnection,
-                        @Alias("text") @DisplayName("Text")  String text,
+                        @Alias("text") @DisplayName("Text") @Text String text,
                         @ParameterGroup(name = "Segmentation") SegmentationParameters segmentationParameters,
                         @ParameterGroup(name = "Embedding Model") EmbeddingModelParameters embeddingModelParameters){
 
