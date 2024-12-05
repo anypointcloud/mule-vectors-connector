@@ -127,7 +127,12 @@ public class DocumentOperations {
       JSONObject jsonObject = new JSONObject();
       jsonObject.put(Constants.JSON_KEY_TEXT,document.text());
 
-      return createDocumentResponse(jsonObject.toString(), new HashMap<>());
+      return createDocumentResponse(
+          jsonObject.toString(),
+          new HashMap<String, Object>() {{
+            put("fileType", documentParameters.getFileType());
+            put("contextPath", documentParameters.getContextPath());
+          }});
 
     } catch (ModuleException me) {
       throw me;
