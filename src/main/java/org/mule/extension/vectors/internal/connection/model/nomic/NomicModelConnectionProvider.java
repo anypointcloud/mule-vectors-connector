@@ -2,6 +2,7 @@ package org.mule.extension.vectors.internal.connection.model.nomic;
 
 import org.mule.extension.vectors.internal.connection.model.BaseModelConnection;
 import org.mule.extension.vectors.internal.connection.model.BaseModelConnectionProvider;
+import org.mule.extension.vectors.internal.connection.model.openai.OpenAIModelConnection;
 import org.mule.runtime.api.connection.ConnectionException;
 import org.mule.runtime.api.connection.ConnectionValidationResult;
 import org.mule.runtime.extension.api.annotation.Alias;
@@ -23,7 +24,21 @@ public class NomicModelConnectionProvider  extends BaseModelConnectionProvider {
   @Override
   public BaseModelConnection connect() throws ConnectionException {
 
-    throw new ConnectionException("Failed to connect to Nomic. Test Connection not supported yet.", null);
+    try {
+
+      NomicModelConnection nomicModelConnection =
+          new NomicModelConnection(nomicModelConnectionParameters.getApiKey());
+      nomicModelConnection.connect();
+      return nomicModelConnection;
+
+    } catch (ConnectionException e) {
+
+      throw e;
+
+    } catch (Exception e) {
+
+      throw new ConnectionException("Failed to connect to Nomic", e);
+    }
   }
 
   @Override

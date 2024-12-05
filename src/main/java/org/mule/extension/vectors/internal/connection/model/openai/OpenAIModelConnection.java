@@ -50,7 +50,7 @@ public class OpenAIModelConnection implements BaseModelConnection {
 
       } catch (Exception e) {
 
-        throw new ConnectionException("Failed to connect to Open AI. Test Connection not supported yet.", e);
+        throw new ConnectionException("Failed to connect to Open AI.", e);
       }
     }
   }
@@ -65,7 +65,7 @@ public class OpenAIModelConnection implements BaseModelConnection {
 
     try {
 
-      doAuthenticatedHttpRequest();
+      if(apiKey.compareTo("demo") != 0) doAuthenticatedHttpRequest();
       return true;
 
     } catch (Exception e) {
