@@ -29,10 +29,7 @@ import org.mule.extension.vectors.internal.util.MetadatatUtils;
 import org.mule.runtime.extension.api.annotation.Alias;
 import org.mule.runtime.extension.api.annotation.error.Throws;
 import org.mule.runtime.extension.api.annotation.metadata.fixed.OutputJsonType;
-import org.mule.runtime.extension.api.annotation.param.Config;
-import org.mule.runtime.extension.api.annotation.param.ConfigOverride;
-import org.mule.runtime.extension.api.annotation.param.MediaType;
-import org.mule.runtime.extension.api.annotation.param.ParameterGroup;
+import org.mule.runtime.extension.api.annotation.param.*;
 import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
 import org.mule.runtime.extension.api.annotation.param.display.Text;
 import org.mule.runtime.extension.api.exception.ModuleException;
@@ -61,7 +58,7 @@ public class CompositeOperations {
   @OutputJsonType(schema = "api/response/StoreAddToStoreResponse.json")
   public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, EmbeddingResponseAttributes>
   addTextToStore( @Config CompositeConfiguration compositeConfiguration,
-                  @Alias("text") @DisplayName("Text") String text,
+                  @Alias("text") @DisplayName("Text") @Content String text,
                   @Alias("storeName") @DisplayName("Store Name")  String storeName,
                   @ParameterGroup(name = "Segmentation") SegmentationParameters segmentationParameters,
                   @ParameterGroup(name = "Embedding Model") EmbeddingModelParameters embeddingModelParameters){
@@ -287,7 +284,7 @@ public class CompositeOperations {
   public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, EmbeddingResponseAttributes>
   queryTextFromEmbedding( @Config CompositeConfiguration compositeConfiguration,
                           @Alias("storeName") @DisplayName("Store Name") String storeName,
-                          @Text String question,
+                          @Content String question,
                           Number maxResults,
                           Double minScore,
                           @ParameterGroup(name = "Embedding Model") EmbeddingModelParameters embeddingModelParameters) {
@@ -384,7 +381,7 @@ public class CompositeOperations {
   @OutputJsonType(schema = "api/response/StoreQueryResponse.json")
   public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, EmbeddingResponseAttributes>
   queryTextWithFilterFromEmbedding( String storeName,
-                                    @Text String question,
+                                    @Content String question,
                                     Number maxResults,
                                     Double minScore,
                                     @Config CompositeConfiguration compositeConfiguration,

@@ -64,7 +64,7 @@ public class EmbeddingOperations {
   public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, EmbeddingResponseAttributes>
       generateEmbedding(@Config EmbeddingConfiguration embeddingConfiguration,
                         @Connection BaseModelConnection modelConnection,
-                        @Alias("text") @DisplayName("Text") @Text String text,
+                        @Alias("text") @DisplayName("Text") @Content String text,
                         @ParameterGroup(name = "Segmentation") SegmentationParameters segmentationParameters,
                         @ParameterGroup(name = "Embedding Model") EmbeddingModelParameters embeddingModelParameters){
 
