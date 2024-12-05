@@ -145,4 +145,51 @@ public class DocumentOperations {
           e);
     }
   }
+
+  /**
+   * Parses a document by filepath and returns the text
+   */
+  @MediaType(value = APPLICATION_JSON, strict = false)
+  @Alias("Document-load-document")
+  @Throws(DocumentErrorTypeProvider.class)
+  @OutputJsonType(schema = "api/response/DocumentLoadDocumentResponse.json")
+  public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, DocumentResponseAttributes>
+  loadDocument( @Config DocumentConfiguration documentConfiguration,
+                @Connection BaseStorageConnection storageConnection,
+                @ParameterGroup(name = "Document") DocumentParameters documentParameters
+  ){
+
+    try {
+
+      BaseStorage baseStorage = BaseStorage.builder()
+          .configuration(documentConfiguration)
+          .connection(storageConnection)
+          .contextPath(documentParameters.getContextPath())
+          .fileType(documentParameters.getFileType())
+          .build();
+      Document document = baseStorage.getSingleDocument();
+
+      JSONObject jsonObject = new JSONObject();
+      jsonObject.put(Constants.JSON_KEY_TEXT,document.text());
+      JSONObject metadataObject = new JSONObject(document.metadata().toMap());
+      jsonObject.put(Constants.JSON_KEY_METADATA, metadataObject);
+
+      return createDocumentResponse(
+          jsonObject.toString(),
+          new HashMap<String, Object>() {{
+            put("fileType", documentParameters.getFileType());
+            put("contextPath", documentParameters.getContextPath());
+          }});
+
+    } catch (ModuleException me) {
+      throw me;
+
+    } catch (Exception e) {
+
+      throw new ModuleException(
+          String.format("Error while splitting document %s.", documentParameters.getContextPath()),
+          MuleVectorsErrorType.DOCUMENT_OPERATIONS_FAILURE,
+          e);
+    }
+  }
 }

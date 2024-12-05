@@ -10,15 +10,22 @@ import static org.mule.runtime.extension.api.annotation.param.MediaType.APPLICAT
 
 public class EmbeddingResponseAttributes  implements Serializable {
 
-  private final HashMap<String, Object> requestAttributes;
+  private final String embeddingModelName;
+
+  private final HashMap<String, Object> otherAttributes;
 
   public EmbeddingResponseAttributes(HashMap<String, Object> requestAttributes) {
 
-    this.requestAttributes = requestAttributes;
+    this.embeddingModelName = (String)requestAttributes.remove("embeddingModelName");
+    this.otherAttributes = requestAttributes;
+  }
+
+  public String getEmbeddingModelName() {
+    return embeddingModelName;
   }
 
   @MediaType(value = APPLICATION_JSON, strict = false)
-  public Map<String, Object> getRequestAttributes() {
-    return requestAttributes;
+  public Map<String, Object> getOtherAttributes() {
+    return otherAttributes;
   }
 }

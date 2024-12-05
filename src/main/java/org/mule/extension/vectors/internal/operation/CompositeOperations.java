@@ -167,6 +167,7 @@ public class CompositeOperations {
       while(baseStorage.hasNext()) {
 
         Document document = baseStorage.next();
+        MetadatatUtils.addIngestionMetadataToDocument(document);
         embeddingStoreIngestor.ingest(document);
         documentNumber ++;
       }
@@ -245,6 +246,7 @@ public class CompositeOperations {
           .build();
       Document document = baseStorage.getSingleDocument();
 
+      MetadatatUtils.addIngestionMetadataToDocument(document);
       embeddingStoreIngestor.ingest(document);
 
       JSONObject jsonObject = JsonUtils.createIngestionStatusObject(storeName);

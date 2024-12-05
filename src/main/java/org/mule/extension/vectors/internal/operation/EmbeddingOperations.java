@@ -1,5 +1,6 @@
 package org.mule.extension.vectors.internal.operation;
 
+import static org.mule.extension.vectors.internal.helper.ResponseHelper.createDocumentResponse;
 import static org.mule.extension.vectors.internal.helper.ResponseHelper.createEmbeddingResponse;
 import static org.mule.runtime.extension.api.annotation.param.MediaType.APPLICATION_JSON;
 
@@ -106,7 +107,11 @@ public class EmbeddingOperations {
       jsonObject.put(Constants.JSON_KEY_SEGMENTS, jsonSegments);
       jsonObject.put(Constants.JSON_KEY_DIMENSIONS, embeddingModel.dimension());
 
-      return createEmbeddingResponse(jsonObject.toString(), new HashMap<>());
+      return createEmbeddingResponse(
+          jsonObject.toString(),
+          new HashMap<String, Object>() {{
+            put("embeddingModelName", embeddingModelParameters.getEmbeddingModelName());
+          }});
 
     } catch (ModuleException me) {
       throw me;

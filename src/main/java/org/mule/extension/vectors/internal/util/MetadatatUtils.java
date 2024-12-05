@@ -16,11 +16,14 @@ public class MetadatatUtils {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MetadatatUtils.class);
 
-  public static void addMetadataToDocument(Document document, String fileType) {
+  public static void addIngestionMetadataToDocument(Document document) {
 
     document.metadata().put(Constants.METADATA_KEY_SOURCE_ID, dev.langchain4j.internal.Utils.randomUUID());
     document.metadata().put(Constants.METADATA_KEY_INGESTION_DATETIME, Utils.getCurrentISO8601Timestamp());
     document.metadata().put(Constants.METADATA_KEY_INGESTION_TIMESTAMP, Utils.getCurrentTimeMillis());
+  }
+
+  public static void addMetadataToDocument(Document document, String fileType) {
 
     if(!fileType.isEmpty()) document.metadata().put(Constants.METADATA_KEY_FILE_TYPE, fileType);
 

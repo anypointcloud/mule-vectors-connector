@@ -23,7 +23,21 @@ public class MistralAIModelConnectionProvider  extends BaseModelConnectionProvid
   @Override
   public BaseModelConnection connect() throws ConnectionException {
 
-    throw new ConnectionException("Failed to connect", null);
+    try {
+
+      MistralAIModelConnection mistralAIModelConnection =
+          new MistralAIModelConnection(mistralAIModelConnectionParameters.getApiKey());
+      mistralAIModelConnection.connect();
+      return mistralAIModelConnection;
+
+    } catch (ConnectionException e) {
+
+      throw e;
+
+    } catch (Exception e) {
+
+      throw new ConnectionException("Failed to connect to Mistral AI", e);
+    }
   }
 
   @Override
