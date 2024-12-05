@@ -5,6 +5,7 @@ import dev.langchain4j.data.document.DocumentParser;
 import dev.langchain4j.data.document.loader.UrlDocumentLoader;
 import dev.langchain4j.data.document.transformer.jsoup.HtmlToTextDocumentTransformer;
 import org.mule.extension.vectors.internal.config.DocumentConfiguration;
+import org.mule.extension.vectors.internal.connection.storage.local.LocalStorageConnection;
 import org.mule.extension.vectors.internal.constant.Constants;
 import org.mule.extension.vectors.internal.storage.BaseStorage;
 import org.mule.extension.vectors.internal.storage.BaseStorageConfiguration;
@@ -49,10 +50,10 @@ public class LocalStorage extends BaseStorage {
     return pathIterator;
   }
 
-  public LocalStorage(DocumentConfiguration documentConfiguration, String contextPath, String fileType) {
+  public LocalStorage(DocumentConfiguration documentConfiguration, LocalStorageConnection storageConnection, String contextPath, String fileType) {
 
     super(documentConfiguration, contextPath, fileType);
-    this.fullPath = contextPath;
+    this.fullPath = storageConnection.getWorkingDir() != null ? storageConnection.getWorkingDir() + "/" + contextPath : contextPath;
   }
 
   // Override hasNext to check if there are files left to process

@@ -8,11 +8,13 @@ import org.mule.extension.vectors.internal.config.DocumentConfiguration;
 import org.mule.extension.vectors.internal.connection.storage.BaseStorageConnection;
 import org.mule.extension.vectors.internal.connection.storage.amazons3.AmazonS3StorageConnection;
 import org.mule.extension.vectors.internal.connection.storage.azureblob.AzureBlobStorageConnection;
+import org.mule.extension.vectors.internal.connection.storage.local.LocalStorageConnection;
 import org.mule.extension.vectors.internal.constant.Constants;
 import org.mule.extension.vectors.internal.error.MuleVectorsErrorType;
 import org.mule.extension.vectors.internal.storage.azureblob.AzureBlobStorage;
 import org.mule.extension.vectors.internal.storage.local.LocalStorage;
 import org.mule.extension.vectors.internal.storage.amazons3.AmazonS3Storage;
+import org.mule.extension.vectors.internal.storage.local.LocalStorageConfiguration;
 import org.mule.runtime.extension.api.exception.ModuleException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -133,7 +135,7 @@ public abstract class BaseStorage implements Iterator<Document> {
 
           case Constants.STORAGE_TYPE_LOCAL:
 
-            baseStorage = new LocalStorage(documentConfiguration, contextPath, fileType);
+            baseStorage = new LocalStorage(documentConfiguration, (LocalStorageConnection) storageConnection, contextPath, fileType);
             break;
 
           case Constants.STORAGE_TYPE_AWS_S3:

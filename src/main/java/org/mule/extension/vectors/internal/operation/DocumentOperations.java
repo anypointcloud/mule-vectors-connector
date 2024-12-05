@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 import static org.mule.extension.vectors.internal.helper.ResponseHelper.createDocumentResponse;
+import static org.mule.extension.vectors.internal.helper.ResponseHelper.createEmbeddingResponse;
 import static org.mule.runtime.extension.api.annotation.param.MediaType.APPLICATION_JSON;
 
 public class DocumentOperations {
@@ -81,7 +82,12 @@ public class DocumentOperations {
       JSONObject jsonObject = new JSONObject();
       jsonObject.put(Constants.JSON_KEY_SEGMENTS, jsonSegments);
 
-      return createDocumentResponse(jsonObject.toString(), new HashMap<>());
+     return createDocumentResponse(
+          jsonObject.toString(),
+          new HashMap<String, Object>() {{
+            put("fileType", documentParameters.getFileType());
+            put("contextPath", documentParameters.getContextPath());
+          }});
 
     } catch (ModuleException me) {
       throw me;
