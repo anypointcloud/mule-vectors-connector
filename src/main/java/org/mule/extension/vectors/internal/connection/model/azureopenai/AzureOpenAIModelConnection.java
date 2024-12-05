@@ -15,12 +15,16 @@ import dev.langchain4j.internal.ValidationUtils;
 import org.mule.extension.vectors.internal.connection.model.BaseModelConnection;
 import org.mule.extension.vectors.internal.constant.Constants;
 import org.mule.runtime.api.connection.ConnectionException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
 public class AzureOpenAIModelConnection implements BaseModelConnection {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(AzureOpenAIModelConnection.class);
 
   private String endpoint;
   private String apiKey;
@@ -78,6 +82,8 @@ public class AzureOpenAIModelConnection implements BaseModelConnection {
         .retryOptions(retryOptions);
 
     this.openAIClient = openAIClientBuilder.buildClient();
+
+    LOGGER.debug("Connected to Azure Open AI.");
   }
 
   @Override
@@ -86,6 +92,7 @@ public class AzureOpenAIModelConnection implements BaseModelConnection {
     if(this.openAIClient != null) {
 
       // Add logic to invalidate connection
+      LOGGER.debug("Disconnecting from Azure Open AI.");
     }
   }
 
@@ -93,6 +100,7 @@ public class AzureOpenAIModelConnection implements BaseModelConnection {
   public boolean isValid() {
 
     openAIClient.listBatches();;
+    LOGGER.debug("Azure Open AI connection is valid.");
     return true;
   }
 }

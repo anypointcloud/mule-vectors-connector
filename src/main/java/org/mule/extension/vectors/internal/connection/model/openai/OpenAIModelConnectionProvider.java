@@ -1,7 +1,9 @@
 package org.mule.extension.vectors.internal.connection.model.openai;
 
+import dev.langchain4j.model.openai.OpenAiEmbeddingModel;
 import org.mule.extension.vectors.internal.connection.model.BaseModelConnection;
 import org.mule.extension.vectors.internal.connection.model.BaseModelConnectionProvider;
+import org.mule.extension.vectors.internal.connection.model.azureopenai.AzureOpenAIModelConnection;
 import org.mule.runtime.api.connection.ConnectionException;
 import org.mule.runtime.api.connection.ConnectionValidationResult;
 import org.mule.runtime.extension.api.annotation.Alias;
@@ -23,7 +25,21 @@ public class OpenAIModelConnectionProvider  extends BaseModelConnectionProvider 
   @Override
   public BaseModelConnection connect() throws ConnectionException {
 
-    throw new ConnectionException("Failed to connect to Open AI. Test Connection not supported yet.", null);
+    try {
+
+      OpenAIModelConnection openAIModelConnection =
+          new OpenAIModelConnection(openAIModelConnectionParameters.getApiKey());
+      openAIModelConnection.connect();
+      return openAIModelConnection;
+
+    } catch (ConnectionException e) {
+
+      throw e;
+
+    } catch (Exception e) {
+
+      throw new ConnectionException("Failed to connect to Open AI", e);
+    }
   }
 
   @Override
