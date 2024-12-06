@@ -81,7 +81,7 @@ public class DocumentOperations {
           .collect(JSONArray::new, JSONArray::put, JSONArray::putAll);
 
       JSONObject jsonObject = new JSONObject();
-      jsonObject.put(Constants.JSON_KEY_SEGMENTS, jsonSegments);
+      jsonObject.put(Constants.JSON_KEY_TEXT_SEGMENTS, jsonSegments);
 
      return createDocumentResponse(
           jsonObject.toString(),
@@ -159,7 +159,8 @@ public class DocumentOperations {
   public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, DocumentResponseAttributes>
   loadDocument( @Config DocumentConfiguration documentConfiguration,
                 @Connection BaseStorageConnection storageConnection,
-                @ParameterGroup(name = "Document") DocumentParameters documentParameters
+                @ParameterGroup(name = "Document") DocumentParameters documentParameters,
+                @ParameterGroup(name = "Segmentation") SegmentationParameters segmentationParameters
   ){
 
     try {
@@ -172,8 +173,25 @@ public class DocumentOperations {
           .build();
       Document document = baseStorage.getSingleDocument();
 
+      DocumentSplitter splitter = DocumentSplitters.recursive(
+          segmentationParameters.getMaxSegmentSizeInChar(),
+          segmentationParameters.getMaxOverlapSizeInChars());
+
+      List<TextSegment> segments = splitter.split(document);
+
+      // Use Streams to populate a JSONArray
+      JSONArray jsonTextSegments = IntStream.range(0, segments.size())
+          .mapToObj(i -> {
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put(Constants.JSON_KEY_TEXT, segments.get(i).text()); // Replace getText with the actual method
+            jsonObject.put(Constants.JSON_KEY_INDEX, i);
+            return jsonObject;
+          })
+          .collect(JSONArray::new, JSONArray::put, JSONArray::putAll);
+
       JSONObject jsonObject = new JSONObject();
-      jsonObject.put(Constants.JSON_KEY_TEXT,document.text());
+      jsonObject.put(Constants.JSON_KEY_TEXT_SEGMENTS, jsonTextSegments);
+
       JSONObject metadataObject = new JSONObject(document.metadata().toMap());
       jsonObject.put(Constants.JSON_KEY_METADATA, metadataObject);
 

@@ -72,6 +72,7 @@ public class Constants {
 
   public static final String JSON_KEY_SOURCES = "sources";
   public static final String JSON_KEY_SEGMENTS = "segments";
+  public static final String JSON_KEY_TEXT_SEGMENTS = "text-segments";
   public static final String JSON_KEY_SEGMENT_COUNT = "segmentCount";
   public static final String JSON_KEY_SOURCE_COUNT = "sourceCount";
   public static final String JSON_KEY_STORE_NAME = "storeName";

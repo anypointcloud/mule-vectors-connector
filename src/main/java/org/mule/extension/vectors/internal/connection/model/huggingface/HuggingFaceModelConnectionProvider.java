@@ -2,6 +2,7 @@ package org.mule.extension.vectors.internal.connection.model.huggingface;
 
 import org.mule.extension.vectors.internal.connection.model.BaseModelConnection;
 import org.mule.extension.vectors.internal.connection.model.BaseModelConnectionProvider;
+import org.mule.extension.vectors.internal.connection.model.mistralai.MistralAIModelConnection;
 import org.mule.runtime.api.connection.ConnectionException;
 import org.mule.runtime.api.connection.ConnectionValidationResult;
 import org.mule.runtime.extension.api.annotation.Alias;
@@ -23,7 +24,21 @@ public class HuggingFaceModelConnectionProvider extends BaseModelConnectionProvi
   @Override
   public BaseModelConnection connect() throws ConnectionException {
 
-    throw new ConnectionException("Failed to connect to Hugging Face. Test Connection not supported yet.", null);
+    try {
+
+      HuggingFaceModelConnection huggingFaceModelConnection =
+          new HuggingFaceModelConnection(huggingFaceModelConnectionParameters.getApiKey());
+      huggingFaceModelConnection.connect();
+      return huggingFaceModelConnection;
+
+    } catch (ConnectionException e) {
+
+      throw e;
+
+    } catch (Exception e) {
+
+      throw new ConnectionException("Failed to connect to Hugging Face", e);
+    }
   }
 
   @Override

@@ -18,5 +18,5 @@
       }
     }
   },
-  "required": ["segments"]
+  "required": ["text-segments"]
 }

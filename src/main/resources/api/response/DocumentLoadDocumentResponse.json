@@ -2,8 +2,20 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
   "properties": {
-    "text": {
-      "type": "string"
+    "text-segments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "index": {
+            "type": "integer"
+          },
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": ["index", "text"]
+      }
     },
     "metadata": {
       "type": "object",
@@ -30,5 +42,6 @@
       "additionalProperties": true
     }
   },
-  "required": ["text"]
+  "required": ["text-segments"]
 }
+
