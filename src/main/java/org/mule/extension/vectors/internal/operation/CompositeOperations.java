@@ -284,7 +284,7 @@ public class CompositeOperations {
   public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, EmbeddingResponseAttributes>
   queryTextFromEmbedding( @Config CompositeConfiguration compositeConfiguration,
                           @Alias("storeName") @DisplayName("Store Name") String storeName,
-                          @Content String question,
+                          String question,
                           Number maxResults,
                           Double minScore,
                           @ParameterGroup(name = "Embedding Model") EmbeddingModelParameters embeddingModelParameters) {
@@ -381,7 +381,7 @@ public class CompositeOperations {
   @OutputJsonType(schema = "api/response/StoreQueryResponse.json")
   public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, EmbeddingResponseAttributes>
   queryTextWithFilterFromEmbedding( String storeName,
-                                    @Content String question,
+                                    String question,
                                     Number maxResults,
                                     Double minScore,
                                     @Config CompositeConfiguration compositeConfiguration,

@@ -7,38 +7,38 @@
       "items": {
         "type": "object",
         "properties": {
-          "index": {
-            "type": "integer"
-          },
           "text": {
             "type": "string"
+          },
+          "metadata": {
+            "type": "object",
+            "properties": {
+              "index": {
+                "type": "integer"
+              },
+              "file_type": {
+                "type": "string"
+              },
+              "absolute_directory_path": {
+                "type": "string"
+              },
+              "file_name": {
+                "type": "string"
+              },
+              "source": {
+                "type": "string"
+              },
+              "url": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              }
+            }
           }
-        },
-        "required": ["index", "text"]
-      }
-    },
-    "metadata": {
-      "type": "object",
-      "properties": {
-        "file_type": {
-          "type": "string"
-        },
-        "absolute_directory_path": {
-          "type": "string"
-        },
-        "file_name": {
-          "type": "string"
-        },
-        "source": {
-          "type": "string"
-        },
-        "url": {
-          "type": "string"
-        },
-        "title": {
-          "type": "string"
-        }
       },
+        "required": ["text", "metadata"]
+    },
       "additionalProperties": true
     }
   },

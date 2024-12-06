@@ -4,6 +4,7 @@ import dev.langchain4j.data.document.Document;
 import dev.langchain4j.data.document.DocumentSplitter;
 import dev.langchain4j.data.document.splitter.DocumentSplitters;
 import dev.langchain4j.data.segment.TextSegment;
+import dev.langchain4j.internal.ValidationUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.mule.extension.vectors.api.metadata.DocumentResponseAttributes;
@@ -27,6 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.IntStream;
@@ -173,27 +175,36 @@ public class DocumentOperations {
           .build();
       Document document = baseStorage.getSingleDocument();
 
-      DocumentSplitter splitter = DocumentSplitters.recursive(
-          segmentationParameters.getMaxSegmentSizeInChar(),
-          segmentationParameters.getMaxOverlapSizeInChars());
+      List<TextSegment> textSegments;
 
-      List<TextSegment> segments = splitter.split(document);
+      int maxSegmentSizeInChar = segmentationParameters.getMaxSegmentSizeInChar();
+      int maxOverlapSizeInChars = segmentationParameters.getMaxOverlapSizeInChars();
+      if(maxSegmentSizeInChar != 0 || maxOverlapSizeInChars != 0) {
+
+        ValidationUtils.ensureGreaterThanZero(maxSegmentSizeInChar, "maxSegmentSizeInChar");
+        ValidationUtils.ensureGreaterThanZero(maxOverlapSizeInChars, "maxOverlapSizeInChars");
+        DocumentSplitter splitter = DocumentSplitters.recursive(
+            segmentationParameters.getMaxSegmentSizeInChar(),
+            segmentationParameters.getMaxOverlapSizeInChars());
+
+        textSegments = splitter.split(document);
+      } else {
+
+        textSegments = Collections.singletonList(document.toTextSegment());
+      }
 
       // Use Streams to populate a JSONArray
-      JSONArray jsonTextSegments = IntStream.range(0, segments.size())
+      JSONArray jsonTextSegments = IntStream.range(0, textSegments.size())
           .mapToObj(i -> {
-            JSONObject jsonObject = new JSONObject();
-            jsonObject.put(Constants.JSON_KEY_TEXT, segments.get(i).text()); // Replace getText with the actual method
-            jsonObject.put(Constants.JSON_KEY_INDEX, i);
-            return jsonObject;
+            JSONObject jsonTextSegment = new JSONObject();
+            jsonTextSegment.put(Constants.JSON_KEY_TEXT, textSegments.get(i).text());
+            jsonTextSegment.put(Constants.JSON_KEY_METADATA, new JSONObject(textSegments.get(i).metadata().toMap()));
+            return jsonTextSegment;
           })
           .collect(JSONArray::new, JSONArray::put, JSONArray::putAll);
 
       JSONObject jsonObject = new JSONObject();
       jsonObject.put(Constants.JSON_KEY_TEXT_SEGMENTS, jsonTextSegments);
-
-      JSONObject metadataObject = new JSONObject(document.metadata().toMap());
-      jsonObject.put(Constants.JSON_KEY_METADATA, metadataObject);
 
       return createDocumentResponse(
           jsonObject.toString(),
