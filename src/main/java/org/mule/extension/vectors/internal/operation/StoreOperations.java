@@ -9,7 +9,6 @@ import org.mule.extension.vectors.api.metadata.EmbeddingResponseAttributes;
 import org.mule.extension.vectors.internal.config.CompositeConfiguration;
 import org.mule.extension.vectors.internal.constant.Constants;
 import org.mule.extension.vectors.internal.error.MuleVectorsErrorType;
-import org.mule.extension.vectors.internal.error.provider.CompositeErrorTypeProvider;
 import org.mule.extension.vectors.internal.error.provider.StoreErrorTypeProvider;
 import org.mule.extension.vectors.internal.helper.EmbeddingOperationValidator;
 import org.mule.extension.vectors.internal.helper.parameter.EmbeddingModelParameters;
@@ -55,7 +54,7 @@ public class StoreOperations {
   @Alias("Store-list-sources")
   @DisplayName("[Store] List sources")
   @Throws(StoreErrorTypeProvider.class)
-  @OutputJsonType(schema = "api/response/StoreListSourcesResponse.json")
+  @OutputJsonType(schema = "api/metadata/StoreListSourcesResponse.json")
   public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, EmbeddingResponseAttributes>
   listSourcesFromStore( String storeName,
                         @Config CompositeConfiguration compositeConfiguration,
@@ -103,7 +102,7 @@ public class StoreOperations {
   @Alias("Store-remove-from-store-by-filter")
   @DisplayName("[Store] Remove from store by filter")
   @Throws(StoreErrorTypeProvider.class)
-  @OutputJsonType(schema = "api/response/StoreRemoveFromStoreResponse.json")
+  @OutputJsonType(schema = "api/metadata/StoreRemoveFromStoreResponse.json")
   public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, EmbeddingResponseAttributes>
   removeEmbeddingsByFilter( String storeName,
                             @Config CompositeConfiguration compositeConfiguration,

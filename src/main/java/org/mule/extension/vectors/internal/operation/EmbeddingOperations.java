@@ -1,6 +1,5 @@
 package org.mule.extension.vectors.internal.operation;
 
-import static org.mule.extension.vectors.internal.helper.ResponseHelper.createDocumentResponse;
 import static org.mule.extension.vectors.internal.helper.ResponseHelper.createEmbeddingResponse;
 import static org.mule.runtime.extension.api.annotation.param.MediaType.APPLICATION_JSON;
 
@@ -17,17 +16,11 @@ import org.mule.extension.vectors.internal.config.EmbeddingConfiguration;
 import org.mule.extension.vectors.internal.connection.model.BaseModelConnection;
 import org.mule.extension.vectors.internal.constant.Constants;
 import org.mule.extension.vectors.internal.error.MuleVectorsErrorType;
-import org.mule.extension.vectors.internal.error.provider.CompositeErrorTypeProvider;
 import org.mule.extension.vectors.internal.error.provider.EmbeddingErrorTypeProvider;
-import org.mule.extension.vectors.internal.helper.EmbeddingOperationValidator;
 import org.mule.extension.vectors.internal.helper.parameter.*;
-import org.mule.extension.vectors.internal.config.CompositeConfiguration;
-import dev.langchain4j.store.embedding.*;
-import dev.langchain4j.store.embedding.filter.Filter;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.mule.extension.vectors.internal.model.BaseModel;
-import org.mule.extension.vectors.internal.store.BaseStore;
 import org.mule.runtime.extension.api.annotation.Alias;
 import org.mule.runtime.extension.api.annotation.error.Throws;
 import org.mule.runtime.extension.api.annotation.metadata.fixed.OutputJsonType;
@@ -41,7 +34,6 @@ import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.model.embedding.EmbeddingModel;
 
 import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
-import org.mule.runtime.extension.api.annotation.param.display.Text;
 import org.mule.runtime.extension.api.exception.ModuleException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,7 +52,7 @@ public class EmbeddingOperations {
   @Alias("Embedding-generate-from-text")
   @DisplayName("[Embedding] Generate embeddings from text")
   @Throws(EmbeddingErrorTypeProvider.class)
-  @OutputJsonType(schema = "api/response/EmbeddingGenerateFromTextResponse.json")
+  @OutputJsonType(schema = "api/metadata/EmbeddingGenerateFromTextResponse.json")
   public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, EmbeddingResponseAttributes>
       generateEmbedding(@Config EmbeddingConfiguration embeddingConfiguration,
                         @Connection BaseModelConnection modelConnection,
@@ -78,7 +70,7 @@ public class EmbeddingOperations {
 
       EmbeddingModel embeddingModel = baseModel.buildEmbeddingModel();
 
-      DocumentSplitter documentSplitter = DocumentSplitters.recursive(segmentationParameters.getMaxSegmentSizeInChar(),
+      DocumentSplitter documentSplitter = DocumentSplitters.recursive(segmentationParameters.getMaxSegmentSizeInChars(),
                                                                       segmentationParameters.getMaxOverlapSizeInChars());
 
       List<TextSegment> textSegments = documentSplitter.split(new Document(text));

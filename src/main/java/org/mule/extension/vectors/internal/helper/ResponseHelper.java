@@ -2,11 +2,16 @@ package org.mule.extension.vectors.internal.helper;
 
 import org.mule.extension.vectors.api.metadata.DocumentResponseAttributes;
 import org.mule.extension.vectors.api.metadata.EmbeddingResponseAttributes;
+import org.mule.runtime.api.metadata.MediaType;
+import org.mule.runtime.api.streaming.CursorProvider;
 import org.mule.runtime.extension.api.runtime.operation.Result;
+import org.mule.runtime.extension.api.runtime.streaming.StreamingHelper;
 
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import static org.apache.commons.io.IOUtils.toInputStream;
@@ -22,9 +27,9 @@ public final class ResponseHelper {
 
     return Result.<InputStream, EmbeddingResponseAttributes>builder()
         .attributes(new EmbeddingResponseAttributes((HashMap<String, Object>) embeddingAttributes))
-        .attributesMediaType(org.mule.runtime.api.metadata.MediaType.APPLICATION_JAVA)
+        .attributesMediaType(MediaType.APPLICATION_JAVA)
         .output(toInputStream(response, StandardCharsets.UTF_8))
-        .mediaType(org.mule.runtime.api.metadata.MediaType.APPLICATION_JSON)
+        .mediaType(MediaType.APPLICATION_JSON)
         .build();
   }
 
@@ -34,9 +39,26 @@ public final class ResponseHelper {
 
     return Result.<InputStream, DocumentResponseAttributes>builder()
         .attributes(new DocumentResponseAttributes((HashMap<String, Object>) documentAttributes))
-        .attributesMediaType(org.mule.runtime.api.metadata.MediaType.APPLICATION_JAVA)
+        .attributesMediaType(MediaType.APPLICATION_JAVA)
         .output(toInputStream(response, StandardCharsets.UTF_8))
-        .mediaType(org.mule.runtime.api.metadata.MediaType.APPLICATION_JSON)
+        .mediaType(MediaType.APPLICATION_JSON)
         .build();
+  }
+
+  public static List<Result<CursorProvider, DocumentResponseAttributes>> createPageDocumentResponse(
+      String response,
+      Map<String, Object> documentAttributes,
+      StreamingHelper streamingHelper) {
+
+    List<Result<CursorProvider, DocumentResponseAttributes>> page =  new LinkedList();
+
+    page.add(Result.<CursorProvider, DocumentResponseAttributes>builder()
+        .attributes(new DocumentResponseAttributes((HashMap<String, Object>) documentAttributes))
+        .output((CursorProvider) streamingHelper.resolveCursorProvider(toInputStream(response, StandardCharsets.UTF_8)))
+        .mediaType(org.mule.runtime.api.metadata.MediaType.APPLICATION_JSON)
+        .attributesMediaType(org.mule.runtime.api.metadata.MediaType.APPLICATION_JAVA)
+        .build());
+
+    return page;
   }
 }

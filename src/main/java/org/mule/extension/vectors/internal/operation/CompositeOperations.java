@@ -31,7 +31,6 @@ import org.mule.runtime.extension.api.annotation.error.Throws;
 import org.mule.runtime.extension.api.annotation.metadata.fixed.OutputJsonType;
 import org.mule.runtime.extension.api.annotation.param.*;
 import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
-import org.mule.runtime.extension.api.annotation.param.display.Text;
 import org.mule.runtime.extension.api.exception.ModuleException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,7 +54,7 @@ public class CompositeOperations {
   @Alias("Composite-add-text-to-store")
   @DisplayName("[Composite] Add text to store")
   @Throws(CompositeErrorTypeProvider.class)
-  @OutputJsonType(schema = "api/response/StoreAddToStoreResponse.json")
+  @OutputJsonType(schema = "api/metadata/StoreAddToStoreResponse.json")
   public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, EmbeddingResponseAttributes>
   addTextToStore( @Config CompositeConfiguration compositeConfiguration,
                   @Alias("text") @DisplayName("Text") @Content String text,
@@ -83,7 +82,7 @@ public class CompositeOperations {
       EmbeddingStore<TextSegment> embeddingStore = baseStore.buildEmbeddingStore();
 
       EmbeddingStoreIngestor embeddingStoreIngestor = EmbeddingStoreIngestor.builder()
-          .documentSplitter(DocumentSplitters.recursive(segmentationParameters.getMaxSegmentSizeInChar(), segmentationParameters.getMaxOverlapSizeInChars()))
+          .documentSplitter(DocumentSplitters.recursive(segmentationParameters.getMaxSegmentSizeInChars(), segmentationParameters.getMaxOverlapSizeInChars()))
           .embeddingModel(embeddingModel)
           .embeddingStore(embeddingStore)
           .build();
@@ -121,7 +120,7 @@ public class CompositeOperations {
   @Alias("Composite-add-folder-to-store")
   @DisplayName("[Composite] Add folder to store")
   @Throws(CompositeErrorTypeProvider.class)
-  @OutputJsonType(schema = "api/response/StoreAddToStoreResponse.json")
+  @OutputJsonType(schema = "api/metadata/StoreAddToStoreResponse.json")
   public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, EmbeddingResponseAttributes>
   addFolderToStore( @Config CompositeConfiguration compositeConfiguration,
                     @Alias("storeName") @DisplayName("Store Name") String storeName,
@@ -152,7 +151,7 @@ public class CompositeOperations {
       EmbeddingStore<TextSegment> embeddingStore = baseStore.buildEmbeddingStore();
 
       EmbeddingStoreIngestor embeddingStoreIngestor = EmbeddingStoreIngestor.builder()
-          .documentSplitter(DocumentSplitters.recursive(segmentationParameters.getMaxSegmentSizeInChar(), segmentationParameters.getMaxOverlapSizeInChars()))
+          .documentSplitter(DocumentSplitters.recursive(segmentationParameters.getMaxSegmentSizeInChars(), segmentationParameters.getMaxOverlapSizeInChars()))
           .embeddingModel(embeddingModel)
           .embeddingStore(embeddingStore)
           .build();
@@ -204,7 +203,7 @@ public class CompositeOperations {
   @Alias("Composite-add-document-to-store")
   @DisplayName("[Composite] Add document to store")
   @Throws(CompositeErrorTypeProvider.class)
-  @OutputJsonType(schema = "api/response/StoreAddToStoreResponse.json")
+  @OutputJsonType(schema = "api/metadata/StoreAddToStoreResponse.json")
   public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, EmbeddingResponseAttributes>
   addFileEmbedding( @Config CompositeConfiguration compositeConfiguration,
                     @Alias("storeName") @DisplayName("Store Name") String storeName,
@@ -235,7 +234,7 @@ public class CompositeOperations {
       EmbeddingStore<TextSegment> embeddingStore = baseStore.buildEmbeddingStore();
 
       EmbeddingStoreIngestor embeddingStoreIngestor = EmbeddingStoreIngestor.builder()
-          .documentSplitter(DocumentSplitters.recursive(segmentationParameters.getMaxSegmentSizeInChar(), segmentationParameters.getMaxOverlapSizeInChars()))
+          .documentSplitter(DocumentSplitters.recursive(segmentationParameters.getMaxSegmentSizeInChars(), segmentationParameters.getMaxOverlapSizeInChars()))
           .embeddingModel(embeddingModel)
           .embeddingStore(embeddingStore)
           .build();
@@ -280,7 +279,7 @@ public class CompositeOperations {
   @Alias("Composite-query-text-from-store")
   @DisplayName("[Composite] Query text from store")
   @Throws(CompositeErrorTypeProvider.class)
-  @OutputJsonType(schema = "api/response/StoreQueryResponse.json")
+  @OutputJsonType(schema = "api/metadata/StoreQueryResponse.json")
   public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, EmbeddingResponseAttributes>
   queryTextFromEmbedding( @Config CompositeConfiguration compositeConfiguration,
                           @Alias("storeName") @DisplayName("Store Name") String storeName,
@@ -378,7 +377,7 @@ public class CompositeOperations {
   @Alias("Composite-query-text-from-store-with-filter")
   @DisplayName("[Composite] Query text from store with filter")
   @Throws(CompositeErrorTypeProvider.class)
-  @OutputJsonType(schema = "api/response/StoreQueryResponse.json")
+  @OutputJsonType(schema = "api/metadata/StoreQueryResponse.json")
   public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, EmbeddingResponseAttributes>
   queryTextWithFilterFromEmbedding( String storeName,
                                     String question,

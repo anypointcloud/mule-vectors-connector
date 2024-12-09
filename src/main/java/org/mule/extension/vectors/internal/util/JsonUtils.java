@@ -6,6 +6,11 @@ package org.mule.extension.vectors.internal.util;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import dev.langchain4j.data.document.Document;
+import dev.langchain4j.data.document.DocumentSplitter;
+import dev.langchain4j.data.document.splitter.DocumentSplitters;
+import dev.langchain4j.data.segment.TextSegment;
+import dev.langchain4j.internal.ValidationUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -18,27 +23,15 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.IntStream;
 
 public final class JsonUtils {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JsonUtils.class);
 
   private JsonUtils() {}
-
-  public static JSONObject readConfigFile(String filePath) {
-    Path path = Paths.get(filePath);
-    if (Files.exists(path)) {
-      try {
-        String content = new String(Files.readAllBytes(path));
-        return new JSONObject(content);
-      } catch (Exception e) {
-        LOGGER.error("Unable to read the config file: " + filePath, e);
-      }
-    } else {
-      LOGGER.warn("File does not exist: {}", filePath);
-    }
-    return null;
-  }
 
   public static JsonNode stringToJsonNode(String content) throws IOException {
     ObjectMapper objectMapper = new ObjectMapper();
@@ -62,6 +55,38 @@ public final class JsonUtils {
 
     JSONObject jsonObject = new JSONObject();
     jsonObject.put(Constants.JSON_KEY_STATUS, Constants.OPERATION_STATUS_UPDATED);
+    return jsonObject;
+  }
+
+  public static JSONObject docToTextSegmentsJson(Document document, int maxSegmentSizeInChars, int maxOverlapSizeInChars) {
+
+    List<TextSegment> textSegments;
+
+    if(maxSegmentSizeInChars != 0 || maxOverlapSizeInChars != 0) {
+
+      ValidationUtils.ensureGreaterThanZero(maxSegmentSizeInChars, "maxSegmentSizeInChars");
+      ValidationUtils.ensureGreaterThanZero(maxOverlapSizeInChars, "maxOverlapSizeInChars");
+      DocumentSplitter splitter = DocumentSplitters.recursive(maxSegmentSizeInChars, maxOverlapSizeInChars);
+
+      textSegments = splitter.split(document);
+    } else {
+
+      textSegments = Collections.singletonList(document.toTextSegment());
+    }
+
+    // Use Streams to populate a JSONArray
+    JSONArray jsonTextSegments = IntStream.range(0, textSegments.size())
+        .mapToObj(i -> {
+          JSONObject jsonTextSegment = new JSONObject();
+          jsonTextSegment.put(Constants.JSON_KEY_TEXT, textSegments.get(i).text());
+          jsonTextSegment.put(Constants.JSON_KEY_METADATA, new JSONObject(textSegments.get(i).metadata().toMap()));
+          return jsonTextSegment;
+        })
+        .collect(JSONArray::new, JSONArray::put, JSONArray::putAll);
+
+    JSONObject jsonObject = new JSONObject();
+    jsonObject.put(Constants.JSON_KEY_TEXT_SEGMENTS, jsonTextSegments);
+
     return jsonObject;
   }
 }
