@@ -16,7 +16,7 @@ public class DocumentsOutputTypeMetadataResolver  implements OutputTypeResolver<
 
   @Override
   public String getCategoryName() {
-    return "load-document";
+    return "document";
   }
 
   @Override
@@ -25,7 +25,7 @@ public class DocumentsOutputTypeMetadataResolver  implements OutputTypeResolver<
 
     InputStream resourceAsStream = Thread.currentThread()
         .getContextClassLoader()
-        .getResourceAsStream("api/metadata/DocumentLoadDocumentsResponse.json");
+        .getResourceAsStream("api/metadata/DocumentLoadListResponse.json");
 
     Optional<MetadataType> metadataType = new JsonTypeLoader(IOUtils.toString(resourceAsStream))
         .load(null, "Load Documents Response");

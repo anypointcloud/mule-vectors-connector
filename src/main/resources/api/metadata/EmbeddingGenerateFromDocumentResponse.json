@@ -15,6 +15,24 @@
             "properties": {
               "index": {
                 "type": "integer"
+              },
+              "file_type": {
+                "type": "string"
+              },
+              "absolute_directory_path": {
+                "type": "string"
+              },
+              "file_name": {
+                "type": "string"
+              },
+              "source": {
+                "type": "string"
+              },
+              "url": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
               }
             }
           }

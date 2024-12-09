@@ -43,12 +43,12 @@ public class DocumentOperations {
    * Parses a document by filepath and returns the text
    */
   @MediaType(value = APPLICATION_JSON, strict = false)
-  @Alias("Document-load-document")
-  @DisplayName("[Document] Load document")
+  @Alias("Document-load-single")
+  @DisplayName("[Document] Load single document")
   @Throws(DocumentErrorTypeProvider.class)
-  @OutputJsonType(schema = "api/metadata/DocumentLoadDocumentResponse.json")
+  @OutputJsonType(schema = "api/metadata/DocumentLoadSingleResponse.json")
   public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, DocumentResponseAttributes>
-  loadDocument( @Config DocumentConfiguration documentConfiguration,
+  loadSingleDocument( @Config DocumentConfiguration documentConfiguration,
                 @Connection BaseStorageConnection storageConnection,
                 @ParameterGroup(name = "Document") DocumentParameters documentParameters,
                 @ParameterGroup(name = "Segmentation") SegmentationParameters segmentationParameters
@@ -91,12 +91,12 @@ public class DocumentOperations {
    * Parses a document by filepath and returns the text
    */
   @MediaType(value = ANY, strict = false)
-  @Alias("Document-load-documents")
-  @DisplayName("[Document] Load documents")
+  @Alias("Document-load-list")
+  @DisplayName("[Document] Load document list")
   @Throws(DocumentErrorTypeProvider.class)
   @OutputResolver(output = DocumentsOutputTypeMetadataResolver.class)
   public PagingProvider<BaseStorageConnection, Result<CursorProvider, DocumentResponseAttributes>>
-  loadDocuments( @Config DocumentConfiguration documentConfiguration,
+  loadDocumentList( @Config DocumentConfiguration documentConfiguration,
                  @ParameterGroup(name = "Document") DocumentParameters documentParameters,
                  @ParameterGroup(name = "Segmentation") SegmentationParameters segmentationParameters,
                  StreamingHelper streamingHelper

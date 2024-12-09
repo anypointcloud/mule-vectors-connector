@@ -79,6 +79,7 @@ public class Constants {
   public static final String JSON_KEY_TEXT = "text";
   public static final String JSON_KEY_STATUS = "status";
   public static final String JSON_KEY_EMBEDDING = "embedding";
+  public static final String JSON_KEY_EMBEDDINGS = "embeddings";
   public static final String JSON_KEY_DIMENSIONS = "dimensions";
   public static final String JSON_KEY_RESPONSE = "response";
   public static final String JSON_KEY_QUESTION = "question";
