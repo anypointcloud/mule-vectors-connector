@@ -1,7 +1,11 @@
 package org.mule.extension.vectors.internal.connection.store.pinecone;
 
+import io.pinecone.clients.Pinecone;
+import io.qdrant.client.QdrantClient;
+import io.qdrant.client.QdrantGrpcClient;
 import org.mule.extension.vectors.internal.connection.store.BaseStoreConnection;
 import org.mule.extension.vectors.internal.constant.Constants;
+import org.mule.runtime.api.connection.ConnectionException;
 
 public class PineconeStoreConnection implements BaseStoreConnection {
 
@@ -33,17 +37,37 @@ public class PineconeStoreConnection implements BaseStoreConnection {
   }
 
   @Override
-  public void connect() {
+  public void connect() throws ConnectionException {
 
+    try {
+
+      Pinecone client = (new Pinecone.Builder(apiKey)).build();
+      client.listIndexes();
+
+    } catch (Exception e) {
+
+      throw new ConnectionException("Impossible to connect to Pinecone.", e);
+    }
   }
 
   @Override
   public void disconnect() {
 
+    // Add disconnection logic if any.
   }
 
   @Override
   public boolean isValid() {
-    return false;
+
+    try {
+
+      Pinecone client = (new Pinecone.Builder(apiKey)).build();
+      client.listIndexes();
+      return true;
+
+    } catch (Exception e) {
+
+      return false;
+    }
   }
 }
