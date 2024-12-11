@@ -56,7 +56,7 @@ public class EmbeddingOperations {
   @Alias("Embedding-generate-from-text")
   @DisplayName("[Embedding] Generate from text")
   @Throws(EmbeddingErrorTypeProvider.class)
-  @OutputJsonType(schema = "api/metadata/EmbeddingGenerateFromTextResponse.json")
+  @OutputJsonType(schema = "api/metadata/EmbeddingGenerateResponse.json")
   public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, EmbeddingResponseAttributes>
       generateEmbeddingFromText(@Config EmbeddingConfiguration embeddingConfiguration,
                         @Connection BaseModelConnection modelConnection,
@@ -114,7 +114,7 @@ public class EmbeddingOperations {
 
       jsonObject.put(Constants.JSON_KEY_EMBEDDINGS, jsonEmbeddings);
 
-      jsonObject.put(Constants.JSON_KEY_DIMENSIONS, embeddingModel.dimension());
+      jsonObject.put(Constants.JSON_KEY_DIMENSION, embeddingModel.dimension());
 
       return createEmbeddingResponse(
           jsonObject.toString(),
@@ -142,7 +142,7 @@ public class EmbeddingOperations {
   @Alias("Embedding-generate-from-document")
   @DisplayName("[Embedding] Generate from document")
   @Throws(EmbeddingErrorTypeProvider.class)
-  @OutputJsonType(schema = "api/metadata/EmbeddingGenerateFromDocumentResponse.json")
+  @OutputJsonType(schema = "api/metadata/EmbeddingGenerateResponse.json")
   public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, EmbeddingResponseAttributes>
   generateEmbeddingFromDocument(@Config EmbeddingConfiguration embeddingConfiguration,
                                 @Connection BaseModelConnection modelConnection,
@@ -152,8 +152,6 @@ public class EmbeddingOperations {
     try {
 
       String contentString = IOUtils.toString(content, StandardCharsets.UTF_8);
-
-      LOGGER.debug(String.format("Text Segments: %s",contentString));
 
       BaseModel baseModel = BaseModel.builder()
           .configuration(embeddingConfiguration)
@@ -196,7 +194,7 @@ public class EmbeddingOperations {
 
       jsonObject.put(Constants.JSON_KEY_EMBEDDINGS, jsonEmbeddings);
 
-      jsonObject.put(Constants.JSON_KEY_DIMENSIONS, embeddingModel.dimension());
+      jsonObject.put(Constants.JSON_KEY_DIMENSION, embeddingModel.dimension());
 
       return createEmbeddingResponse(
           jsonObject.toString(),

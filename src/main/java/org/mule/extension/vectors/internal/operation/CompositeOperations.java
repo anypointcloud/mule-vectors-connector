@@ -10,6 +10,7 @@ import dev.langchain4j.store.embedding.*;
 import dev.langchain4j.store.embedding.filter.Filter;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.mule.extension.vectors.api.metadata.CompositeResponseAttributes;
 import org.mule.extension.vectors.api.metadata.EmbeddingResponseAttributes;
 import org.mule.extension.vectors.internal.config.CompositeConfiguration;
 import org.mule.extension.vectors.internal.constant.Constants;
@@ -40,6 +41,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import static java.util.stream.Collectors.joining;
+import static org.mule.extension.vectors.internal.helper.ResponseHelper.createCompositeResponse;
 import static org.mule.extension.vectors.internal.helper.ResponseHelper.createEmbeddingResponse;
 import static org.mule.runtime.extension.api.annotation.param.MediaType.APPLICATION_JSON;
 
@@ -54,8 +56,8 @@ public class CompositeOperations {
   @Alias("Composite-add-text-to-store")
   @DisplayName("[Composite] Add text to store")
   @Throws(CompositeErrorTypeProvider.class)
-  @OutputJsonType(schema = "api/metadata/StoreAddToStoreResponse.json")
-  public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, EmbeddingResponseAttributes>
+  @OutputJsonType(schema = "api/metadata/StoreAddResponse.json")
+  public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, CompositeResponseAttributes>
   addTextToStore( @Config CompositeConfiguration compositeConfiguration,
                   @Alias("text") @DisplayName("Text") @Content String text,
                   @Alias("storeName") @DisplayName("Store Name")  String storeName,
@@ -94,7 +96,7 @@ public class CompositeOperations {
 
       JSONObject jsonObject = JsonUtils.createIngestionStatusObject(storeName);
 
-      return createEmbeddingResponse(
+      return createCompositeResponse(
           jsonObject.toString(),
           new HashMap<String, Object>() {{
             put("storeName", storeName);
@@ -120,8 +122,8 @@ public class CompositeOperations {
   @Alias("Composite-add-folder-to-store")
   @DisplayName("[Composite] Add folder to store")
   @Throws(CompositeErrorTypeProvider.class)
-  @OutputJsonType(schema = "api/metadata/StoreAddToStoreResponse.json")
-  public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, EmbeddingResponseAttributes>
+  @OutputJsonType(schema = "api/metadata/StoreAddResponse.json")
+  public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, CompositeResponseAttributes>
   addFolderToStore( @Config CompositeConfiguration compositeConfiguration,
                     @Alias("storeName") @DisplayName("Store Name") String storeName,
                     @ConfigOverride @Alias("storage") @DisplayName(Constants.PARAM_DISPLAY_NAME_STORAGE_OVERRIDE)
@@ -173,12 +175,10 @@ public class CompositeOperations {
       JSONObject jsonObject = JsonUtils.createIngestionStatusObject(storeName);
 
       long finalDocumentNumber = documentNumber;
-      return createEmbeddingResponse(
+      return createCompositeResponse(
           jsonObject.toString(),
           new HashMap<String, Object>() {{
-            put("documentCount", finalDocumentNumber);
             put("storeName", storeName);
-            put("storageType", baseStorage.getStorageType());
             put("fileType", documentParameters.getFileType());
             put("contextPath", documentParameters.getContextPath());
           }});
@@ -203,8 +203,8 @@ public class CompositeOperations {
   @Alias("Composite-add-document-to-store")
   @DisplayName("[Composite] Add document to store")
   @Throws(CompositeErrorTypeProvider.class)
-  @OutputJsonType(schema = "api/metadata/StoreAddToStoreResponse.json")
-  public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, EmbeddingResponseAttributes>
+  @OutputJsonType(schema = "api/metadata/StoreAddResponse.json")
+  public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, CompositeResponseAttributes>
   addFileEmbedding( @Config CompositeConfiguration compositeConfiguration,
                     @Alias("storeName") @DisplayName("Store Name") String storeName,
                     @ConfigOverride @Alias("storage") @DisplayName(Constants.PARAM_DISPLAY_NAME_STORAGE_OVERRIDE)
@@ -251,11 +251,10 @@ public class CompositeOperations {
 
       JSONObject jsonObject = JsonUtils.createIngestionStatusObject(storeName);
 
-      return createEmbeddingResponse(
+      return createCompositeResponse(
           jsonObject.toString(),
           new HashMap<String, Object>() {{
             put("storeName", storeName);
-            put("storageType", baseStorage.getStorageType());
             put("fileType", documentParameters.getFileType());
             put("contextPath", documentParameters.getContextPath());
           }});
@@ -280,7 +279,7 @@ public class CompositeOperations {
   @DisplayName("[Composite] Query text from store")
   @Throws(CompositeErrorTypeProvider.class)
   @OutputJsonType(schema = "api/metadata/StoreQueryResponse.json")
-  public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, EmbeddingResponseAttributes>
+  public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, CompositeResponseAttributes>
   queryTextFromEmbedding( @Config CompositeConfiguration compositeConfiguration,
                           @Alias("storeName") @DisplayName("Store Name") String storeName,
                           String question,
@@ -350,7 +349,7 @@ public class CompositeOperations {
 
       jsonObject.put(Constants.JSON_KEY_SOURCES, sources);
 
-      return createEmbeddingResponse(
+      return createCompositeResponse(
           jsonObject.toString(),
           new HashMap<String, Object>() {{
             put("storeName", storeName);
@@ -378,7 +377,7 @@ public class CompositeOperations {
   @DisplayName("[Composite] Query text from store with filter")
   @Throws(CompositeErrorTypeProvider.class)
   @OutputJsonType(schema = "api/metadata/StoreQueryResponse.json")
-  public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, EmbeddingResponseAttributes>
+  public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, CompositeResponseAttributes>
   queryTextWithFilterFromEmbedding( String storeName,
                                     String question,
                                     Number maxResults,
@@ -464,7 +463,7 @@ public class CompositeOperations {
       jsonObject.put(Constants.JSON_KEY_SOURCES, sources);
 
 
-      return createEmbeddingResponse(
+      return createCompositeResponse(
           jsonObject.toString(),
           new HashMap<String, Object>() {{
             put("storeName", storeName);

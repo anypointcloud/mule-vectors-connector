@@ -1,16 +1,19 @@
 package org.mule.extension.vectors.internal.pagination;
 
+import dev.langchain4j.data.document.BlankDocumentException;
 import dev.langchain4j.data.document.Document;
 import org.json.JSONObject;
 import org.mule.extension.vectors.api.metadata.DocumentResponseAttributes;
 import org.mule.extension.vectors.internal.config.DocumentConfiguration;
 import org.mule.extension.vectors.internal.connection.storage.BaseStorageConnection;
+import org.mule.extension.vectors.internal.error.MuleVectorsErrorType;
 import org.mule.extension.vectors.internal.helper.parameter.DocumentParameters;
 import org.mule.extension.vectors.internal.helper.parameter.SegmentationParameters;
 import org.mule.extension.vectors.internal.storage.BaseStorage;
 import org.mule.extension.vectors.internal.util.JsonUtils;
 import org.mule.runtime.api.exception.MuleException;
 import org.mule.runtime.api.streaming.CursorProvider;
+import org.mule.runtime.extension.api.exception.ModuleException;
 import org.mule.runtime.extension.api.runtime.operation.Result;
 import org.mule.runtime.extension.api.runtime.streaming.PagingProvider;
 import org.mule.runtime.extension.api.runtime.streaming.StreamingHelper;
@@ -41,37 +44,55 @@ public class DocumentPagingProvider implements PagingProvider<BaseStorageConnect
   @Override
   public List<Result<CursorProvider, DocumentResponseAttributes>> getPage(BaseStorageConnection connection) {
 
-    if(baseStorage == null) {
+    try {
+      if(baseStorage == null) {
 
-      baseStorage = BaseStorage.builder()
-          .configuration(documentConfiguration)
-          .connection(connection)
-          .contextPath(documentParameters.getContextPath())
-          .fileType(documentParameters.getFileType())
-          .build();
-    }
+        baseStorage = BaseStorage.builder()
+            .configuration(documentConfiguration)
+            .connection(connection)
+            .contextPath(documentParameters.getContextPath())
+            .fileType(documentParameters.getFileType())
+            .build();
+      }
 
-    if(baseStorage.hasNext()) {
+      while(baseStorage.hasNext()) {
 
-      Document document = baseStorage.next();
+        try {
 
-      JSONObject jsonObject =
-          JsonUtils.docToTextSegmentsJson(document,
-                                          segmentationParameters.getMaxSegmentSizeInChars(),
-                                          segmentationParameters.getMaxOverlapSizeInChars());
+          Document document = baseStorage.next();
 
-      return createPageDocumentResponse(
-          jsonObject.toString(),
-          new HashMap<String, Object>() {{
-            put("fileType", documentParameters.getFileType());
-            put("contextPath", documentParameters.getContextPath());
-          }},
-          streamingHelper
-      );
+          JSONObject jsonObject =
+              JsonUtils.docToTextSegmentsJson(document,
+                                              segmentationParameters.getMaxSegmentSizeInChars(),
+                                              segmentationParameters.getMaxOverlapSizeInChars());
 
-    } else {
+          return createPageDocumentResponse(
+              jsonObject.toString(),
+              new HashMap<String, Object>() {{
+                put("fileType", documentParameters.getFileType());
+                put("contextPath", documentParameters.getContextPath());
+              }},
+              streamingHelper
+          );
+
+        } catch (BlankDocumentException bde) {
+
+          // Look for next page if any on error
+        }
+
+      }
 
       return Collections.emptyList();
+
+    } catch (ModuleException me) {
+      throw me;
+
+    } catch (Exception e) {
+
+      throw new ModuleException(
+          String.format("Error while getting document from %s.", documentParameters.getContextPath()),
+          MuleVectorsErrorType.STORAGE_SERVICES_FAILURE,
+          e);
     }
   }
 

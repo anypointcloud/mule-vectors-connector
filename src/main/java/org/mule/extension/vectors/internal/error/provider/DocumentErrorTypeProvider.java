@@ -11,8 +11,7 @@ import java.util.Set;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableSet;
-import static org.mule.extension.vectors.internal.error.MuleVectorsErrorType.DOCUMENT_OPERATIONS_FAILURE;
-import static org.mule.extension.vectors.internal.error.MuleVectorsErrorType.STORAGE_SERVICES_FAILURE;
+import static org.mule.extension.vectors.internal.error.MuleVectorsErrorType.*;
 
 public class DocumentErrorTypeProvider implements ErrorTypeProvider {
 
@@ -21,6 +20,7 @@ public class DocumentErrorTypeProvider implements ErrorTypeProvider {
   public Set<ErrorTypeDefinition> getErrorTypes() {
     return unmodifiableSet(new HashSet<>(asList(
         DOCUMENT_OPERATIONS_FAILURE,
+        DOCUMENT_PARSING_FAILURE,
         STORAGE_SERVICES_FAILURE)));
   }
 }

@@ -44,7 +44,7 @@ public class DocumentOperations {
    */
   @MediaType(value = APPLICATION_JSON, strict = false)
   @Alias("Document-load-single")
-  @DisplayName("[Document] Load single document")
+  @DisplayName("[Document] Load single")
   @Throws(DocumentErrorTypeProvider.class)
   @OutputJsonType(schema = "api/metadata/DocumentLoadSingleResponse.json")
   public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, DocumentResponseAttributes>
@@ -92,7 +92,7 @@ public class DocumentOperations {
    */
   @MediaType(value = ANY, strict = false)
   @Alias("Document-load-list")
-  @DisplayName("[Document] Load document list")
+  @DisplayName("[Document] Load list")
   @Throws(DocumentErrorTypeProvider.class)
   @OutputResolver(output = DocumentsOutputTypeMetadataResolver.class)
   public PagingProvider<BaseStorageConnection, Result<CursorProvider, DocumentResponseAttributes>>

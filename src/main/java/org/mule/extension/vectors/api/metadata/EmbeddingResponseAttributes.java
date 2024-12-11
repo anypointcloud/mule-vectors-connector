@@ -17,8 +17,8 @@ public class EmbeddingResponseAttributes  implements Serializable {
 
   public EmbeddingResponseAttributes(HashMap<String, Object> requestAttributes) {
 
-    this.embeddingModelName = (String)requestAttributes.remove("embeddingModelName");
-    this.embeddingModelDimension = (int)requestAttributes.remove("embeddingModelDimension");
+    this.embeddingModelName = requestAttributes.containsKey("embeddingModelName") ? (String)requestAttributes.remove("embeddingModelName") : null;
+    this.embeddingModelDimension = requestAttributes.containsKey("embeddingModelDimension") ? (int)requestAttributes.remove("embeddingModelDimension") : null;
     this.otherAttributes = requestAttributes;
   }
 

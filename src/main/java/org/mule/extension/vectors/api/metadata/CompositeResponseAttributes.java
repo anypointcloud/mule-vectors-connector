@@ -23,9 +23,9 @@ public class CompositeResponseAttributes implements Serializable {
 
   public CompositeResponseAttributes(HashMap<String, Object> requestAttributes) {
 
-    this.fileType = (String)requestAttributes.remove("fileType");
-    this.contextPath = (String)requestAttributes.remove("contextPath");
-    this.storeName = (String)requestAttributes.remove("storeName");
+    this.fileType = requestAttributes.containsKey("fileType") ? (String)requestAttributes.remove("fileType") : null;
+    this.contextPath = requestAttributes.containsKey("contextPath") ? (String)requestAttributes.remove("contextPath") : null;
+    this.storeName = requestAttributes.containsKey("storeName") ? (String)requestAttributes.remove("storeName") : null;
     this.otherAttributes = requestAttributes;
   }
 

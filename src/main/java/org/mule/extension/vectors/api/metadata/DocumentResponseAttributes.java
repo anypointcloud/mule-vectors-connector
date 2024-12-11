@@ -22,8 +22,8 @@ public class DocumentResponseAttributes implements Serializable {
 
   public DocumentResponseAttributes(HashMap<String, Object> requestAttributes) {
 
-    this.fileType = (String)requestAttributes.remove("fileType");
-    this.contextPath = (String)requestAttributes.remove("contextPath");
+    this.fileType = requestAttributes.containsKey("fileType") ? (String)requestAttributes.remove("fileType") : null;
+    this.contextPath = requestAttributes.containsKey("contextPath") ? (String)requestAttributes.remove("contextPath") : null;
     this.otherAttributes = requestAttributes;
   }
 

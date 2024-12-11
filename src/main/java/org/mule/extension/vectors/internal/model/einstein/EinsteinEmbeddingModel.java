@@ -11,11 +11,14 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.mule.extension.vectors.internal.constant.Constants;
 import org.mule.extension.vectors.internal.error.MuleVectorsErrorType;
+import org.mule.runtime.api.connection.ConnectionException;
 import org.mule.runtime.extension.api.exception.ModuleException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -261,8 +264,8 @@ public class EinsteinEmbeddingModel extends DimensionAwareEmbeddingModel {
 
       if (responseCode == HttpURLConnection.HTTP_OK) {
         // Read response
-        try (java.io.BufferedReader br = new java.io.BufferedReader(
-            new java.io.InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8))) {
+        try (BufferedReader br = new BufferedReader(
+            new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8))) {
           StringBuilder response = new StringBuilder();
           String responseLine;
           while ((responseLine = br.readLine()) != null) {
@@ -271,9 +274,23 @@ public class EinsteinEmbeddingModel extends DimensionAwareEmbeddingModel {
           return response.toString();
         }
       } else {
-        throw new ModuleException(
-            "Error while generating embeddings with \"EINSTEIN\" embedding model service. Response code: " + responseCode,
-            MuleVectorsErrorType.AI_SERVICES_FAILURE);
+
+        // Read error response
+        try (BufferedReader in = new BufferedReader(
+            new InputStreamReader(connection.getErrorStream(), StandardCharsets.UTF_8))) {
+          String inputLine;
+          StringBuilder response = new StringBuilder();
+          while ((inputLine = in.readLine()) != null) {
+            response.append(inputLine);
+          }
+          // Print the error response
+          LOGGER.error("Error (HTTP " + responseCode + "): " + response.toString());
+          throw new ModuleException(
+              String.format("Error while generating embeddings with \"EINSTEIN\" embedding model service. Response code: %s. Response %s.",
+                            responseCode,
+                            response.toString()),
+              MuleVectorsErrorType.AI_SERVICES_FAILURE);
+        }
       }
     } catch (ModuleException e) {
       throw e;

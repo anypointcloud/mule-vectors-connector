@@ -55,7 +55,7 @@
     },
     "dimension": {
       "type": "integer",
-      "description": "The number of dimensions in the embedding vectors."
+      "description": "The dimension in the embedding vectors."
     }
   },
   "required": ["text-segments", "embeddings", "dimension"]

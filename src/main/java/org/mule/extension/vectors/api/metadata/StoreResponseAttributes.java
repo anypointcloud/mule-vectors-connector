@@ -21,7 +21,7 @@ public class StoreResponseAttributes implements Serializable {
 
   public StoreResponseAttributes(HashMap<String, Object> requestAttributes) {
 
-    this.storeName = (String)requestAttributes.remove("storeName");
+    this.storeName = requestAttributes.containsKey("storeName") ? (String)requestAttributes.remove("storeName") : null;
     this.otherAttributes = requestAttributes;
   }
 
