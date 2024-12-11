@@ -1,5 +1,6 @@
 package org.mule.extension.vectors.internal.connection.store.chroma;
 
+import org.mule.extension.vectors.internal.connection.model.mistralai.MistralAIModelConnection;
 import org.mule.extension.vectors.internal.connection.store.BaseStoreConnection;
 import org.mule.extension.vectors.internal.connection.store.BaseStoreConnectionProvider;
 import org.mule.extension.vectors.internal.connection.store.milvus.MilvusStoreConnectionProvider;
@@ -25,18 +26,48 @@ public class ChromaStoreConnectionProvider  extends BaseStoreConnectionProvider 
   @Override
   public BaseStoreConnection connect() throws ConnectionException {
 
-    throw new ConnectionException("Failed to connect to Chroma. Test Connection not supported yet.", null);
+    try {
+
+      ChromaStoreConnection chromaStoreConnection =
+          new ChromaStoreConnection(chromaStoreConfiguration.getUrl());
+      chromaStoreConnection.connect();
+      return chromaStoreConnection;
+
+    } catch (ConnectionException e) {
+
+      throw e;
+
+    } catch (Exception e) {
+
+      throw new ConnectionException("Failed to connect to Chroma", e);
+    }
   }
 
   @Override
   public void disconnect(BaseStoreConnection connection) {
 
+    try {
+
+      connection.disconnect();
+    } catch (Exception e) {
+
+      LOGGER.error("Failed to close connection", e);
+    }
   }
 
   @Override
   public ConnectionValidationResult validate(BaseStoreConnection connection) {
 
-    return ConnectionValidationResult.failure("Failed to validate connection to Chroma", null);
+    try {
+
+      if (connection.isValid()) {
+        return ConnectionValidationResult.success();
+      } else {
+        return ConnectionValidationResult.failure("Failed to validate connection to Chroma", null);
+      }
+    } catch (Exception e) {
+      return ConnectionValidationResult.failure("Failed to validate connection to Chroma", e);
+    }
   }
 
 }
