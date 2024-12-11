@@ -32,14 +32,13 @@ public class PGVectorStoreConnectionParameters extends BaseStoreConnectionParame
   @Parameter
   @Expression(ExpressionSupport.SUPPORTED)
   @Placement(order = 4)
-  @Example("<your-username>")
-  private String userName;
+  @Example("postgres")
+  private String user;
 
   @Parameter
   @Password
   @Expression(ExpressionSupport.SUPPORTED)
   @Placement(order = 5)
-  @Example("<your-password>")
   private String password;
 
   public String getHost() {
@@ -54,8 +53,8 @@ public class PGVectorStoreConnectionParameters extends BaseStoreConnectionParame
     return database;
   }
 
-  public String getUserName() {
-    return userName;
+  public String getUser() {
+    return user;
   }
 
   public String getPassword() {

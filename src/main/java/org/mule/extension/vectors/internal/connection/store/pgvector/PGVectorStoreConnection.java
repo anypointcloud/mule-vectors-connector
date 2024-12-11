@@ -1,21 +1,35 @@
 package org.mule.extension.vectors.internal.connection.store.pgvector;
 
+import dev.langchain4j.internal.ValidationUtils;
+import org.mule.extension.vectors.internal.connection.model.mistralai.MistralAIModelConnection;
 import org.mule.extension.vectors.internal.connection.store.BaseStoreConnection;
 import org.mule.extension.vectors.internal.constant.Constants;
+import org.mule.runtime.api.connection.ConnectionException;
+import org.postgresql.ds.PGSimpleDataSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.naming.NamingException;
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.SQLException;
 
 public class PGVectorStoreConnection implements BaseStoreConnection {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(PGVectorStoreConnection.class);
 
   private String host;
   private int port;
   private String database;
-  private String userName;
+  private String user;
   private String password;
+  private DataSource dataSource;
 
   public PGVectorStoreConnection(String host, int port, String database, String userName, String password) {
     this.host = host;
     this.port = port;
     this.database = database;
-    this.userName = userName;
+    this.user = userName;
     this.password = password;
   }
 
@@ -31,12 +45,16 @@ public class PGVectorStoreConnection implements BaseStoreConnection {
     return database;
   }
 
-  public String getUserName() {
-    return userName;
+  public String getUser() {
+    return user;
   }
 
   public String getPassword() {
     return password;
+  }
+
+  public DataSource getDataSource() {
+    return dataSource;
   }
 
   @Override
@@ -45,17 +63,78 @@ public class PGVectorStoreConnection implements BaseStoreConnection {
   }
 
   @Override
-  public void connect() {
+  public void connect() throws ConnectionException {
 
+    try {
+
+      this.dataSource = createDataSource();
+      if(dataSource != null) {
+
+        Connection conn = dataSource.getConnection();
+        if (conn == null) {
+
+          throw new ConnectionException("Impossible to connect to PGVector. Cannot get a connection from the pool.");
+        }
+      } else {
+
+        throw new ConnectionException("Impossible to connect to PGVector. Cannot initiate the datasource.");
+      }
+
+    } catch (ConnectionException e) {
+
+      throw e;
+
+    } catch (SQLException e) {
+
+      throw new ConnectionException("Impossible to connect to PGVector. SQLException.", e);
+
+    } catch (Exception e) {
+
+      throw new ConnectionException("Impossible to connect to PGVector.", e);
+    }
   }
 
   @Override
   public void disconnect() {
 
+    try {
+
+      this.dataSource.getConnection().close();
+    } catch (SQLException e) {
+
+      LOGGER.error("Unable to close the connection to PGVector.", e);
+
+    }
   }
 
   @Override
   public boolean isValid() {
-    return false;
+
+    try {
+
+      Connection conn = this.dataSource.getConnection();
+      return conn != null;
+
+    } catch (Exception e) {
+
+      return false;
+
+    }
+  }
+
+  private DataSource createDataSource() {
+
+    host = ValidationUtils.ensureNotBlank(host, "host");
+    port = ValidationUtils.ensureGreaterThanZero(port, "port");
+    user = ValidationUtils.ensureNotBlank(user, "user");
+    password = ValidationUtils.ensureNotBlank(password, "password");
+    database = ValidationUtils.ensureNotBlank(database, "database");
+    PGSimpleDataSource source = new PGSimpleDataSource();
+    source.setServerNames(new String[]{host});
+    source.setPortNumbers(new int[]{port});
+    source.setDatabaseName(database);
+    source.setUser(user);
+    source.setPassword(password);
+    return source;
   }
 }
