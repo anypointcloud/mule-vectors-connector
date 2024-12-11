@@ -1,5 +1,6 @@
 package org.mule.extension.vectors.internal.storage.local;
 
+import dev.langchain4j.data.document.BlankDocumentException;
 import dev.langchain4j.data.document.Document;
 import dev.langchain4j.data.document.DocumentParser;
 import dev.langchain4j.data.document.loader.UrlDocumentLoader;
@@ -7,10 +8,12 @@ import dev.langchain4j.data.document.transformer.jsoup.HtmlToTextDocumentTransfo
 import org.mule.extension.vectors.internal.config.DocumentConfiguration;
 import org.mule.extension.vectors.internal.connection.storage.local.LocalStorageConnection;
 import org.mule.extension.vectors.internal.constant.Constants;
+import org.mule.extension.vectors.internal.error.MuleVectorsErrorType;
 import org.mule.extension.vectors.internal.storage.BaseStorage;
 import org.mule.extension.vectors.internal.storage.BaseStorageConfiguration;
 import org.mule.extension.vectors.internal.util.MetadatatUtils;
 import org.mule.extension.vectors.internal.util.Utils;
+import org.mule.runtime.extension.api.exception.ModuleException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +47,10 @@ public class LocalStorage extends BaseStorage {
         // Create an iterator for the list of files
         pathIterator = pathList.iterator();
       } catch (IOException e) {
-        LOGGER.error("Error processing files: ", e);
+        throw new ModuleException(
+            String.format("Error while getting document from %s.", fullPath),
+            MuleVectorsErrorType.STORAGE_SERVICES_FAILURE,
+            e);
       }
     }
     return pathIterator;
@@ -68,7 +74,20 @@ public class LocalStorage extends BaseStorage {
     if (hasNext()) {
       Path path = getPathIterator().next();
       LOGGER.debug("File: " + path.getFileName().toString());
-      Document document = loadDocument(path.toString(), documentParser);
+      Document document;
+      try {
+        document = loadDocument(path.toString(), documentParser);
+      } catch(BlankDocumentException bde) {
+
+        LOGGER.warn(String.format("BlankDocumentException: Error while parsing document %s.", path.toString()));
+        throw bde;
+      } catch (Exception e) {
+
+        throw new ModuleException(
+            String.format("Error while parsing document %s.", path.toString()),
+            MuleVectorsErrorType.DOCUMENT_PARSING_FAILURE,
+            e);
+      }
       MetadatatUtils.addMetadataToDocument(document, fileType, path.getFileName().toString());
       return document;
     }

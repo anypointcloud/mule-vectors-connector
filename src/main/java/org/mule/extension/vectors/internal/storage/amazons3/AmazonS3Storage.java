@@ -1,10 +1,13 @@
 package org.mule.extension.vectors.internal.storage.amazons3;
 
+import dev.langchain4j.data.document.BlankDocumentException;
 import org.mule.extension.vectors.internal.config.DocumentConfiguration;
 import org.mule.extension.vectors.internal.connection.storage.amazons3.AmazonS3StorageConnection;
+import org.mule.extension.vectors.internal.error.MuleVectorsErrorType;
 import org.mule.extension.vectors.internal.storage.BaseStorage;
 import org.mule.extension.vectors.internal.storage.BaseStorageConfiguration;
 import org.mule.extension.vectors.internal.util.MetadatatUtils;
+import org.mule.runtime.extension.api.exception.ModuleException;
 import software.amazon.awssdk.regions.Region;
 import dev.langchain4j.data.document.loader.amazon.s3.AmazonS3DocumentLoader;
 import dev.langchain4j.data.document.loader.amazon.s3.AwsCredentials;
@@ -111,7 +114,20 @@ public class AmazonS3Storage extends BaseStorage {
 
         S3Object object = getS3ObjectIterator().next();
         LOGGER.debug("AWS S3 Object Key: " + object.key());
-        Document document = getLoader().loadDocument(getAWSS3Bucket(), object.key(), documentParser);
+        Document document;
+        try {
+            document = getLoader().loadDocument(getAWSS3Bucket(), object.key(), documentParser);
+        } catch(BlankDocumentException bde) {
+
+            LOGGER.warn(String.format("BlankDocumentException: Error while parsing document %s.", contextPath));
+            throw bde;
+        } catch (Exception e) {
+
+            throw new ModuleException(
+                String.format("Error while parsing document %s.", contextPath),
+                MuleVectorsErrorType.DOCUMENT_PARSING_FAILURE,
+                e);
+        }
         MetadatatUtils.addMetadataToDocument(document, fileType, object.key());
         return document;
     }
