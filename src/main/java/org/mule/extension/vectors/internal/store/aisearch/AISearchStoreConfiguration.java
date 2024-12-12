@@ -1,5 +1,9 @@
 package org.mule.extension.vectors.internal.store.aisearch;
 
+import org.mule.extension.vectors.internal.connection.model.BaseModelConnection;
+import org.mule.extension.vectors.internal.connection.model.huggingface.HuggingFaceModelConnection;
+import org.mule.extension.vectors.internal.connection.store.BaseStoreConnection;
+import org.mule.extension.vectors.internal.connection.store.aisearch.AISearchStoreConnection;
 import org.mule.extension.vectors.internal.constant.Constants;
 import org.mule.extension.vectors.internal.store.BaseStoreConfiguration;
 import org.mule.runtime.api.meta.ExpressionSupport;
@@ -31,8 +35,9 @@ public class AISearchStoreConfiguration implements BaseStoreConfiguration {
   private String apiKey;
 
   @Override
-  public String getVectorStore() {
-    return Constants.VECTOR_STORE_AI_SEARCH;
+  public BaseStoreConnection getConnection() {
+
+    return new AISearchStoreConnection(url, apiKey);
   }
 
   public String getUrl() {

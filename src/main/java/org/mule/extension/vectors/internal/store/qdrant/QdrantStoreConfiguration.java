@@ -1,5 +1,8 @@
 package org.mule.extension.vectors.internal.store.qdrant;
 
+import org.mule.extension.vectors.internal.connection.store.BaseStoreConnection;
+import org.mule.extension.vectors.internal.connection.store.pinecone.PineconeStoreConnection;
+import org.mule.extension.vectors.internal.connection.store.qdrant.QdrantStoreConnection;
 import org.mule.extension.vectors.internal.constant.Constants;
 import org.mule.extension.vectors.internal.store.BaseStoreConfiguration;
 import org.mule.runtime.api.meta.ExpressionSupport;
@@ -50,8 +53,9 @@ public class QdrantStoreConfiguration implements BaseStoreConfiguration {
   private String apiKey;
 
   @Override
-  public String getVectorStore() {
-    return Constants.VECTOR_STORE_QDRANT;
+  public BaseStoreConnection getConnection() {
+
+    return new QdrantStoreConnection(host,gprcPort,useTLS,textSegmentKey,apiKey);
   }
 
   public String getHost() {

@@ -14,6 +14,8 @@ import io.qdrant.client.grpc.JsonWithInt;
 import io.qdrant.client.grpc.Points;
 import org.json.JSONObject;
 import org.mule.extension.vectors.internal.config.CompositeConfiguration;
+import org.mule.extension.vectors.internal.config.StoreConfiguration;
+import org.mule.extension.vectors.internal.connection.store.qdrant.QdrantStoreConnection;
 import org.mule.extension.vectors.internal.constant.Constants;
 import org.mule.extension.vectors.internal.error.MuleVectorsErrorType;
 import org.mule.extension.vectors.internal.helper.parameter.QueryParameters;
@@ -26,22 +28,25 @@ import java.util.concurrent.ExecutionException;
 
 public class QdrantStore extends BaseStore {
 
-    private final QdrantClient client;
     private final String payloadTextKey;
+    private QdrantClient client;
 
-    public QdrantStore(String storeName, CompositeConfiguration compositeConfiguration, QueryParameters queryParams, int dimension) {
+    public QdrantStore(StoreConfiguration storeConfiguration, QdrantStoreConnection qdrantStoreConnection, String storeName, QueryParameters queryParams, int dimension) {
 
-        super(storeName, compositeConfiguration, queryParams, dimension);
+        super(storeConfiguration, qdrantStoreConnection, storeName, queryParams, dimension);
 
         try {
 
-            QdrantStoreConfiguration qdrantStoreConfiguration = (QdrantStoreConfiguration) compositeConfiguration.getStoreConfiguration();
-            String host = qdrantStoreConfiguration.getHost();
-            String apiKey = qdrantStoreConfiguration.getApiKey();
-            int port = qdrantStoreConfiguration.getGprcPort();
-            boolean useTls = qdrantStoreConfiguration.isUseTLS();
-            this.client = new QdrantClient(QdrantGrpcClient.newBuilder(host, port, useTls).withApiKey(apiKey).build());
-            this.payloadTextKey = qdrantStoreConfiguration.getTextSegmentKey();
+            String host = qdrantStoreConnection.getHost();
+            String apiKey = qdrantStoreConnection.getApiKey();
+            int port = qdrantStoreConnection.getGprcPort();
+            boolean useTls = qdrantStoreConnection.isUseTLS();
+            this.client = qdrantStoreConnection.getClient();
+            if(client == null) {
+
+                this.client = new QdrantClient(QdrantGrpcClient.newBuilder(host, port, useTls).withApiKey(apiKey).build());
+            }
+            this.payloadTextKey = qdrantStoreConnection.getTextSegmentKey();
 
             if (!this.client.collectionExistsAsync(this.storeName).get() && dimension > 0) {
                 this.client.createCollectionAsync(storeName,
@@ -52,7 +57,7 @@ public class QdrantStore extends BaseStore {
         } catch (Exception e) {
 
             throw new ModuleException(
-                String.format("Error while initializing embedding store \"%s\".", compositeConfiguration.getStoreConfiguration().getVectorStore()),
+                String.format("Error while initializing embedding store \"%s\".", qdrantStoreConnection.getVectorStore()),
                 MuleVectorsErrorType.STORE_SERVICES_FAILURE);
         }
     }

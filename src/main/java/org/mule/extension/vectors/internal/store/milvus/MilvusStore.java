@@ -12,6 +12,8 @@ import io.milvus.param.R;
 import io.milvus.response.QueryResultsWrapper;
 import org.json.JSONObject;
 import org.mule.extension.vectors.internal.config.CompositeConfiguration;
+import org.mule.extension.vectors.internal.config.StoreConfiguration;
+import org.mule.extension.vectors.internal.connection.store.milvus.MilvusStoreConnection;
 import org.mule.extension.vectors.internal.constant.Constants;
 import org.mule.extension.vectors.internal.helper.parameter.QueryParameters;
 import org.mule.extension.vectors.internal.store.BaseStore;
@@ -45,13 +47,12 @@ public class MilvusStore extends BaseStore {
     return client;
   }
 
-  public MilvusStore(String storeName, CompositeConfiguration compositeConfiguration, QueryParameters queryParams, int dimension) {
+  public MilvusStore(StoreConfiguration storeConfiguration, MilvusStoreConnection milvusStoreConnection, String storeName, QueryParameters queryParams, int dimension) {
 
-    super(storeName, compositeConfiguration, queryParams, dimension);
+    super(storeConfiguration, milvusStoreConnection, storeName, queryParams, dimension);
 
-    MilvusStoreConfiguration milvusStoreConfiguration = (MilvusStoreConfiguration) compositeConfiguration.getStoreConfiguration();
-    this.uri = milvusStoreConfiguration.getUrl();
-    //this.client =
+    this.uri = milvusStoreConnection.getUrl();
+    this.client = milvusStoreConnection.getClient();
   }
 
   public EmbeddingStore<TextSegment> buildEmbeddingStore() {

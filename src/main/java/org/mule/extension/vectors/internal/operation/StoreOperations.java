@@ -13,6 +13,10 @@ import org.json.JSONObject;
 import org.mule.extension.vectors.api.metadata.EmbeddingResponseAttributes;
 import org.mule.extension.vectors.api.metadata.StoreResponseAttributes;
 import org.mule.extension.vectors.internal.config.CompositeConfiguration;
+import org.mule.extension.vectors.internal.config.EmbeddingConfiguration;
+import org.mule.extension.vectors.internal.config.StoreConfiguration;
+import org.mule.extension.vectors.internal.connection.model.BaseModelConnection;
+import org.mule.extension.vectors.internal.connection.store.BaseStoreConnection;
 import org.mule.extension.vectors.internal.constant.Constants;
 import org.mule.extension.vectors.internal.error.MuleVectorsErrorType;
 import org.mule.extension.vectors.internal.error.provider.StoreErrorTypeProvider;
@@ -59,9 +63,10 @@ public class StoreOperations {
   @Throws(StoreErrorTypeProvider.class)
   @OutputJsonType(schema = "api/metadata/StoreAddResponse.json")
   public Result<InputStream, StoreResponseAttributes>
-      addToStore( @Config CompositeConfiguration compositeConfiguration,
-                            String storeName,
-                            @Alias("textSegmentsAndEmbeddings") @DisplayName("Text Segments and Embeddings") @InputJsonType(schema = "api/metadata/EmbeddingGenerateResponse.json") @Content InputStream content){
+      addToStore( @Config StoreConfiguration storeConfiguration,
+                  @Connection BaseStoreConnection storeConnection,
+                  String storeName,
+                  @Alias("textSegmentsAndEmbeddings") @DisplayName("Text Segments and Embeddings") @InputJsonType(schema = "api/metadata/EmbeddingGenerateResponse.json") @Content InputStream content){
 
     try {
 
@@ -101,7 +106,8 @@ public class StoreOperations {
 
       BaseStore baseStore = BaseStore.builder()
           .storeName(storeName)
-          .configuration(compositeConfiguration)
+          .configuration(storeConfiguration)
+          .connection(storeConnection)
           .dimension(dimension)
           .build();
 
@@ -148,7 +154,7 @@ public class StoreOperations {
    * each matched document, such as file name, URL, and ingestion datetime. The results are returned as a JSON structure.
    *
    * @param storeName      the name of the embedding store to search
-   * @param compositeConfiguration  the configuration object providing access to connection details and other settings
+   * @param storeConfiguration  the configuration object providing access to connection details and other settings
    * @return an {@link InputStream} containing a JSON object with the store name and an array of source metadata.
    *
    * @MediaType(value = APPLICATION_JSON, strict = false)
@@ -160,7 +166,8 @@ public class StoreOperations {
   @Throws(StoreErrorTypeProvider.class)
   @OutputJsonType(schema = "api/metadata/StoreListSourcesResponse.json")
   public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, EmbeddingResponseAttributes>
-  listSourcesFromStore( @Config CompositeConfiguration compositeConfiguration,
+  listSourcesFromStore(  @Config StoreConfiguration storeConfiguration,
+                         @Connection BaseStoreConnection storeConnection,
                         String storeName,
                         @ParameterGroup(name = "Querying Strategy") QueryParameters queryParams
   ) {
@@ -168,13 +175,14 @@ public class StoreOperations {
     try {
 
       EmbeddingOperationValidator.validateOperationType(
-          Constants.EMBEDDING_OPERATION_TYPE_QUERY_ALL, compositeConfiguration.getStoreConfiguration().getVectorStore());
+          Constants.EMBEDDING_OPERATION_TYPE_QUERY_ALL, storeConnection.getVectorStore());
       EmbeddingOperationValidator.validateOperationType(
-          Constants.EMBEDDING_OPERATION_TYPE_FILTER_BY_METADATA, compositeConfiguration.getStoreConfiguration().getVectorStore());
+          Constants.EMBEDDING_OPERATION_TYPE_FILTER_BY_METADATA, storeConnection.getVectorStore());
 
       BaseStore baseStore = BaseStore.builder()
           .storeName(storeName)
-          .configuration(compositeConfiguration)
+          .configuration(storeConfiguration)
+          .connection(storeConnection)
           .queryParams(queryParams)
           .build();
 
@@ -208,28 +216,22 @@ public class StoreOperations {
   @Throws(StoreErrorTypeProvider.class)
   @OutputJsonType(schema = "api/metadata/StoreRemoveFromStoreResponse.json")
   public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, EmbeddingResponseAttributes>
-  removeEmbeddingsByFilter( String storeName,
-                            @Config CompositeConfiguration compositeConfiguration,
+  removeEmbeddingsByFilter( @Config StoreConfiguration storeConfiguration,
+                            @Connection BaseStoreConnection storeConnection,
+                            String storeName,
                             @ParameterGroup(name = "Filter") MetadataFilterParameters.RemoveFilterParameters removeFilterParams,
                             @ParameterGroup(name = "Embedding Model") EmbeddingModelParameters embeddingModelParameters) {
 
     try {
       EmbeddingOperationValidator.validateOperationType(
-          Constants.EMBEDDING_OPERATION_TYPE_REMOVE_EMBEDDINGS, compositeConfiguration.getStoreConfiguration().getVectorStore());
+          Constants.EMBEDDING_OPERATION_TYPE_REMOVE_EMBEDDINGS, storeConnection.getVectorStore());
       EmbeddingOperationValidator.validateOperationType(
-          Constants.EMBEDDING_OPERATION_TYPE_FILTER_BY_METADATA, compositeConfiguration.getStoreConfiguration().getVectorStore());
-
-      BaseModel baseModel = BaseModel.builder()
-          .connection(compositeConfiguration.getModelConfiguration().getConnection())
-          .embeddingModelParameters(embeddingModelParameters)
-          .build();
-
-      EmbeddingModel embeddingModel = baseModel.buildEmbeddingModel();
+          Constants.EMBEDDING_OPERATION_TYPE_FILTER_BY_METADATA, storeConnection.getVectorStore());
 
       BaseStore baseStore = BaseStore.builder()
           .storeName(storeName)
-          .configuration(compositeConfiguration)
-          .dimension(embeddingModel.dimension())
+          .configuration(storeConfiguration)
+          .connection(storeConnection)
           .build();
 
       EmbeddingStore<TextSegment> embeddingStore = baseStore.buildEmbeddingStore();

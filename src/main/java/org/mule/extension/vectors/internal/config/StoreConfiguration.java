@@ -1,7 +1,5 @@
 package org.mule.extension.vectors.internal.config;
 
-import org.mule.extension.vectors.internal.connection.storage.amazons3.AmazonS3StorageConnectionProvider;
-import org.mule.extension.vectors.internal.connection.storage.azureblob.AzureBlobStorageConnectionProvider;
 import org.mule.extension.vectors.internal.connection.store.aisearch.AISearchStoreConnectionProvider;
 import org.mule.extension.vectors.internal.connection.store.chroma.ChromaStoreConnectionProvider;
 import org.mule.extension.vectors.internal.connection.store.elasticsearch.ElasticsearchStoreConnectionProvider;
@@ -24,6 +22,7 @@ import org.mule.runtime.extension.api.annotation.connectivity.ConnectionProvider
     PGVectorStoreConnectionProvider.class,
     PineconeStoreConnectionProvider.class,
     QdrantStoreConnectionProvider.class})
+@Operations({StoreOperations.class})
 public class StoreConfiguration {
 
 }

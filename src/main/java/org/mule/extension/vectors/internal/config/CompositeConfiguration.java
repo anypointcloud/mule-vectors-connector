@@ -20,7 +20,7 @@ import org.mule.runtime.extension.api.annotation.param.display.Summary;
  * operations since they represent something core from the extension.
  */
 @org.mule.runtime.extension.api.annotation.Configuration(name = "compositeConfig")
-@Operations({CompositeOperations.class, StoreOperations.class})
+@Operations({CompositeOperations.class})
 public class CompositeConfiguration {
 
   @Parameter

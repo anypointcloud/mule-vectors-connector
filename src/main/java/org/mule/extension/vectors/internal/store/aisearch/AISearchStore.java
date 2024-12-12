@@ -6,6 +6,8 @@ import dev.langchain4j.store.embedding.azure.search.AzureAiSearchEmbeddingStore;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.mule.extension.vectors.internal.config.CompositeConfiguration;
+import org.mule.extension.vectors.internal.config.StoreConfiguration;
+import org.mule.extension.vectors.internal.connection.store.aisearch.AISearchStoreConnection;
 import org.mule.extension.vectors.internal.constant.Constants;
 import org.mule.extension.vectors.internal.helper.parameter.QueryParameters;
 import org.mule.extension.vectors.internal.store.BaseStore;
@@ -24,13 +26,12 @@ public class AISearchStore extends BaseStore {
   private final String apiKey;
   private final String url;
 
-  public AISearchStore(String storeName, CompositeConfiguration compositeConfiguration, QueryParameters queryParams, int dimension) {
+  public AISearchStore(StoreConfiguration compositeConfiguration, AISearchStoreConnection aiSearchStoreConnection, String storeName, QueryParameters queryParams, int dimension) {
 
-    super(storeName, compositeConfiguration, queryParams, dimension);
+    super(compositeConfiguration, aiSearchStoreConnection, storeName, queryParams, dimension);
 
-    AISearchStoreConfiguration aiSearchStoreConfiguration = (AISearchStoreConfiguration) compositeConfiguration.getStoreConfiguration();
-    this.url = aiSearchStoreConfiguration.getUrl();
-    this.apiKey = aiSearchStoreConfiguration.getApiKey();
+    this.url = aiSearchStoreConnection.getUrl();
+    this.apiKey = aiSearchStoreConnection.getApiKey();
   }
 
   public EmbeddingStore<TextSegment> buildEmbeddingStore() {

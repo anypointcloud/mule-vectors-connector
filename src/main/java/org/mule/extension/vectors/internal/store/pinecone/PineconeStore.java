@@ -5,6 +5,9 @@ import dev.langchain4j.store.embedding.EmbeddingStore;
 import dev.langchain4j.store.embedding.pinecone.PineconeEmbeddingStore;
 import dev.langchain4j.store.embedding.pinecone.PineconeServerlessIndexConfig;
 import org.mule.extension.vectors.internal.config.CompositeConfiguration;
+import org.mule.extension.vectors.internal.config.StoreConfiguration;
+import org.mule.extension.vectors.internal.connection.store.BaseStoreConnection;
+import org.mule.extension.vectors.internal.connection.store.pinecone.PineconeStoreConnection;
 import org.mule.extension.vectors.internal.helper.parameter.QueryParameters;
 import org.mule.extension.vectors.internal.store.BaseStore;
 
@@ -14,14 +17,13 @@ public class PineconeStore extends BaseStore {
   private String cloud;
   private String region;
 
-  public PineconeStore(String storeName, CompositeConfiguration compositeConfiguration, QueryParameters queryParams, int dimension) {
+  public PineconeStore(StoreConfiguration storeConfiguration, PineconeStoreConnection pineconeStoreConnection, String storeName, QueryParameters queryParams, int dimension) {
 
-    super(storeName, compositeConfiguration, queryParams, dimension);
+    super(storeConfiguration, pineconeStoreConnection, storeName, queryParams, dimension);
 
-    PineconeStoreConfiguration pineconeStoreConfiguration = (PineconeStoreConfiguration) compositeConfiguration.getStoreConfiguration();
-    this.apiKey = pineconeStoreConfiguration.getApiKey();
-    this.cloud = pineconeStoreConfiguration.getCloud();
-    this.region = pineconeStoreConfiguration.getRegion();
+    this.apiKey = pineconeStoreConnection.getApiKey();
+    this.cloud = pineconeStoreConnection.getCloud();
+    this.region = pineconeStoreConnection.getRegion();
   }
 
   public EmbeddingStore<TextSegment> buildEmbeddingStore() {

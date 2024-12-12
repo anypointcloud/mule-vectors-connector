@@ -1,5 +1,8 @@
 package org.mule.extension.vectors.internal.store.pinecone;
 
+import org.mule.extension.vectors.internal.connection.store.BaseStoreConnection;
+import org.mule.extension.vectors.internal.connection.store.pgvector.PGVectorStoreConnection;
+import org.mule.extension.vectors.internal.connection.store.pinecone.PineconeStoreConnection;
 import org.mule.extension.vectors.internal.constant.Constants;
 import org.mule.extension.vectors.internal.store.BaseStoreConfiguration;
 import org.mule.runtime.api.meta.ExpressionSupport;
@@ -31,12 +34,12 @@ public class PineconeStoreConfiguration implements BaseStoreConfiguration {
   @Password
   @Expression(ExpressionSupport.SUPPORTED)
   @Placement(order = 3)
-  @Example("<your-apikey>")
   private String apiKey;
 
   @Override
-  public String getVectorStore() {
-    return Constants.VECTOR_STORE_PINECONE;
+  public BaseStoreConnection getConnection() {
+
+    return new PineconeStoreConnection(cloud,region,apiKey);
   }
 
   public String getCloud() {

@@ -74,6 +74,9 @@ public class PGVectorStoreConnection implements BaseStoreConnection {
         if (conn == null) {
 
           throw new ConnectionException("Impossible to connect to PGVector. Cannot get a connection from the pool.");
+        } else {
+
+          conn.close();
         }
       } else {
 
@@ -113,7 +116,14 @@ public class PGVectorStoreConnection implements BaseStoreConnection {
     try {
 
       Connection conn = this.dataSource.getConnection();
-      return conn != null;
+      if(conn != null) {
+
+        conn.close();
+        return true;
+      } else {
+
+        return false;
+      }
 
     } catch (Exception e) {
 

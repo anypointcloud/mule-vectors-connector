@@ -1,5 +1,7 @@
 package org.mule.extension.vectors.internal.store.milvus;
 
+import org.mule.extension.vectors.internal.connection.store.BaseStoreConnection;
+import org.mule.extension.vectors.internal.connection.store.milvus.MilvusStoreConnection;
 import org.mule.extension.vectors.internal.constant.Constants;
 import org.mule.extension.vectors.internal.store.BaseStoreConfiguration;
 import org.mule.runtime.api.meta.ExpressionSupport;
@@ -21,8 +23,9 @@ public class MilvusStoreConfiguration implements BaseStoreConfiguration {
   private String url;
 
   @Override
-  public String getVectorStore() {
-    return Constants.VECTOR_STORE_MILVUS;
+  public BaseStoreConnection getConnection() {
+
+    return new MilvusStoreConnection(url);
   }
 
   public String getUrl() {

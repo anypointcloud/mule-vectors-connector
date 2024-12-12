@@ -13,6 +13,7 @@ import org.json.JSONObject;
 import org.mule.extension.vectors.api.metadata.CompositeResponseAttributes;
 import org.mule.extension.vectors.api.metadata.EmbeddingResponseAttributes;
 import org.mule.extension.vectors.internal.config.CompositeConfiguration;
+import org.mule.extension.vectors.internal.connection.store.BaseStoreConnection;
 import org.mule.extension.vectors.internal.constant.Constants;
 import org.mule.extension.vectors.internal.error.MuleVectorsErrorType;
 import org.mule.extension.vectors.internal.error.provider.CompositeErrorTypeProvider;
@@ -77,7 +78,7 @@ public class CompositeOperations {
 
       BaseStore baseStore = BaseStore.builder()
           .storeName(storeName)
-          .configuration(compositeConfiguration)
+          .connection(compositeConfiguration.getStoreConfiguration().getConnection())
           .dimension(embeddingModel.dimension())
           .build();
 
@@ -134,8 +135,10 @@ public class CompositeOperations {
 
     try {
 
+      BaseStoreConnection storeConnection = compositeConfiguration.getStoreConfiguration().getConnection();
+
       EmbeddingOperationValidator.validateOperationType(
-          Constants.EMBEDDING_OPERATION_TYPE_STORE_METADATA, compositeConfiguration.getStoreConfiguration().getVectorStore());
+          Constants.EMBEDDING_OPERATION_TYPE_STORE_METADATA, storeConnection.getVectorStore());
 
       BaseModel baseModel = BaseModel.builder()
           .connection(compositeConfiguration.getModelConfiguration().getConnection())
@@ -146,7 +149,7 @@ public class CompositeOperations {
 
       BaseStore baseStore = BaseStore.builder()
           .storeName(storeName)
-          .configuration(compositeConfiguration)
+          .connection(storeConnection)
           .dimension(embeddingModel.dimension())
           .build();
 
@@ -215,8 +218,10 @@ public class CompositeOperations {
 
     try {
 
+      BaseStoreConnection storeConnection = compositeConfiguration.getStoreConfiguration().getConnection();
+
       EmbeddingOperationValidator.validateOperationType(
-          Constants.EMBEDDING_OPERATION_TYPE_STORE_METADATA, compositeConfiguration.getStoreConfiguration().getVectorStore());
+          Constants.EMBEDDING_OPERATION_TYPE_STORE_METADATA, storeConnection.getVectorStore());
 
       BaseModel baseModel = BaseModel.builder()
           .connection(compositeConfiguration.getModelConfiguration().getConnection())
@@ -227,7 +232,7 @@ public class CompositeOperations {
 
       BaseStore baseStore = BaseStore.builder()
           .storeName(storeName)
-          .configuration(compositeConfiguration)
+          .connection(storeConnection)
           .dimension(embeddingModel.dimension())
           .build();
 
@@ -288,6 +293,8 @@ public class CompositeOperations {
                           @ParameterGroup(name = "Embedding Model") EmbeddingModelParameters embeddingModelParameters) {
     try {
 
+      BaseStoreConnection storeConnection = compositeConfiguration.getStoreConfiguration().getConnection();
+
       int maximumResults = maxResults.intValue();
       if (minScore == null) { //|| minScore == 0) {
         minScore = Constants.EMBEDDING_SEARCH_REQUEST_DEFAULT_MIN_SCORE;
@@ -302,7 +309,7 @@ public class CompositeOperations {
 
       BaseStore baseStore = BaseStore.builder()
           .storeName(storeName)
-          .configuration(compositeConfiguration)
+          .connection(storeConnection)
           .dimension(embeddingModel.dimension())
           .build();
 
@@ -388,8 +395,10 @@ public class CompositeOperations {
 
     try {
 
+      BaseStoreConnection storeConnection = compositeConfiguration.getStoreConfiguration().getConnection();
+
       EmbeddingOperationValidator.validateOperationType(
-          Constants.EMBEDDING_OPERATION_TYPE_FILTER_BY_METADATA, compositeConfiguration.getStoreConfiguration().getVectorStore());
+          Constants.EMBEDDING_OPERATION_TYPE_FILTER_BY_METADATA, storeConnection.getVectorStore());
 
       int maximumResults = maxResults.intValue();
       if (minScore == null) { //|| minScore == 0) {
@@ -405,7 +414,7 @@ public class CompositeOperations {
 
       BaseStore baseStore = BaseStore.builder()
           .storeName(storeName)
-          .configuration(compositeConfiguration)
+          .connection(storeConnection)
           .dimension(embeddingModel.dimension())
           .build();
 

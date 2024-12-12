@@ -1,6 +1,7 @@
 package org.mule.extension.vectors.internal.store.pgvector;
 
-import org.mule.extension.vectors.internal.constant.Constants;
+import org.mule.extension.vectors.internal.connection.store.BaseStoreConnection;
+import org.mule.extension.vectors.internal.connection.store.pgvector.PGVectorStoreConnection;
 import org.mule.extension.vectors.internal.store.BaseStoreConfiguration;
 import org.mule.runtime.api.meta.ExpressionSupport;
 import org.mule.runtime.extension.api.annotation.Alias;
@@ -36,19 +37,19 @@ public class PGVectorStoreConfiguration implements BaseStoreConfiguration {
   @Parameter
   @Expression(ExpressionSupport.SUPPORTED)
   @Placement(order = 4)
-  @Example("<your-username>")
-  private String userName;
+  @Example("postgres")
+  private String user;
 
   @Parameter
   @Password
   @Expression(ExpressionSupport.SUPPORTED)
   @Placement(order = 5)
-  @Example("<your-password>")
   private String password;
 
   @Override
-  public String getVectorStore() {
-    return Constants.VECTOR_STORE_PGVECTOR;
+  public BaseStoreConnection getConnection() {
+
+    return new PGVectorStoreConnection(host, port, database, user, password);
   }
 
   public String getHost() {
@@ -63,8 +64,8 @@ public class PGVectorStoreConfiguration implements BaseStoreConfiguration {
     return database;
   }
 
-  public String getUserName() {
-    return userName;
+  public String getUser() {
+    return user;
   }
 
   public String getPassword() {

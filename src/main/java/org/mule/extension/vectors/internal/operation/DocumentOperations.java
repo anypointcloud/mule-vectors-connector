@@ -30,7 +30,6 @@ import org.slf4j.LoggerFactory;
 import java.io.InputStream;
 import java.util.*;
 
-import static org.apache.commons.io.IOUtils.toInputStream;
 import static org.mule.extension.vectors.internal.helper.ResponseHelper.createDocumentResponse;
 import static org.mule.runtime.extension.api.annotation.param.MediaType.ANY;
 import static org.mule.runtime.extension.api.annotation.param.MediaType.APPLICATION_JSON;
