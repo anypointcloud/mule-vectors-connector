@@ -170,10 +170,15 @@ public class CompositeOperations {
       long documentNumber = 0L;
       while(baseStorage.hasNext()) {
 
-        Document document = baseStorage.next();
-        MetadatatUtils.addIngestionMetadataToDocument(document);
-        embeddingStoreIngestor.ingest(document);
-        documentNumber ++;
+        try {
+
+          Document document = baseStorage.next();
+          MetadatatUtils.addIngestionMetadataToDocument(document);
+          embeddingStoreIngestor.ingest(document);
+          documentNumber ++;
+        } catch(Exception e) {
+          // Do nothing continue to next iteration.
+        }
       }
       JSONObject jsonObject = JsonUtils.createIngestionStatusObject(storeName);
 
