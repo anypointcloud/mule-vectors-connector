@@ -55,6 +55,7 @@ public class PGVectorStore extends BaseStore {
       source.setDatabaseName(database);
       source.setUser(user);
       source.setPassword(password);
+      this.dataSource = source;
     }
     return dataSource;
   }
