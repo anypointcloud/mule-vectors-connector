@@ -175,6 +175,9 @@ public class CompositeOperations {
           Document document = baseStorage.next();
           MetadatatUtils.addIngestionMetadataToDocument(document);
           embeddingStoreIngestor.ingest(document);
+          LOGGER.info(String.format("Ingested into %s  >> %s",
+                                    storeName,
+                                    MetadatatUtils.getSourceDisplayName(document.metadata())));
           documentNumber ++;
         } catch(Exception e) {
           // Do nothing continue to next iteration.
