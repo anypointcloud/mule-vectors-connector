@@ -1,6 +1,7 @@
 package org.mule.extension.vectors.internal.storage.local;
 
 import org.mule.extension.vectors.internal.connection.storage.BaseStorageConnection;
+import org.mule.extension.vectors.internal.connection.storage.local.LocalStorageConnection;
 import org.mule.extension.vectors.internal.constant.Constants;
 import org.mule.extension.vectors.internal.storage.BaseStorageConfiguration;
 import org.mule.runtime.api.meta.ExpressionSupport;
@@ -30,7 +31,7 @@ public class LocalStorageConfiguration implements BaseStorageConfiguration {
   }
 
   @Override
-  public BaseStorageConnection getConnection() { return null; }
+  public BaseStorageConnection getConnection() { return new LocalStorageConnection(workingDirectory); }
 
   public void setWorkingDirectory(String workingDirectory) {
     this.workingDirectory = workingDirectory;
