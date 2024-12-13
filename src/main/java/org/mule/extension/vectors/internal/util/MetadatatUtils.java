@@ -39,7 +39,7 @@ public class MetadatatUtils {
 
     // Logic to determine the result
     if (absoluteDirectoryPath != null) {
-      return absoluteDirectoryPath + Optional.ofNullable(fileName).orElse("");
+      return absoluteDirectoryPath + "/" + Optional.ofNullable(fileName).orElse("");
     } else {
       return Optional.ofNullable(url).orElse(
                  Optional.ofNullable(source).orElse(
