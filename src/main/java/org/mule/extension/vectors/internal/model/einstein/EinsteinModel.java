@@ -13,27 +13,21 @@ public class EinsteinModel  extends BaseModel {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(EinsteinModel.class);
 
-  private final String salesforceOrgUrl;
-  private final String clientId;
-  private final String clientSecret;
   private final String modelName;
+  private final EinsteinModelConnection einsteinModelConnection;
 
   public EinsteinModel(EmbeddingConfiguration embeddingConfiguration, EinsteinModelConnection einsteinModelConnection, EmbeddingModelParameters embeddingModelParameters) {
 
     super(embeddingConfiguration, einsteinModelConnection, embeddingModelParameters);
 
-    this.salesforceOrgUrl = einsteinModelConnection.getSalesforceOrg();
-    this.clientId = einsteinModelConnection.getClientId();
-    this.clientSecret = einsteinModelConnection.getClientSecret();
+    this.einsteinModelConnection = einsteinModelConnection;
     this.modelName = embeddingModelParameters.getEmbeddingModelName();
   }
 
   public EmbeddingModel buildEmbeddingModel() {
 
     return EinsteinEmbeddingModel.builder()
-        .salesforceOrg(salesforceOrgUrl)
-        .clientId(clientId)
-        .clientSecret(clientSecret)
+        .connection(einsteinModelConnection)
         .modelName(modelName)
         .build();
   }
