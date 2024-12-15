@@ -83,7 +83,8 @@ public class EinsteinModelConnection implements BaseModelConnection {
 
   @Override
   public boolean isValid() {
-    return true;
+
+    return isAccessTokenValid();
   }
 
   /**
@@ -139,6 +140,26 @@ public class EinsteinModelConnection implements BaseModelConnection {
       throw new ConnectionException(
           "Error while getting access token for \"EINSTEIN\" embedding model service.",
           e);
+    }
+  }
+
+  private Boolean isAccessTokenValid() {
+
+    String urlString = Constants.URI_HTTPS_PREFIX + salesforceOrg + "/services/oauth2/userinfo";
+
+    try {
+      URL url = new URL(urlString);
+      HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+
+      conn.setRequestMethod("GET");
+      conn.setRequestProperty("Authorization", "Bearer " + this.accessToken);
+
+     return conn.getResponseCode() == HttpURLConnection.HTTP_OK;
+
+    } catch (Exception e) {
+
+      LOGGER.error("Error while validating access token for \"EINSTEIN\" embedding model service.", e);
+      return false;
     }
   }
 
