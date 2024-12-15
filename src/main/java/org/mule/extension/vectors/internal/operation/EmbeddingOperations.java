@@ -83,6 +83,10 @@ public class EmbeddingOperations {
 
         embeddings = embeddingModel.embedAll(textSegments).content();
 
+      }  catch(ModuleException e) {
+
+        throw e;
+
       } catch(Exception e) {
 
         throw new ModuleException(
@@ -177,6 +181,10 @@ public class EmbeddingOperations {
       try {
 
         embeddings = embeddingModel.embedAll(textSegments).content();
+
+      } catch(ModuleException e) {
+
+        throw e;
 
       } catch(Exception e) {
 

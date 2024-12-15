@@ -1,12 +1,16 @@
 package org.mule.extension.vectors.internal.connection.model.einstein;
 
+import org.json.JSONObject;
 import org.mule.extension.vectors.internal.connection.model.BaseModelConnection;
 import org.mule.extension.vectors.internal.constant.Constants;
+import org.mule.extension.vectors.internal.error.MuleVectorsErrorType;
 import org.mule.runtime.api.connection.ConnectionException;
+import org.mule.runtime.extension.api.exception.ModuleException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -21,9 +25,15 @@ public class EinsteinModelConnection implements BaseModelConnection {
   public static final String QUERY_PARAM_CLIENT_SECRET = "client_secret";
   public static final String GRANT_TYPE_CLIENT_CREDENTIALS = "client_credentials";
 
-  private String salesforceOrg;
-  private String clientId;
-  private String clientSecret;
+  private final String salesforceOrg;
+  private final String clientId;
+  private final String clientSecret;
+
+  private String accessToken;
+
+  public String getAccessToken() {
+    return accessToken;
+  }
 
   public EinsteinModelConnection(String salesforceOrg, String clientId, String clientSecret) {
 
@@ -53,12 +63,13 @@ public class EinsteinModelConnection implements BaseModelConnection {
   public void connect() throws ConnectionException {
 
     try {
-      int responseCode = getConnectionResponseCode(salesforceOrg, clientId, clientSecret);
-      if (responseCode != 200) {
 
-        throw new ConnectionException("Failed to connect to Salesforce: HTTP " + responseCode);
+      this.accessToken = getAccessToken(salesforceOrg, clientId, clientSecret);
+      if (this.accessToken == null) {
+
+        throw new ConnectionException("Failed to connect to Salesforce: HTTP " + accessToken);
       }
-    } catch (IOException e) {
+    } catch (Exception e) {
 
       throw new ConnectionException("Failed to connect to Salesforce", e);
     }
@@ -72,27 +83,63 @@ public class EinsteinModelConnection implements BaseModelConnection {
 
   @Override
   public boolean isValid() {
-    return false;
+    return true;
   }
 
-  private int getConnectionResponseCode(String salesforceOrg, String clientId, String clientSecret) throws IOException {
+  /**
+   * Authenticates with Salesforce and obtains an access token.
+   *
+   * @param salesforceOrg Salesforce organization identifier
+   * @param clientId OAuth client ID
+   * @param clientSecret OAuth client secret
+   * @return Access token for API calls
+   * @throws ModuleException if authentication fails
+   */
+  private String getAccessToken(String salesforceOrg, String clientId, String clientSecret) throws ConnectionException {
 
-    LOGGER.debug("Preparing request for connection for salesforce org:{}", salesforceOrg);
+    String urlString = Constants.URI_HTTPS_PREFIX + salesforceOrg + "/services/oauth2/token";
+    String params = "grant_type=client_credentials&client_id=" + clientId + "&client_secret=" + clientSecret;
 
-    String urlStr = getOAuthURL(salesforceOrg);
-    String urlParameters = getOAuthParams(clientId, clientSecret);
+    try {
+      URL url = new URL(urlString);
+      HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 
-    byte[] postData = urlParameters.getBytes(StandardCharsets.UTF_8);
+      // Configure connection for OAuth token request
+      conn.setDoOutput(true);
+      conn.setRequestMethod("POST");
+      conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
 
-    URL url = new URL(urlStr);
-    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-    conn.setDoOutput(true);
-    conn.setRequestMethod(Constants.HTTP_METHOD_POST);
-    conn.getOutputStream().write(postData);
-    int respCode = conn.getResponseCode();
+      // Write parameters to request body
+      try (OutputStream os = conn.getOutputStream()) {
+        byte[] input = params.getBytes(StandardCharsets.UTF_8);
+        os.write(input, 0, input.length);
+      }
 
-    LOGGER.debug("Response code for connection request:{}", respCode);
-    return respCode;
+      int responseCode = conn.getResponseCode();
+      if (responseCode == HttpURLConnection.HTTP_OK) {
+        // Read and parse response
+        try (java.io.BufferedReader br = new java.io.BufferedReader(
+            new java.io.InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8))) {
+          StringBuilder response = new StringBuilder();
+          String responseLine;
+          while ((responseLine = br.readLine()) != null) {
+            response.append(responseLine.trim());
+          }
+          return new JSONObject(response.toString()).getString("access_token");
+        }
+      } else {
+        throw new ConnectionException("Error while getting access token for \"EINSTEIN\" embedding model service. " +
+                                          "Response code: " + responseCode);
+      }
+    } catch (ConnectionException e) {
+
+      throw e;
+
+    } catch (Exception e) {
+      throw new ConnectionException(
+          "Error while getting access token for \"EINSTEIN\" embedding model service.",
+          e);
+    }
   }
 
   public static String getOAuthURL(String salesforceOrg) {

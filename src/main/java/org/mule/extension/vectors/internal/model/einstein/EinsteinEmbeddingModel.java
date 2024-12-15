@@ -240,6 +240,9 @@ public class EinsteinEmbeddingModel extends DimensionAwareEmbeddingModel {
    * @throws ModuleException if the API call fails
    */
   private String generateEmbeddings(String payload) {
+
+    int responseCode = -1;
+
     try {
       // Prepare connection
       String urlString = URL_BASE + this.modelName + "/embeddings";
@@ -260,7 +263,7 @@ public class EinsteinEmbeddingModel extends DimensionAwareEmbeddingModel {
         os.write(input, 0, input.length);
       }
 
-      int responseCode = connection.getResponseCode();
+      responseCode = connection.getResponseCode();
 
       if (responseCode == HttpURLConnection.HTTP_OK) {
         // Read response
@@ -296,7 +299,7 @@ public class EinsteinEmbeddingModel extends DimensionAwareEmbeddingModel {
       throw e;
     } catch (Exception e) {
       throw new ModuleException(
-          "Error while generating embeddings with \"EINSTEIN\" embedding model service.",
+          String.format("Error while generating embeddings with \"EINSTEIN\" embedding model service. Response code: %s", responseCode),
           MuleVectorsErrorType.AI_SERVICES_FAILURE,
           e);
     }
