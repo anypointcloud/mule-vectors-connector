@@ -14,6 +14,8 @@ import dev.langchain4j.data.document.Document;
 import dev.langchain4j.data.document.DocumentSplitter;
 import dev.langchain4j.data.document.Metadata;
 import org.apache.commons.io.IOUtils;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.mule.extension.vectors.api.metadata.EmbeddingResponseAttributes;
 import org.mule.extension.vectors.internal.config.EmbeddingConfiguration;
 import org.mule.extension.vectors.internal.connection.model.BaseModelConnection;
@@ -21,16 +23,12 @@ import org.mule.extension.vectors.internal.constant.Constants;
 import org.mule.extension.vectors.internal.error.MuleVectorsErrorType;
 import org.mule.extension.vectors.internal.error.provider.EmbeddingErrorTypeProvider;
 import org.mule.extension.vectors.internal.helper.parameter.*;
-import org.json.JSONArray;
-import org.json.JSONObject;
 import org.mule.extension.vectors.internal.model.BaseModel;
 import org.mule.runtime.extension.api.annotation.Alias;
 import org.mule.runtime.extension.api.annotation.error.Throws;
 import org.mule.runtime.extension.api.annotation.metadata.fixed.InputJsonType;
 import org.mule.runtime.extension.api.annotation.metadata.fixed.OutputJsonType;
 import org.mule.runtime.extension.api.annotation.param.*;
-
-import static java.util.stream.Collectors.joining;
 
 import dev.langchain4j.data.document.splitter.DocumentSplitters;
 import dev.langchain4j.data.embedding.Embedding;
@@ -43,14 +41,22 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class is a container for operations, every public method in this class will be taken as an extension operation.
+ * Container for embedding operations, providing methods to generate embeddings from text or documents.
  */
 public class EmbeddingOperations {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(EmbeddingOperations.class);
 
-   /**
-   * Generate Embeddings from text
+  /**
+   * Generates embeddings from a given text string. The text can optionally be segmented before embedding.
+   *
+   * @param embeddingConfiguration the configuration for the embedding service.
+   * @param modelConnection the connection to the embedding model.
+   * @param text the input text to generate embeddings from.
+   * @param segmentationParameters parameters defining segmentation rules for the input text.
+   * @param embeddingModelParameters parameters for the embedding model to be used.
+   * @return a {@link org.mule.runtime.extension.api.runtime.operation.Result} containing the embeddings in JSON format and metadata.
+   * @throws ModuleException if an error occurs during the embedding process.
    */
   @MediaType(value = APPLICATION_JSON, strict = false)
   @Alias("Embedding-generate-from-text")
@@ -58,14 +64,13 @@ public class EmbeddingOperations {
   @Throws(EmbeddingErrorTypeProvider.class)
   @OutputJsonType(schema = "api/metadata/EmbeddingGenerateResponse.json")
   public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, EmbeddingResponseAttributes>
-      generateEmbeddingFromText(@Config EmbeddingConfiguration embeddingConfiguration,
-                        @Connection BaseModelConnection modelConnection,
-                        @Alias("text") @DisplayName("Text") @Content String text,
-                        @ParameterGroup(name = "Segmentation") SegmentationParameters segmentationParameters,
-                        @ParameterGroup(name = "Embedding Model") EmbeddingModelParameters embeddingModelParameters){
+  generateEmbeddingFromText(@Config EmbeddingConfiguration embeddingConfiguration,
+                            @Connection BaseModelConnection modelConnection,
+                            @Alias("text") @DisplayName("Text") @Content String text,
+                            @ParameterGroup(name = "Segmentation") SegmentationParameters segmentationParameters,
+                            @ParameterGroup(name = "Embedding Model") EmbeddingModelParameters embeddingModelParameters) {
 
     try {
-
       BaseModel baseModel = BaseModel.builder()
           .configuration(embeddingConfiguration)
           .connection(modelConnection)
@@ -147,7 +152,14 @@ public class EmbeddingOperations {
   }
 
   /**
-   * Generate Embeddings from text
+   * Generates embeddings from text segments provided in a document format.
+   *
+   * @param embeddingConfiguration the configuration for the embedding service.
+   * @param modelConnection the connection to the embedding model.
+   * @param content the input text segments as an {@link InputStream} in JSON format.
+   * @param embeddingModelParameters parameters for the embedding model to be used.
+   * @return a {@link org.mule.runtime.extension.api.runtime.operation.Result} containing the embeddings in JSON format and metadata.
+   * @throws ModuleException if an error occurs during the embedding process.
    */
   @MediaType(value = APPLICATION_JSON, strict = false)
   @Alias("Embedding-generate-from-document")
@@ -158,7 +170,7 @@ public class EmbeddingOperations {
   generateEmbeddingFromDocument(@Config EmbeddingConfiguration embeddingConfiguration,
                                 @Connection BaseModelConnection modelConnection,
                                 @Alias("textSegments") @DisplayName("Text Segments") @InputJsonType(schema = "api/metadata/DocumentLoadSingleResponse.json") @Content InputStream content,
-                                @ParameterGroup(name = "Embedding Model") EmbeddingModelParameters embeddingModelParameters){
+                                @ParameterGroup(name = "Embedding Model") EmbeddingModelParameters embeddingModelParameters) {
 
     try {
 

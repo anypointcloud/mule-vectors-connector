@@ -39,7 +39,16 @@ public class DocumentOperations {
   private static final Logger LOGGER = LoggerFactory.getLogger(DocumentOperations.class);
 
   /**
-   * Parses a document by contextPath and returns the text
+   * Loads a single document from the storage specified by the {@code contextPath} and returns its content
+   * in JSON format. The document is processed into segments based on the provided segmentation parameters.
+   *
+   * @param documentConfiguration the configuration for accessing the document.
+   * @param storageConnection      the connection to the document storage.
+   * @param documentParameters     parameters for specifying the document location and type.
+   * @param segmentationParameters parameters for segmenting the document content into smaller parts.
+   * @return a {@link Result} containing the document's content as an {@link InputStream} and
+   *         additional metadata in {@link DocumentResponseAttributes}.
+   * @throws ModuleException if an error occurs while loading or processing the document.
    */
   @MediaType(value = APPLICATION_JSON, strict = false)
   @Alias("Document-load-single")
@@ -47,14 +56,12 @@ public class DocumentOperations {
   @Throws(DocumentErrorTypeProvider.class)
   @OutputJsonType(schema = "api/metadata/DocumentLoadSingleResponse.json")
   public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, DocumentResponseAttributes>
-  loadSingleDocument( @Config DocumentConfiguration documentConfiguration,
-                @Connection BaseStorageConnection storageConnection,
-                @ParameterGroup(name = "Document") DocumentParameters documentParameters,
-                @ParameterGroup(name = "Segmentation") SegmentationParameters segmentationParameters
-  ){
+  loadSingleDocument(@Config DocumentConfiguration documentConfiguration,
+                     @Connection BaseStorageConnection storageConnection,
+                     @ParameterGroup(name = "Document") DocumentParameters documentParameters,
+                     @ParameterGroup(name = "Segmentation") SegmentationParameters segmentationParameters) {
 
     try {
-
       BaseStorage baseStorage = BaseStorage.builder()
           .configuration(documentConfiguration)
           .connection(storageConnection)
@@ -78,16 +85,25 @@ public class DocumentOperations {
       throw me;
 
     } catch (Exception e) {
-
       throw new ModuleException(
-          String.format("Error while splitting document %s.", documentParameters.getContextPath()),
+          String.format("Error while loading and/or segmenting document at '%s'.", documentParameters.getContextPath()),
           MuleVectorsErrorType.DOCUMENT_OPERATIONS_FAILURE,
           e);
     }
   }
 
   /**
-   * Parses a document by filepath and returns the text
+   * Loads a list of documents from storage based on the specified parameters, enabling
+   * paginated access to the documents. The documents are segmented into smaller parts
+   * according to the provided segmentation parameters.
+   *
+   * @param documentConfiguration the configuration for accessing the documents.
+   * @param documentParameters     parameters for specifying the documents' location and type.
+   * @param segmentationParameters parameters for segmenting the documents into smaller parts.
+   * @param streamingHelper        helper for managing the streaming of paginated results.
+   * @return a {@link PagingProvider} for streaming the paginated documents, each as a {@link Result}
+   *         containing a {@link CursorProvider} for content and metadata in {@link DocumentResponseAttributes}.
+   * @throws ModuleException if an error occurs while loading or segmenting the documents.
    */
   @MediaType(value = ANY, strict = false)
   @Alias("Document-load-list")
@@ -95,11 +111,10 @@ public class DocumentOperations {
   @Throws(DocumentErrorTypeProvider.class)
   @OutputResolver(output = DocumentsOutputTypeMetadataResolver.class)
   public PagingProvider<BaseStorageConnection, Result<CursorProvider, DocumentResponseAttributes>>
-  loadDocumentList( @Config DocumentConfiguration documentConfiguration,
-                 @ParameterGroup(name = "Document") DocumentParameters documentParameters,
-                 @ParameterGroup(name = "Segmentation") SegmentationParameters segmentationParameters,
-                 StreamingHelper streamingHelper
-  ){
+  loadDocumentList(@Config DocumentConfiguration documentConfiguration,
+                   @ParameterGroup(name = "Document") DocumentParameters documentParameters,
+                   @ParameterGroup(name = "Segmentation") SegmentationParameters segmentationParameters,
+                   StreamingHelper streamingHelper) {
 
     try {
       return new DocumentPagingProvider(documentConfiguration,
@@ -111,9 +126,8 @@ public class DocumentOperations {
       throw me;
 
     } catch (Exception e) {
-
       throw new ModuleException(
-          String.format("Error while splitting document %s.", documentParameters.getContextPath()),
+          String.format("Error while loading and/or segmenting documents for path '%s'.", documentParameters.getContextPath()),
           MuleVectorsErrorType.DOCUMENT_OPERATIONS_FAILURE,
           e);
     }
