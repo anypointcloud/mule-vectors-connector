@@ -251,6 +251,8 @@ public class EinsteinModelConnection implements BaseModelConnection {
           }
           return response.toString();
         }
+
+      // TOKEN EXPIRED
       } else if (responseCode == 401 && !tokenExpired) {
 
         LOGGER.debug("Salesforce access token expired.");
@@ -261,22 +263,33 @@ public class EinsteinModelConnection implements BaseModelConnection {
 
       } else {
 
-        // Read error response
-        try (BufferedReader in = new BufferedReader(
-            new InputStreamReader(connection.getErrorStream(), StandardCharsets.UTF_8))) {
-          String inputLine;
-          StringBuilder response = new StringBuilder();
-          while ((inputLine = in.readLine()) != null) {
-            response.append(inputLine);
+        // Get response body
+        String responseBody = "";
+        if(connection.getErrorStream() != null) {
+
+          // Read error response
+          try (BufferedReader in = new BufferedReader(
+              new InputStreamReader(connection.getErrorStream(), StandardCharsets.UTF_8))) {
+            String inputLine;
+            StringBuilder response = new StringBuilder();
+            while ((inputLine = in.readLine()) != null) {
+              response.append(inputLine);
+            }
+            responseBody = response.toString();
           }
-          // Print the error response
-          LOGGER.error("Error (HTTP " + responseCode + "): " + response.toString());
-          throw new ModuleException(
-              String.format("Error while generating embeddings with \"EINSTEIN\" embedding model service. Response code: %s. Response %s.",
-                            responseCode,
-                            response.toString()),
-              MuleVectorsErrorType.AI_SERVICES_FAILURE);
         }
+        // Print the error response
+        LOGGER.error("Error (HTTP " + responseCode + "): " + responseBody);
+
+        MuleVectorsErrorType muleVectorsErrorType = responseCode == 429 ?
+            MuleVectorsErrorType.AI_SERVICES_RATE_LIMITING_ERROR : MuleVectorsErrorType.AI_SERVICES_FAILURE;
+
+        throw new ModuleException(
+            String.format(
+                "Error while generating embeddings with \"EINSTEIN\" embedding model service. Response code: %s. Response %s.",
+                responseCode,
+                responseBody),
+            muleVectorsErrorType);
       }
     } catch (ModuleException e) {
 
