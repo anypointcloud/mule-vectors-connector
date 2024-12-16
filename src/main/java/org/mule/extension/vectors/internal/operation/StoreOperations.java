@@ -78,10 +78,10 @@ public class StoreOperations {
       @Connection BaseStoreConnection storeConnection,
       @Alias("storeName") @Summary("Name of the store/collection to query.") String storeName,
       @Alias("textSegmentAndEmbedding")
-      @Summary("Text Segment and Embedding generated from question and used to query the store.")
-      @DisplayName("Text Segment and Embedding")
-      @InputJsonType(schema = "api/metadata/EmbeddingGenerateResponse.json")
-      @Content InputStream content,
+          @Summary("Text Segment and Embedding generated from question and used to query the store.")
+          @DisplayName("Text Segment and Embedding")
+          @InputJsonType(schema = "api/metadata/EmbeddingGenerateResponse.json")
+          @Content InputStream content,
       @Alias("maxResults") @Summary("Maximum number of results (text segments) retrieved.") Number maxResults,
       @Alias("minScore") @Summary("Minimum score used to filter retrieved results (text segments).") Double minScore,
       @ParameterGroup(name = "Filter") MetadataFilterParameters.SearchFilterParameters searchFilterParams) {
@@ -241,8 +241,10 @@ public class StoreOperations {
       @Config StoreConfiguration storeConfiguration,
       @Connection BaseStoreConnection storeConnection,
       @Alias("storeName") @Summary("Name of the store/collection to use for data ingestion.") String storeName,
-      @Alias("textSegmentsAndEmbeddings") @DisplayName("Text Segments and Embeddings")
-      @InputJsonType(schema = "api/metadata/EmbeddingGenerateResponse.json") @Content InputStream content) {
+      @Alias("textSegmentsAndEmbeddings")
+          @DisplayName("Text Segments and Embeddings")
+          @InputJsonType(schema = "api/metadata/EmbeddingGenerateResponse.json")
+          @Content InputStream content) {
 
     try {
 
@@ -385,7 +387,6 @@ public class StoreOperations {
    * @param storeConnection    the connection to the store
    * @param storeName          the name of the store
    * @param removeFilterParams the filter parameters for removal
-   * @param embeddingModelParameters the parameters for the embedding model
    * @return a result containing the store response
    * @throws ModuleException if an error occurs during the operation
    */
