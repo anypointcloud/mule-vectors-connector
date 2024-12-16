@@ -48,30 +48,42 @@ import static java.util.stream.Collectors.joining;
 import static org.mule.extension.vectors.internal.helper.ResponseHelper.*;
 import static org.mule.runtime.extension.api.annotation.param.MediaType.APPLICATION_JSON;
 
+/**
+ * Class providing operations for embedding store management including querying, adding, removing, and listing sources.
+ */
 public class StoreOperations {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(StoreOperations.class);
 
   /**
-   * Query information from embedding store and filter results based on a metadata key filter
+   * Queries an embedding store based on the provided embedding and text segment, and applies a metadata filter.
+   *
+   * @param storeConfiguration the configuration of the store
+   * @param storeConnection    the connection to the store
+   * @param storeName          the name of the store to query
+   * @param content            the input stream containing the text segment and embedding
+   * @param maxResults         the maximum number of results to retrieve
+   * @param minScore           the minimum score to filter results
+   * @param searchFilterParams the search filter parameters
+   * @return a result containing the store response
+   * @throws ModuleException if an error occurs during the operation
    */
   @MediaType(value = APPLICATION_JSON, strict = false)
   @Alias("Query")
   @DisplayName("[Store] Query")
   @Throws(StoreErrorTypeProvider.class)
   @OutputJsonType(schema = "api/metadata/StoreQueryResponse.json")
-  public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, StoreResponseAttributes>
-  query(
+  public Result<InputStream, StoreResponseAttributes> query(
       @Config StoreConfiguration storeConfiguration,
       @Connection BaseStoreConnection storeConnection,
       @Alias("storeName") @Summary("Name of the store/collection to query.") String storeName,
       @Alias("textSegmentAndEmbedding")
-          @Summary("Text Segment and Embedding generated from question and used to query the store.")
-          @DisplayName("Text Segment and Embedding")
-          @InputJsonType(schema = "api/metadata/EmbeddingGenerateResponse.json")
-          @Content InputStream content,
+      @Summary("Text Segment and Embedding generated from question and used to query the store.")
+      @DisplayName("Text Segment and Embedding")
+      @InputJsonType(schema = "api/metadata/EmbeddingGenerateResponse.json")
+      @Content InputStream content,
       @Alias("maxResults") @Summary("Maximum number of results (text segments) retrieved.") Number maxResults,
-      @Alias("minScore") @Summary("Minimum score used to filter retrieved results (text segments).")  Double minScore,
+      @Alias("minScore") @Summary("Minimum score used to filter retrieved results (text segments).") Double minScore,
       @ParameterGroup(name = "Filter") MetadataFilterParameters.SearchFilterParameters searchFilterParams) {
 
     List<TextSegment> textSegments = new LinkedList<>();
@@ -211,18 +223,26 @@ public class StoreOperations {
   }
 
   /**
-   * Add Embeddings to store
+   * Adds embeddings and text segments to the store.
+   *
+   * @param storeConfiguration the configuration of the store
+   * @param storeConnection    the connection to the store
+   * @param storeName          the name of the store to add data to
+   * @param content            the input stream containing the text segments and embeddings
+   * @return a result containing the store response
+   * @throws ModuleException if an error occurs during the operation
    */
   @MediaType(value = APPLICATION_JSON, strict = false)
   @Alias("Store-add")
   @DisplayName("[Store] Add")
   @Throws(StoreErrorTypeProvider.class)
   @OutputJsonType(schema = "api/metadata/StoreAddResponse.json")
-  public Result<InputStream, StoreResponseAttributes>
-      addToStore( @Config StoreConfiguration storeConfiguration,
-                  @Connection BaseStoreConnection storeConnection,
-                  @Alias("storeName") @Summary("Name of the store/collection to use for data ingestion.") String storeName,
-                  @Alias("textSegmentsAndEmbeddings") @DisplayName("Text Segments and Embeddings") @InputJsonType(schema = "api/metadata/EmbeddingGenerateResponse.json") @Content InputStream content){
+  public Result<InputStream, StoreResponseAttributes> addToStore(
+      @Config StoreConfiguration storeConfiguration,
+      @Connection BaseStoreConnection storeConnection,
+      @Alias("storeName") @Summary("Name of the store/collection to use for data ingestion.") String storeName,
+      @Alias("textSegmentsAndEmbeddings") @DisplayName("Text Segments and Embeddings")
+      @InputJsonType(schema = "api/metadata/EmbeddingGenerateResponse.json") @Content InputStream content) {
 
     try {
 
@@ -304,29 +324,25 @@ public class StoreOperations {
   }
 
   /**
-   * Retrieves and lists sources from the specified embedding store.
+   * Lists all sources in the specified embedding store.
    *
-   * This method searches an embedding store for documents (sources) related to a simple query and collects metadata about
-   * each matched document, such as file name, URL, and ingestion datetime. The results are returned as a JSON structure.
-   *
-   * @param storeName      the name of the embedding store to search
-   * @param storeConfiguration  the configuration object providing access to connection details and other settings
-   * @return an {@link InputStream} containing a JSON object with the store name and an array of source metadata.
-   *
-   * @MediaType(value = APPLICATION_JSON, strict = false)
-   * @Alias("Store-list-sources")
+   * @param storeConfiguration the configuration of the store
+   * @param storeConnection    the connection to the store
+   * @param storeName          the name of the store
+   * @param queryParams        the query parameters for listing sources
+   * @return a result containing the store response with metadata of sources
+   * @throws ModuleException if an error occurs during the operation
    */
   @MediaType(value = APPLICATION_JSON, strict = false)
   @Alias("Store-list-sources")
   @DisplayName("[Store] List sources")
   @Throws(StoreErrorTypeProvider.class)
   @OutputJsonType(schema = "api/metadata/StoreListSourcesResponse.json")
-  public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, StoreResponseAttributes>
-  listSources(  @Config StoreConfiguration storeConfiguration,
-                         @Connection BaseStoreConnection storeConnection,
-                        String storeName,
-                        @ParameterGroup(name = "Querying Strategy") QueryParameters queryParams
-  ) {
+  public Result<InputStream, StoreResponseAttributes> listSources(
+      @Config StoreConfiguration storeConfiguration,
+      @Connection BaseStoreConnection storeConnection,
+      String storeName,
+      @ParameterGroup(name = "Querying Strategy") QueryParameters queryParams) {
 
     try {
 
@@ -362,21 +378,28 @@ public class StoreOperations {
     }
   }
 
-
   /**
-   * Remove from a store
+   * Removes embeddings from the store based on the provided filter.
+   *
+   * @param storeConfiguration the configuration of the store
+   * @param storeConnection    the connection to the store
+   * @param storeName          the name of the store
+   * @param removeFilterParams the filter parameters for removal
+   * @param embeddingModelParameters the parameters for the embedding model
+   * @return a result containing the store response
+   * @throws ModuleException if an error occurs during the operation
    */
   @MediaType(value = APPLICATION_JSON, strict = false)
   @Alias("Store-remove")
   @DisplayName("[Store] Remove")
   @Throws(StoreErrorTypeProvider.class)
   @OutputJsonType(schema = "api/metadata/StoreRemoveFromStoreResponse.json")
-  public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, StoreResponseAttributes>
-  removeEmbeddings( @Config StoreConfiguration storeConfiguration,
-                            @Connection BaseStoreConnection storeConnection,
-                            String storeName,
-                            @ParameterGroup(name = "Filter") MetadataFilterParameters.RemoveFilterParameters removeFilterParams,
-                            @ParameterGroup(name = "Embedding Model") EmbeddingModelParameters embeddingModelParameters) {
+  public Result<InputStream, StoreResponseAttributes> removeEmbeddings(
+      @Config StoreConfiguration storeConfiguration,
+      @Connection BaseStoreConnection storeConnection,
+      String storeName,
+      @ParameterGroup(name = "Filter") MetadataFilterParameters.RemoveFilterParameters removeFilterParams,
+      @ParameterGroup(name = "Embedding Model") EmbeddingModelParameters embeddingModelParameters) {
 
     try {
       EmbeddingOperationValidator.validateOperationType(
