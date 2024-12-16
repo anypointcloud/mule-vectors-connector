@@ -1,10 +1,7 @@
 package org.mule.extension.vectors.internal.connection.store.chroma;
 
-import org.mule.extension.vectors.internal.connection.model.mistralai.MistralAIModelConnection;
 import org.mule.extension.vectors.internal.connection.store.BaseStoreConnection;
 import org.mule.extension.vectors.internal.connection.store.BaseStoreConnectionProvider;
-import org.mule.extension.vectors.internal.connection.store.milvus.MilvusStoreConnectionProvider;
-import org.mule.extension.vectors.internal.store.chroma.ChromaStoreConfiguration;
 import org.mule.runtime.api.connection.ConnectionException;
 import org.mule.runtime.api.connection.ConnectionValidationResult;
 import org.mule.runtime.extension.api.annotation.Alias;
@@ -21,7 +18,7 @@ public class ChromaStoreConnectionProvider  extends BaseStoreConnectionProvider 
   private static final Logger LOGGER = LoggerFactory.getLogger(ChromaStoreConnectionProvider.class);
 
   @ParameterGroup(name = Placement.CONNECTION_TAB)
-  private ChromaStoreConfiguration chromaStoreConfiguration;
+  private ChromaStoreConnectionParameters chromaStoreConnectionParameters;
 
   @Override
   public BaseStoreConnection connect() throws ConnectionException {
@@ -29,7 +26,7 @@ public class ChromaStoreConnectionProvider  extends BaseStoreConnectionProvider 
     try {
 
       ChromaStoreConnection chromaStoreConnection =
-          new ChromaStoreConnection(chromaStoreConfiguration.getUrl());
+          new ChromaStoreConnection(chromaStoreConnectionParameters.getUrl());
       chromaStoreConnection.connect();
       return chromaStoreConnection;
 
