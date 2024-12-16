@@ -6,7 +6,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.mulesoft.connectors</groupId>
     <artifactId>mule4-vectors-connector</artifactId>
-    <version>0.2.342-SNAPSHOT</version>
+    <version>0.2.345-SNAPSHOT</version>
     <packaging>mule-extension</packaging>
     <name>MuleSoft Vectors Connector - Mule 4</name>
 
@@ -23,7 +23,7 @@
     <parent>
         <groupId>org.mule.extensions</groupId>
         <artifactId>mule-modules-parent</artifactId>
-        <version>1.3.2</version>
+        <version>1.5.3</version>
     </parent>
 
     <properties>
@@ -191,12 +191,14 @@
 			<groupId>dev.langchain4j</groupId>
 			<artifactId>langchain4j-document-loader-azure-storage-blob</artifactId>
 			<version>${langchain4jVersion}</version>
+			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>dev.langchain4j</groupId>
 			<artifactId>langchain4j-document-loader-amazon-s3</artifactId>
 			<version>${langchain4jVersion}</version>
+			<scope>provided</scope>
 		</dependency>
 
 		<!-- Embedding Model Service Dependencies (Optionals) -->
@@ -204,36 +206,42 @@
 			<groupId>dev.langchain4j</groupId>
 			<artifactId>langchain4j-azure-open-ai</artifactId>
 			<version>${langchain4jVersion}</version>
+			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>dev.langchain4j</groupId>
 			<artifactId>langchain4j-open-ai</artifactId>
 			<version>${langchain4jVersion}</version>
+			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>dev.langchain4j</groupId>
 			<artifactId>langchain4j-mistral-ai</artifactId>
 			<version>${langchain4jVersion}</version>
+			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>dev.langchain4j</groupId>
 			<artifactId>langchain4j-nomic</artifactId>
 			<version>${langchain4jVersion}</version>
+			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>dev.langchain4j</groupId>
 			<artifactId>langchain4j-hugging-face</artifactId>
 			<version>${langchain4jVersion}</version>
+			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>dev.langchain4j</groupId>
 			<artifactId>langchain4j-chroma</artifactId>
 			<version>${langchain4jVersion}</version>
+			<scope>provided</scope>
 		</dependency>
 
 		<!-- Vector Store Dependencies (Optionals) -->
@@ -241,42 +249,49 @@
 			<groupId>dev.langchain4j</groupId>
 			<artifactId>langchain4j-milvus</artifactId>
 			<version>${langchain4jVersion}</version>
+			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>dev.langchain4j</groupId>
 			<artifactId>langchain4j-elasticsearch</artifactId>
 			<version>${langchain4jVersion}</version>
+			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>dev.langchain4j</groupId>
 			<artifactId>langchain4j-opensearch</artifactId>
 			<version>${langchain4jVersion}</version>
+			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>dev.langchain4j</groupId>
 			<artifactId>langchain4j-pgvector</artifactId>
 			<version>${langchain4jVersion}</version>
+			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>dev.langchain4j</groupId>
 			<artifactId>langchain4j-pinecone</artifactId>
 			<version>${langchain4jVersion}</version>
+			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>dev.langchain4j</groupId>
 			<artifactId>langchain4j-qdrant</artifactId>
 			<version>${langchain4jVersion}</version>
+			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>dev.langchain4j</groupId>
 			<artifactId>langchain4j-azure-ai-search</artifactId>
 			<version>${langchain4jVersion}</version>
+			<scope>provided</scope>
 		</dependency>
 
 	</dependencies>
