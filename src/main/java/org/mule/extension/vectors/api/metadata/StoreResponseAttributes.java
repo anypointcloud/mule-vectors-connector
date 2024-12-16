@@ -17,19 +17,19 @@ import static org.mule.runtime.extension.api.annotation.param.MediaType.APPLICAT
 public class StoreResponseAttributes implements Serializable {
 
   private final String storeName;
-  private final FilterAttribute filter;
+  private FilterAttribute filter;
 
   private final HashMap<String, Object> otherAttributes;
 
   public StoreResponseAttributes(HashMap<String, Object> requestAttributes) {
 
     this.storeName = requestAttributes.containsKey("storeName") ? (String)requestAttributes.remove("storeName") : null;
-    MetadataFilterParameters filter = requestAttributes.containsKey("searchFilter") ?
+    MetadataFilterParameters filterParams = requestAttributes.containsKey("searchFilter") ?
         (MetadataFilterParameters.SearchFilterParameters)requestAttributes.remove("searchFilter") :
             requestAttributes.containsKey("removeFilter") ?
                 (MetadataFilterParameters.RemoveFilterParameters)requestAttributes.remove("removeFilter") :
                 null;
-    this.filter = new FilterAttribute(filter.getMetadataKey(), filter.getFilterMethod(), filter.getMetadataValue());
+    if(filterParams != null) this.filter = new FilterAttribute(filterParams.getMetadataKey(), filterParams.getFilterMethod(), filterParams.getMetadataValue());
     this.otherAttributes = requestAttributes;
   }
 
