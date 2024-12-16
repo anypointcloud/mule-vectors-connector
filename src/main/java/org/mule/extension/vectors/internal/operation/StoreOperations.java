@@ -398,8 +398,7 @@ public class StoreOperations {
       @Config StoreConfiguration storeConfiguration,
       @Connection BaseStoreConnection storeConnection,
       String storeName,
-      @ParameterGroup(name = "Filter") MetadataFilterParameters.RemoveFilterParameters removeFilterParams,
-      @ParameterGroup(name = "Embedding Model") EmbeddingModelParameters embeddingModelParameters) {
+      @ParameterGroup(name = "Filter") MetadataFilterParameters.RemoveFilterParameters removeFilterParams) {
 
     try {
       EmbeddingOperationValidator.validateOperationType(

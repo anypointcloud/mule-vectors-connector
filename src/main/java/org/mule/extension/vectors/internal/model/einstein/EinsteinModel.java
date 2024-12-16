@@ -1,7 +1,6 @@
 package org.mule.extension.vectors.internal.model.einstein;
 
 import dev.langchain4j.model.embedding.EmbeddingModel;
-import org.mule.extension.vectors.internal.config.CompositeConfiguration;
 import org.mule.extension.vectors.internal.config.EmbeddingConfiguration;
 import org.mule.extension.vectors.internal.connection.model.einstein.EinsteinModelConnection;
 import org.mule.extension.vectors.internal.helper.parameter.EmbeddingModelParameters;

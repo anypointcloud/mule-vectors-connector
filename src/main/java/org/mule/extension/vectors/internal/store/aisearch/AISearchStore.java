@@ -5,7 +5,6 @@ import dev.langchain4j.store.embedding.EmbeddingStore;
 import dev.langchain4j.store.embedding.azure.search.AzureAiSearchEmbeddingStore;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.mule.extension.vectors.internal.config.CompositeConfiguration;
 import org.mule.extension.vectors.internal.config.StoreConfiguration;
 import org.mule.extension.vectors.internal.connection.store.aisearch.AISearchStoreConnection;
 import org.mule.extension.vectors.internal.constant.Constants;

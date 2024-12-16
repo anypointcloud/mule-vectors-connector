@@ -1,7 +1,6 @@
 package org.mule.extension.vectors.internal.model;
 
 import dev.langchain4j.model.embedding.EmbeddingModel;
-import org.mule.extension.vectors.internal.config.CompositeConfiguration;
 import org.mule.extension.vectors.internal.config.EmbeddingConfiguration;
 import org.mule.extension.vectors.internal.connection.model.BaseModelConnection;
 import org.mule.extension.vectors.internal.connection.model.azureopenai.AzureOpenAIModelConnection;

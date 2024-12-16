@@ -21,4 +21,5 @@ import org.mule.runtime.extension.api.annotation.connectivity.ConnectionProvider
 @Operations({EmbeddingOperations.class})
 public class EmbeddingConfiguration {
 
+
 }

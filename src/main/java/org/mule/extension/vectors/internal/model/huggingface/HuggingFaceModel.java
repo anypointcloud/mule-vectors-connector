@@ -2,7 +2,6 @@ package org.mule.extension.vectors.internal.model.huggingface;
 
 import dev.langchain4j.model.embedding.EmbeddingModel;
 import dev.langchain4j.model.huggingface.HuggingFaceEmbeddingModel;
-import org.mule.extension.vectors.internal.config.CompositeConfiguration;
 import org.mule.extension.vectors.internal.config.EmbeddingConfiguration;
 import org.mule.extension.vectors.internal.connection.model.huggingface.HuggingFaceModelConnection;
 import org.mule.extension.vectors.internal.helper.parameter.EmbeddingModelParameters;

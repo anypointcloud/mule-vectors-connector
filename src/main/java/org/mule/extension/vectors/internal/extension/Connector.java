@@ -1,6 +1,5 @@
 package org.mule.extension.vectors.internal.extension;
 
-import org.mule.extension.vectors.internal.config.CompositeConfiguration;
 import org.mule.extension.vectors.internal.config.DocumentConfiguration;
 import org.mule.extension.vectors.internal.config.EmbeddingConfiguration;
 import org.mule.extension.vectors.internal.config.StoreConfiguration;
@@ -43,7 +42,7 @@ import static org.mule.sdk.api.meta.JavaVersion.JAVA_8;
  */
 @Xml(prefix = "ms-vectors")
 @Extension(name = "MuleSoft Vectors Connector", category = Category.SELECT)
-@Configurations({CompositeConfiguration.class, DocumentConfiguration.class, EmbeddingConfiguration.class, StoreConfiguration.class})
+@Configurations({DocumentConfiguration.class, EmbeddingConfiguration.class, StoreConfiguration.class})
 @SubTypeMapping(baseType = BaseStoreConfiguration.class,
     subTypes = {
         AISearchStoreConfiguration.class,

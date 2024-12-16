@@ -1,6 +1,5 @@
 package org.mule.extension.vectors.internal.helper;
 
-import org.mule.extension.vectors.api.metadata.CompositeResponseAttributes;
 import org.mule.extension.vectors.api.metadata.DocumentResponseAttributes;
 import org.mule.extension.vectors.api.metadata.EmbeddingResponseAttributes;
 import org.mule.extension.vectors.api.metadata.StoreResponseAttributes;
@@ -21,18 +20,6 @@ import static org.apache.commons.io.IOUtils.toInputStream;
 public final class ResponseHelper {
 
   private ResponseHelper() {
-  }
-
-  public static Result<InputStream, CompositeResponseAttributes> createCompositeResponse(
-      String response,
-      Map<String, Object> compositeAttributes) {
-
-    return Result.<InputStream, CompositeResponseAttributes>builder()
-        .attributes(new CompositeResponseAttributes((HashMap<String, Object>) compositeAttributes))
-        .attributesMediaType(MediaType.APPLICATION_JAVA)
-        .output(toInputStream(response, StandardCharsets.UTF_8))
-        .mediaType(MediaType.APPLICATION_JSON)
-        .build();
   }
 
   public static Result<InputStream, StoreResponseAttributes> createStoreResponse(

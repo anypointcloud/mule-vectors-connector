@@ -2,7 +2,6 @@ package org.mule.extension.vectors.internal.model.nomic;
 
 import dev.langchain4j.model.embedding.EmbeddingModel;
 import dev.langchain4j.model.nomic.NomicEmbeddingModel;
-import org.mule.extension.vectors.internal.config.CompositeConfiguration;
 import org.mule.extension.vectors.internal.config.EmbeddingConfiguration;
 import org.mule.extension.vectors.internal.connection.model.nomic.NomicModelConnection;
 import org.mule.extension.vectors.internal.helper.parameter.EmbeddingModelParameters;
