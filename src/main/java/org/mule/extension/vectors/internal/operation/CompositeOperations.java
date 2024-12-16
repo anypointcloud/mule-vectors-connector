@@ -11,7 +11,6 @@ import dev.langchain4j.store.embedding.filter.Filter;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.mule.extension.vectors.api.metadata.CompositeResponseAttributes;
-import org.mule.extension.vectors.api.metadata.EmbeddingResponseAttributes;
 import org.mule.extension.vectors.internal.config.CompositeConfiguration;
 import org.mule.extension.vectors.internal.connection.store.BaseStoreConnection;
 import org.mule.extension.vectors.internal.constant.Constants;
@@ -43,7 +42,6 @@ import java.util.List;
 
 import static java.util.stream.Collectors.joining;
 import static org.mule.extension.vectors.internal.helper.ResponseHelper.createCompositeResponse;
-import static org.mule.extension.vectors.internal.helper.ResponseHelper.createEmbeddingResponse;
 import static org.mule.runtime.extension.api.annotation.param.MediaType.APPLICATION_JSON;
 
 public class CompositeOperations {
@@ -138,7 +136,7 @@ public class CompositeOperations {
       BaseStoreConnection storeConnection = compositeConfiguration.getStoreConfiguration().getConnection();
 
       EmbeddingOperationValidator.validateOperationType(
-          Constants.EMBEDDING_OPERATION_TYPE_STORE_METADATA, storeConnection.getVectorStore());
+          Constants.STORE_OPERATION_TYPE_STORE_METADATA, storeConnection.getVectorStore());
 
       BaseModel baseModel = BaseModel.builder()
           .connection(compositeConfiguration.getModelConfiguration().getConnection())
@@ -229,7 +227,7 @@ public class CompositeOperations {
       BaseStoreConnection storeConnection = compositeConfiguration.getStoreConfiguration().getConnection();
 
       EmbeddingOperationValidator.validateOperationType(
-          Constants.EMBEDDING_OPERATION_TYPE_STORE_METADATA, storeConnection.getVectorStore());
+          Constants.STORE_OPERATION_TYPE_STORE_METADATA, storeConnection.getVectorStore());
 
       BaseModel baseModel = BaseModel.builder()
           .connection(compositeConfiguration.getModelConfiguration().getConnection())
@@ -406,7 +404,7 @@ public class CompositeOperations {
       BaseStoreConnection storeConnection = compositeConfiguration.getStoreConfiguration().getConnection();
 
       EmbeddingOperationValidator.validateOperationType(
-          Constants.EMBEDDING_OPERATION_TYPE_FILTER_BY_METADATA, storeConnection.getVectorStore());
+          Constants.STORE_OPERATION_TYPE_FILTER_BY_METADATA, storeConnection.getVectorStore());
 
       int maximumResults = maxResults.intValue();
       if (minScore == null) { //|| minScore == 0) {

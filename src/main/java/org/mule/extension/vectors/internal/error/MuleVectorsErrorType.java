@@ -7,6 +7,7 @@ import org.mule.runtime.extension.api.error.ErrorTypeDefinition;
  */
 public enum MuleVectorsErrorType implements ErrorTypeDefinition<MuleVectorsErrorType> {
 
+  INVALID_PARAMETERS_ERROR,
   COMPOSITE_OPERATIONS_FAILURE,
   DOCUMENT_PARSING_FAILURE,
   DOCUMENT_OPERATIONS_FAILURE,
@@ -14,5 +15,4 @@ public enum MuleVectorsErrorType implements ErrorTypeDefinition<MuleVectorsError
   STORE_OPERATIONS_FAILURE,
   AI_SERVICES_FAILURE,
   STORE_SERVICES_FAILURE,
-  STORAGE_SERVICES_FAILURE
-}
+  STORAGE_SERVICES_FAILURE}

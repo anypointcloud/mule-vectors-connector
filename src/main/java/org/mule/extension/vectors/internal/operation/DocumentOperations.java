@@ -39,7 +39,7 @@ public class DocumentOperations {
   private static final Logger LOGGER = LoggerFactory.getLogger(DocumentOperations.class);
 
   /**
-   * Parses a document by filepath and returns the text
+   * Parses a document by contextPath and returns the text
    */
   @MediaType(value = APPLICATION_JSON, strict = false)
   @Alias("Document-load-single")

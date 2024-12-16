@@ -74,10 +74,17 @@ public class EmbeddingOperations {
 
       EmbeddingModel embeddingModel = baseModel.buildEmbeddingModel();
 
-      DocumentSplitter documentSplitter = DocumentSplitters.recursive(segmentationParameters.getMaxSegmentSizeInChars(),
-                                                                      segmentationParameters.getMaxOverlapSizeInChars());
+      List<TextSegment> textSegments;
+      if(segmentationParameters.getMaxSegmentSizeInChars() > 0) {
 
-      List<TextSegment> textSegments = documentSplitter.split(new Document(text));
+        DocumentSplitter documentSplitter = DocumentSplitters.recursive(segmentationParameters.getMaxSegmentSizeInChars(),
+                                                                        segmentationParameters.getMaxOverlapSizeInChars());
+        textSegments = documentSplitter.split(new Document(text));
+      } else {
+
+        textSegments = new LinkedList<>();
+        textSegments.add(TextSegment.from(text));
+      }
       List<Embedding> embeddings;
       try {
 
