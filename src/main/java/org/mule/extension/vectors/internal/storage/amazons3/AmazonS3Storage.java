@@ -5,7 +5,7 @@ import org.mule.extension.vectors.internal.config.DocumentConfiguration;
 import org.mule.extension.vectors.internal.connection.storage.amazons3.AmazonS3StorageConnection;
 import org.mule.extension.vectors.internal.error.MuleVectorsErrorType;
 import org.mule.extension.vectors.internal.storage.BaseStorage;
-import org.mule.extension.vectors.internal.util.MetadatatUtils;
+import org.mule.extension.vectors.internal.util.MetadataUtils;
 import org.mule.runtime.extension.api.exception.ModuleException;
 import software.amazon.awssdk.regions.Region;
 import dev.langchain4j.data.document.loader.amazon.s3.AmazonS3DocumentLoader;
@@ -127,7 +127,7 @@ public class AmazonS3Storage extends BaseStorage {
                 MuleVectorsErrorType.DOCUMENT_PARSING_FAILURE,
                 e);
         }
-        MetadatatUtils.addMetadataToDocument(document, fileType, object.key());
+        MetadataUtils.addMetadataToDocument(document, fileType, object.key());
         return document;
     }
 
@@ -135,7 +135,7 @@ public class AmazonS3Storage extends BaseStorage {
 
         LOGGER.debug("S3 URL: " + contextPath);
         Document document = getLoader().loadDocument(getAWSS3Bucket(), getAWSS3ObjectKey(), documentParser);
-        MetadatatUtils.addMetadataToDocument(document, fileType, getAWSS3ObjectKey());
+        MetadataUtils.addMetadataToDocument(document, fileType, getAWSS3ObjectKey());
         return document;
     }
 

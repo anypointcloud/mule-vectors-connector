@@ -15,7 +15,7 @@ import org.mule.extension.vectors.internal.config.DocumentConfiguration;
 import org.mule.extension.vectors.internal.connection.storage.azureblob.AzureBlobStorageConnection;
 import org.mule.extension.vectors.internal.error.MuleVectorsErrorType;
 import org.mule.extension.vectors.internal.storage.BaseStorage;
-import org.mule.extension.vectors.internal.util.MetadatatUtils;
+import org.mule.extension.vectors.internal.util.MetadataUtils;
 import org.mule.runtime.extension.api.exception.ModuleException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -103,7 +103,7 @@ public class AzureBlobStorage extends BaseStorage {
                 MuleVectorsErrorType.DOCUMENT_PARSING_FAILURE,
                 e);
         }
-        MetadatatUtils.addMetadataToDocument(document, fileType, blobItem.getName());
+        MetadataUtils.addMetadataToDocument(document, fileType, blobItem.getName());
         return document;
     }
 
@@ -114,7 +114,7 @@ public class AzureBlobStorage extends BaseStorage {
         String blobName = parts[1];
         LOGGER.debug("Blob name: " + blobName);
         Document document = getLoader().loadDocument(containerName, blobName, documentParser);
-        MetadatatUtils.addMetadataToDocument(document, fileType, blobName);
+        MetadataUtils.addMetadataToDocument(document, fileType, blobName);
         return document;
     }
 }

@@ -10,7 +10,7 @@ import org.mule.extension.vectors.internal.connection.storage.local.LocalStorage
 import org.mule.extension.vectors.internal.constant.Constants;
 import org.mule.extension.vectors.internal.error.MuleVectorsErrorType;
 import org.mule.extension.vectors.internal.storage.BaseStorage;
-import org.mule.extension.vectors.internal.util.MetadatatUtils;
+import org.mule.extension.vectors.internal.util.MetadataUtils;
 import org.mule.extension.vectors.internal.util.Utils;
 import org.mule.runtime.extension.api.exception.ModuleException;
 import org.slf4j.Logger;
@@ -87,7 +87,7 @@ public class LocalStorage extends BaseStorage {
             MuleVectorsErrorType.DOCUMENT_PARSING_FAILURE,
             e);
       }
-      MetadatatUtils.addMetadataToDocument(document, fileType, path.getFileName().toString());
+      MetadataUtils.addMetadataToDocument(document, fileType, path.getFileName().toString());
       return document;
     }
     throw new IllegalStateException("No more files to iterate");
@@ -105,7 +105,7 @@ public class LocalStorage extends BaseStorage {
       case Constants.FILE_TYPE_TEXT:
       case Constants.FILE_TYPE_ANY:
         document = loadDocument(path.toString(), documentParser);
-        MetadatatUtils.addMetadataToDocument(document, fileType, Utils.getFileNameFromPath(fullPath));
+        MetadataUtils.addMetadataToDocument(document, fileType, Utils.getFileNameFromPath(fullPath));
         break;
       case Constants.FILE_TYPE_URL:
         document = loadUrlDocument(contextPath);
@@ -125,7 +125,7 @@ public class LocalStorage extends BaseStorage {
       HtmlToTextDocumentTransformer transformer = new HtmlToTextDocumentTransformer(null, null, true);
       document = transformer.transform(htmlDocument);
       document.metadata().put(Constants.METADATA_KEY_URL, contextPath);
-      MetadatatUtils.addMetadataToDocument(document, Constants.FILE_TYPE_URL, "");
+      MetadataUtils.addMetadataToDocument(document, Constants.FILE_TYPE_URL, "");
     } catch (MalformedURLException e) {
       throw new RuntimeException("Invalid URL: " + contextPath, e);
     }

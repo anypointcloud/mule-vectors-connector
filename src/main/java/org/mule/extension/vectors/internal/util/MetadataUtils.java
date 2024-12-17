@@ -15,9 +15,9 @@ import java.util.Optional;
 /**
  * Utility class for setting metadata.
  */
-public class MetadatatUtils {
+public class MetadataUtils {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(MetadatatUtils.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(MetadataUtils.class);
 
   public static HashMap<String, Object> getIngestionMetadata() {
 
