@@ -4,12 +4,10 @@ import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.store.embedding.EmbeddingStore;
 import dev.langchain4j.store.embedding.pinecone.PineconeEmbeddingStore;
 import dev.langchain4j.store.embedding.pinecone.PineconeServerlessIndexConfig;
-import org.json.JSONObject;
-import org.mule.extension.vectors.internal.config.Configuration;
-import org.mule.extension.vectors.internal.constant.Constants;
+import org.mule.extension.vectors.internal.config.StoreConfiguration;
+import org.mule.extension.vectors.internal.connection.store.pinecone.PineconeStoreConnection;
 import org.mule.extension.vectors.internal.helper.parameter.QueryParameters;
 import org.mule.extension.vectors.internal.store.BaseStore;
-import org.mule.extension.vectors.internal.util.JsonUtils;
 
 public class PineconeStore extends BaseStore {
 
@@ -17,27 +15,34 @@ public class PineconeStore extends BaseStore {
   private String cloud;
   private String region;
 
-  public PineconeStore(String storeName, Configuration configuration, QueryParameters queryParams, int dimension) {
+  public PineconeStore(StoreConfiguration storeConfiguration, PineconeStoreConnection pineconeStoreConnection, String storeName, QueryParameters queryParams, int dimension, boolean createStore) {
 
-    super(storeName, configuration, queryParams, dimension);
+    super(storeConfiguration, pineconeStoreConnection, storeName, queryParams, dimension, createStore);
 
-    PineconeStoreConfiguration pineconeStoreConfiguration = (PineconeStoreConfiguration) configuration.getStoreConfiguration();
-    this.apiKey = pineconeStoreConfiguration.getApiKey();
-    this.cloud = pineconeStoreConfiguration.getCloud();
-    this.region = pineconeStoreConfiguration.getRegion();
+    this.apiKey = pineconeStoreConnection.getApiKey();
+    this.cloud = pineconeStoreConnection.getCloud();
+    this.region = pineconeStoreConnection.getRegion();
   }
 
   public EmbeddingStore<TextSegment> buildEmbeddingStore() {
 
-    return PineconeEmbeddingStore.builder()
-        .apiKey(apiKey)
-        .index(storeName)
-        .nameSpace("ns0mc_" + storeName)
-        .createIndex(PineconeServerlessIndexConfig.builder()
-                         .cloud(cloud)
-                         .region(region)
-                         .dimension(dimension)
-                         .build())
-        .build();
+    return createStore ?
+
+        PineconeEmbeddingStore.builder()
+          .apiKey(apiKey)
+          .index(storeName)
+          .nameSpace("ns0mc_" + storeName)
+          .createIndex(PineconeServerlessIndexConfig.builder()
+                           .cloud(cloud)
+                           .region(region)
+                           .dimension(dimension)
+                           .build())
+          .build():
+
+        PineconeEmbeddingStore.builder()
+            .apiKey(apiKey)
+            .index(storeName)
+            .nameSpace("ns0mc_" + storeName)
+            .build();
   }
 }

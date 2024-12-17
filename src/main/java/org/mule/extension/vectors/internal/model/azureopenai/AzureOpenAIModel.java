@@ -1,34 +1,56 @@
 package org.mule.extension.vectors.internal.model.azureopenai;
 
+import com.azure.ai.openai.OpenAIClient;
 import dev.langchain4j.model.azure.AzureOpenAiEmbeddingModel;
 import dev.langchain4j.model.embedding.EmbeddingModel;
-import org.json.JSONObject;
-import org.mule.extension.vectors.internal.config.Configuration;
-import org.mule.extension.vectors.internal.constant.Constants;
+import org.mule.extension.vectors.internal.config.EmbeddingConfiguration;
+import org.mule.extension.vectors.internal.connection.model.azureopenai.AzureOpenAIModelConnection;
 import org.mule.extension.vectors.internal.helper.parameter.EmbeddingModelParameters;
 import org.mule.extension.vectors.internal.model.BaseModel;
-
-import static org.mule.extension.vectors.internal.util.JsonUtils.readConfigFile;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AzureOpenAIModel extends BaseModel {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(AzureOpenAIModel.class);
+
   private final String endpoint;
   private final String apiKey;
+  private OpenAIClient openAIClient;
 
-  public AzureOpenAIModel(Configuration configuration, EmbeddingModelParameters embeddingModelParameters) {
+  public OpenAIClient getOpenAIClient() {
 
-    super(configuration,embeddingModelParameters);
+    if(this.openAIClient == null) {
 
-    AzureOpenAIModelConfiguration azureOpenAIModelConfiguration = (AzureOpenAIModelConfiguration) configuration.getModelConfiguration();
-    this.endpoint = azureOpenAIModelConfiguration.getEndpoint();
-    this.apiKey = azureOpenAIModelConfiguration.getApiKey();
+      try {
+
+        AzureOpenAIModelConnection azureOpenAIModelConnection = new AzureOpenAIModelConnection(apiKey,endpoint);
+        azureOpenAIModelConnection.connect();
+        this.openAIClient = azureOpenAIModelConnection.getOpenAIClient();
+
+      } catch(Exception e ){
+
+        LOGGER.error("Impossible to initiate OPENAI Client", e);
+      }
+    }
+    return this.openAIClient;
+  }
+
+  public AzureOpenAIModel(EmbeddingConfiguration embeddingConfiguration,
+                          AzureOpenAIModelConnection azureOpenAIModelConnection,
+                          EmbeddingModelParameters embeddingModelParameters) {
+
+    super(embeddingConfiguration, azureOpenAIModelConnection, embeddingModelParameters);
+
+    this.endpoint = azureOpenAIModelConnection.getEndpoint();
+    this.apiKey = azureOpenAIModelConnection.getApiKey();
+    this.openAIClient = azureOpenAIModelConnection.getOpenAIClient();
   }
 
   public EmbeddingModel buildEmbeddingModel() {
 
     return AzureOpenAiEmbeddingModel.builder()
-        .apiKey(apiKey)
-        .endpoint(endpoint)
+        .openAIClient(getOpenAIClient())
         .deploymentName(embeddingModelParameters.getEmbeddingModelName())
         .build();
   }

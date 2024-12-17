@@ -5,11 +5,11 @@ import dev.langchain4j.store.embedding.EmbeddingStore;
 import dev.langchain4j.store.embedding.chroma.ChromaEmbeddingStore;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.mule.extension.vectors.internal.config.Configuration;
+import org.mule.extension.vectors.internal.config.StoreConfiguration;
+import org.mule.extension.vectors.internal.connection.store.chroma.ChromaStoreConnection;
 import org.mule.extension.vectors.internal.constant.Constants;
 import org.mule.extension.vectors.internal.helper.parameter.QueryParameters;
 import org.mule.extension.vectors.internal.store.BaseStore;
-import org.mule.extension.vectors.internal.store.aisearch.AISearchStoreConfiguration;
 import org.mule.extension.vectors.internal.util.JsonUtils;
 
 import java.io.BufferedReader;
@@ -32,15 +32,14 @@ public class ChromaStore extends BaseStore {
    * Initializes a new instance of ChromaStore.
    *
    * @param storeName     the name of the vector store.
-   * @param configuration the configuration object containing necessary settings.
+   * @param storeConfiguration the configuration object containing necessary settings.
    * @param queryParams   parameters related to query configurations.
    */
-  public ChromaStore(String storeName, Configuration configuration, QueryParameters queryParams, int dimension) {
+  public ChromaStore(StoreConfiguration storeConfiguration, ChromaStoreConnection chromaStoreConnection, String storeName, QueryParameters queryParams, int dimension) {
 
-    super(storeName, configuration, queryParams, dimension);
+    super(storeConfiguration, chromaStoreConnection, storeName, queryParams, dimension, true);
 
-    ChromaStoreConfiguration chromaStoreConfiguration = (ChromaStoreConfiguration) configuration.getStoreConfiguration();
-    this.url = chromaStoreConfiguration.getUrl();
+    this.url = chromaStoreConnection.getUrl();
   }
 
   public EmbeddingStore<TextSegment> buildEmbeddingStore() {

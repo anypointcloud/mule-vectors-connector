@@ -65,20 +65,22 @@ public class Constants {
 
   public static final Double EMBEDDING_SEARCH_REQUEST_DEFAULT_MIN_SCORE = 0.7;
 
-  public static final String EMBEDDING_OPERATION_TYPE_STORE_METADATA = "STORE_METADATA";
-  public static final String EMBEDDING_OPERATION_TYPE_FILTER_BY_METADATA = "FILTER_BY_METADATA";
-  public static final String EMBEDDING_OPERATION_TYPE_REMOVE_EMBEDDINGS = "REMOVE_EMBEDDINGS";
-  public static final String EMBEDDING_OPERATION_TYPE_QUERY_ALL = "QUERY_ALL";
+  public static final String STORE_OPERATION_TYPE_STORE_METADATA = "STORE_METADATA";
+  public static final String STORE_OPERATION_TYPE_FILTER_BY_METADATA = "FILTER_BY_METADATA";
+  public static final String STORE_OPERATION_TYPE_REMOVE_EMBEDDINGS = "REMOVE_EMBEDDINGS";
+  public static final String STORE_OPERATION_TYPE_QUERY_ALL = "QUERY_ALL";
 
   public static final String JSON_KEY_SOURCES = "sources";
   public static final String JSON_KEY_SEGMENTS = "segments";
+  public static final String JSON_KEY_TEXT_SEGMENTS = "text-segments";
   public static final String JSON_KEY_SEGMENT_COUNT = "segmentCount";
   public static final String JSON_KEY_SOURCE_COUNT = "sourceCount";
   public static final String JSON_KEY_STORE_NAME = "storeName";
   public static final String JSON_KEY_TEXT = "text";
   public static final String JSON_KEY_STATUS = "status";
   public static final String JSON_KEY_EMBEDDING = "embedding";
-  public static final String JSON_KEY_DIMENSIONS = "dimensions";
+  public static final String JSON_KEY_EMBEDDINGS = "embeddings";
+  public static final String JSON_KEY_DIMENSION = "dimension";
   public static final String JSON_KEY_RESPONSE = "response";
   public static final String JSON_KEY_QUESTION = "question";
   public static final String JSON_KEY_MAX_RESULTS = "maxResults";
@@ -92,4 +94,8 @@ public class Constants {
   public static final String OPERATION_STATUS_DELETED = "deleted";
 
   public static final String PARAM_DISPLAY_NAME_STORAGE_OVERRIDE = "Storage (Override Module Configuration)";
+
+  public static final String URI_HTTPS_PREFIX = "https://";
+
+  public static final String HTTP_METHOD_POST = "POST";
 }

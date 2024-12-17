@@ -1,10 +1,12 @@
 package org.mule.extension.vectors.internal.store.pgvector;
 
 import dev.langchain4j.data.segment.TextSegment;
+import dev.langchain4j.internal.ValidationUtils;
 import dev.langchain4j.store.embedding.EmbeddingStore;
 import dev.langchain4j.store.embedding.pgvector.PgVectorEmbeddingStore;
 import org.json.JSONObject;
-import org.mule.extension.vectors.internal.config.Configuration;
+import org.mule.extension.vectors.internal.config.StoreConfiguration;
+import org.mule.extension.vectors.internal.connection.store.pgvector.PGVectorStoreConnection;
 import org.mule.extension.vectors.internal.constant.Constants;
 import org.mule.extension.vectors.internal.helper.parameter.QueryParameters;
 import org.mule.extension.vectors.internal.store.BaseStore;
@@ -13,6 +15,7 @@ import org.postgresql.ds.PGSimpleDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -20,8 +23,6 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-
-import static org.mule.extension.vectors.internal.util.JsonUtils.readConfigFile;
 
 /**
  * Represents a store for vector data using PostgreSQL with PGVector extension.
@@ -31,41 +32,60 @@ public class PGVectorStore extends BaseStore {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PGVectorStore.class);
 
-  private String userName;
+  private String user;
   private String password;
   private String host;
   private int port;
   private String database;
 
+  private DataSource dataSource;
+
+  public javax.sql.DataSource getDataSource() {
+
+    if(dataSource == null) {
+
+      host = ValidationUtils.ensureNotBlank(host, "host");
+      port = ValidationUtils.ensureGreaterThanZero(port, "port");
+      user = ValidationUtils.ensureNotBlank(user, "user");
+      password = ValidationUtils.ensureNotBlank(password, "password");
+      database = ValidationUtils.ensureNotBlank(database, "database");
+      PGSimpleDataSource source = new PGSimpleDataSource();
+      source.setServerNames(new String[]{host});
+      source.setPortNumbers(new int[]{port});
+      source.setDatabaseName(database);
+      source.setUser(user);
+      source.setPassword(password);
+      this.dataSource = source;
+    }
+    return dataSource;
+  }
+
   /**
    * Constructs a PGVectorVectorStore instance using configuration and query parameters.
    *
    * @param storeName The name of the store.
-   * @param configuration The configuration for connecting to the store.
+   * @param storeConfiguration The configuration for connecting to the store.
    * @param queryParams Parameters related to query configurations.
    */
-  public PGVectorStore(String storeName, Configuration configuration, QueryParameters queryParams, int dimension) {
+  public PGVectorStore(StoreConfiguration storeConfiguration, PGVectorStoreConnection pgVectorStoreConnection, String storeName, QueryParameters queryParams, int dimension, boolean createStore) {
 
-    super(storeName, configuration, queryParams, dimension);
+    super(storeConfiguration, pgVectorStoreConnection, storeName, queryParams, dimension, createStore);
 
-    PGVectorStoreConfiguration pgVectorStoreConfiguration = (PGVectorStoreConfiguration)configuration.getStoreConfiguration();
-    this.host = pgVectorStoreConfiguration.getHost();
-    this.port = pgVectorStoreConfiguration.getPort();
-    this.database = pgVectorStoreConfiguration.getDatabase();
-    this.userName = pgVectorStoreConfiguration.getUserName();
-    this.password = pgVectorStoreConfiguration.getPassword();
+    this.host = pgVectorStoreConnection.getHost();
+    this.port = pgVectorStoreConnection.getPort();
+    this.database = pgVectorStoreConnection.getDatabase();
+    this.user = pgVectorStoreConnection.getUser();
+    this.password = pgVectorStoreConnection.getPassword();
+    this.dataSource = pgVectorStoreConnection.getDataSource();
   }
 
   public EmbeddingStore<TextSegment> buildEmbeddingStore() {
 
-    return PgVectorEmbeddingStore.builder()
-        .host(host)
-        .port(port)
-        .database(database)
-        .user(userName)
-        .password(password)
+    return PgVectorEmbeddingStore.datasourceBuilder()
+        .datasource(getDataSource())
         .table(storeName)
         .dimension(dimension)
+        .createTable(createStore)
         .build();
   }
 
@@ -81,7 +101,7 @@ public class PGVectorStore extends BaseStore {
     JSONObject jsonObject = new JSONObject();
     jsonObject.put(Constants.JSON_KEY_STORE_NAME, storeName);
 
-    try (PgVectorMetadataIterator iterator = new PgVectorMetadataIterator(userName, password, host, port, database, storeName, (int)queryParams.embeddingPageSize())) {
+    try (PgVectorMetadataIterator iterator = new PgVectorMetadataIterator(user, password, host, port, database, storeName, (int)queryParams.embeddingPageSize())) {
       while (iterator.hasNext()) {
 
         JSONObject metadataObject = new JSONObject(iterator.next());

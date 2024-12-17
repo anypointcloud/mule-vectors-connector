@@ -185,7 +185,10 @@ public abstract class MetadataFilterParameters {
     }
 
     @Override
-    public Object getMetadataValue() { return Utils.convertStringToType(metadataValue);}
+    public Object getMetadataValue() {
+
+      return metadataValue != null && !metadataValue.isEmpty() ? Utils.convertStringToType(metadataValue) : metadataValue;
+    }
 
     @Override
     public boolean isMetadataKeyEmpty() { return metadataKey == null || metadataKey.isEmpty(); }
@@ -239,7 +242,10 @@ public abstract class MetadataFilterParameters {
     }
 
     @Override
-    public Object getMetadataValue() { return Utils.convertStringToType(metadataValue);}
+    public Object getMetadataValue() {
+
+      return metadataValue != null && !metadataValue.isEmpty() ? Utils.convertStringToType(metadataValue) : metadataValue;
+    }
 
     @Override
     public boolean isMetadataKeyEmpty() { return metadataKey == null || metadataKey.isEmpty(); }
