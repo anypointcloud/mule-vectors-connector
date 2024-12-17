@@ -67,9 +67,9 @@ public class PGVectorStore extends BaseStore {
    * @param storeConfiguration The configuration for connecting to the store.
    * @param queryParams Parameters related to query configurations.
    */
-  public PGVectorStore(StoreConfiguration storeConfiguration, PGVectorStoreConnection pgVectorStoreConnection, String storeName, QueryParameters queryParams, int dimension) {
+  public PGVectorStore(StoreConfiguration storeConfiguration, PGVectorStoreConnection pgVectorStoreConnection, String storeName, QueryParameters queryParams, int dimension, boolean createStore) {
 
-    super(storeConfiguration, pgVectorStoreConnection, storeName, queryParams, dimension);
+    super(storeConfiguration, pgVectorStoreConnection, storeName, queryParams, dimension, createStore);
 
     this.host = pgVectorStoreConnection.getHost();
     this.port = pgVectorStoreConnection.getPort();
@@ -85,6 +85,7 @@ public class PGVectorStore extends BaseStore {
         .datasource(getDataSource())
         .table(storeName)
         .dimension(dimension)
+        .createTable(createStore)
         .build();
   }
 

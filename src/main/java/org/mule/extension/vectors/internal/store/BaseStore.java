@@ -45,14 +45,16 @@ public class BaseStore {
   protected BaseStoreConnection storeConnection;
   protected QueryParameters queryParams;
   protected int dimension;
+  protected boolean createStore;
 
-  public BaseStore(StoreConfiguration storeConfiguration, BaseStoreConnection storeConnection, String storeName, QueryParameters queryParams, int dimension) {
+  public BaseStore(StoreConfiguration storeConfiguration, BaseStoreConnection storeConnection, String storeName, QueryParameters queryParams, int dimension, boolean createStore) {
 
     this.storeConfiguration = storeConfiguration;
     this.storeConnection = storeConnection;
     this.storeName = storeName;
     this.queryParams = queryParams;
     this.dimension = dimension;
+    this.createStore = createStore;
   }
 
   public EmbeddingStore<TextSegment> buildEmbeddingStore() {
@@ -212,6 +214,7 @@ public class BaseStore {
     private QueryParameters queryParams;
     private String storeName;
     private int dimension;
+    private boolean createStore = true;
 
     public Builder() {
 
@@ -260,6 +263,11 @@ public class BaseStore {
       return this;
     }
 
+    public Builder createStore(boolean createStore) {
+      this.createStore = createStore;
+      return this;
+    }
+
     /**
      * Builds and returns a new {@link BaseStore} instance based on the builder's configuration.
      * <p>
@@ -285,12 +293,12 @@ public class BaseStore {
 
         case Constants.VECTOR_STORE_PGVECTOR:
 
-          baseStore = new PGVectorStore(storeConfiguration, (PGVectorStoreConnection)storeConnection, storeName, queryParams, dimension);
+          baseStore = new PGVectorStore(storeConfiguration, (PGVectorStoreConnection)storeConnection, storeName, queryParams, dimension, createStore);
           break;
 
         case Constants.VECTOR_STORE_AI_SEARCH:
 
-          baseStore = new AISearchStore(storeConfiguration, (AISearchStoreConnection)storeConnection, storeName, queryParams, dimension);
+          baseStore = new AISearchStore(storeConfiguration, (AISearchStoreConnection)storeConnection, storeName, queryParams, dimension, createStore);
           break;
 
         case Constants.VECTOR_STORE_CHROMA:
@@ -300,22 +308,22 @@ public class BaseStore {
 
         case Constants.VECTOR_STORE_PINECONE:
 
-          baseStore = new PineconeStore(storeConfiguration, (PineconeStoreConnection)storeConnection, storeName, queryParams, dimension);
+          baseStore = new PineconeStore(storeConfiguration, (PineconeStoreConnection)storeConnection, storeName, queryParams, dimension, createStore);
           break;
 
         case Constants.VECTOR_STORE_ELASTICSEARCH:
 
-          baseStore = new ElasticsearchStore(storeConfiguration, (ElasticsearchStoreConnection)storeConnection, storeName, queryParams, dimension);
+          baseStore = new ElasticsearchStore(storeConfiguration, (ElasticsearchStoreConnection)storeConnection, storeName, queryParams);
           break;
 
         case Constants.VECTOR_STORE_OPENSEARCH:
 
-          baseStore = new OpenSearchStore(storeConfiguration, (OpenSearchStoreConnection)storeConnection, storeName, queryParams, dimension);
+          baseStore = new OpenSearchStore(storeConfiguration, (OpenSearchStoreConnection)storeConnection, storeName, queryParams);
           break;
 
         case Constants.VECTOR_STORE_QDRANT:
 
-          baseStore = new QdrantStore(storeConfiguration, (QdrantStoreConnection)storeConnection, storeName, queryParams, dimension);
+          baseStore = new QdrantStore(storeConfiguration, (QdrantStoreConnection)storeConnection, storeName, queryParams, dimension, createStore);
           break;
 
         default:

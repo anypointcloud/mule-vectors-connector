@@ -151,6 +151,7 @@ public class StoreOperations {
           .storeName(storeName)
           .connection(storeConnection)
           .dimension(dimension)
+          .createStore(false)
           .build();
 
       EmbeddingStore<TextSegment> embeddingStore = baseStore.buildEmbeddingStore();
@@ -357,6 +358,7 @@ public class StoreOperations {
           .configuration(storeConfiguration)
           .connection(storeConnection)
           .queryParams(queryParams)
+          .createStore(false)
           .build();
 
       JSONObject jsonObject = baseStore.listSources();
@@ -410,6 +412,7 @@ public class StoreOperations {
           .storeName(storeName)
           .configuration(storeConfiguration)
           .connection(storeConnection)
+          .createStore(false)
           .build();
 
       EmbeddingStore<TextSegment> embeddingStore = baseStore.buildEmbeddingStore();

@@ -37,7 +37,7 @@ public class ChromaStore extends BaseStore {
    */
   public ChromaStore(StoreConfiguration storeConfiguration, ChromaStoreConnection chromaStoreConnection, String storeName, QueryParameters queryParams, int dimension) {
 
-    super(storeConfiguration, chromaStoreConnection, storeName, queryParams, dimension);
+    super(storeConfiguration, chromaStoreConnection, storeName, queryParams, dimension, true);
 
     this.url = chromaStoreConnection.getUrl();
   }

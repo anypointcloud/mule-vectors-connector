@@ -60,9 +60,9 @@ public class OpenSearchStore extends BaseStore {
     return openSearchClient;
   }
 
-  public OpenSearchStore(StoreConfiguration storeConfiguration, OpenSearchStoreConnection openSearchStoreConnection, String storeName, QueryParameters queryParams, int dimension) {
+  public OpenSearchStore(StoreConfiguration storeConfiguration, OpenSearchStoreConnection openSearchStoreConnection, String storeName, QueryParameters queryParams) {
 
-    super(storeConfiguration, openSearchStoreConnection, storeName, queryParams, dimension);
+    super(storeConfiguration, openSearchStoreConnection, storeName, queryParams, 0, true);
 
     this.url = openSearchStoreConnection.getUrl();
     this.user = openSearchStoreConnection.getUser();

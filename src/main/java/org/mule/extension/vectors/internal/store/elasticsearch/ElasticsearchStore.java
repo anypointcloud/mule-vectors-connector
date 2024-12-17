@@ -56,9 +56,9 @@ public class ElasticsearchStore extends BaseStore {
     return restClient;
   }
 
-  public ElasticsearchStore(StoreConfiguration storeConfiguration, ElasticsearchStoreConnection elasticsearchStoreConnection, String storeName, QueryParameters queryParams, int dimension) {
+  public ElasticsearchStore(StoreConfiguration storeConfiguration, ElasticsearchStoreConnection elasticsearchStoreConnection, String storeName, QueryParameters queryParams) {
 
-    super(storeConfiguration, elasticsearchStoreConnection, storeName, queryParams, dimension);
+    super(storeConfiguration, elasticsearchStoreConnection, storeName, queryParams, 0, true);
 
     this.url = elasticsearchStoreConnection.getUrl();
     this.user = elasticsearchStoreConnection.getUser();
@@ -72,7 +72,6 @@ public class ElasticsearchStore extends BaseStore {
     return ElasticsearchEmbeddingStore.builder()
         .restClient(getRestClient())
         .indexName(storeName)
-        .dimension(dimension)
         .build();
   }
 }

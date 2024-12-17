@@ -30,9 +30,9 @@ public class QdrantStore extends BaseStore {
     private final String payloadTextKey;
     private QdrantClient client;
 
-    public QdrantStore(StoreConfiguration storeConfiguration, QdrantStoreConnection qdrantStoreConnection, String storeName, QueryParameters queryParams, int dimension) {
+    public QdrantStore(StoreConfiguration storeConfiguration, QdrantStoreConnection qdrantStoreConnection, String storeName, QueryParameters queryParams, int dimension, boolean createStore) {
 
-        super(storeConfiguration, qdrantStoreConnection, storeName, queryParams, dimension);
+        super(storeConfiguration, qdrantStoreConnection, storeName, queryParams, dimension, createStore);
 
         try {
 
@@ -47,7 +47,7 @@ public class QdrantStore extends BaseStore {
             }
             this.payloadTextKey = qdrantStoreConnection.getTextSegmentKey();
 
-            if (!this.client.collectionExistsAsync(this.storeName).get() && dimension > 0) {
+            if (createStore && !this.client.collectionExistsAsync(this.storeName).get() && dimension > 0) {
                 this.client.createCollectionAsync(storeName,
                         Collections.VectorParams.newBuilder().setDistance(Collections.Distance.Cosine)
                                 .setSize(dimension).build())

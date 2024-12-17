@@ -15,9 +15,9 @@ public class PineconeStore extends BaseStore {
   private String cloud;
   private String region;
 
-  public PineconeStore(StoreConfiguration storeConfiguration, PineconeStoreConnection pineconeStoreConnection, String storeName, QueryParameters queryParams, int dimension) {
+  public PineconeStore(StoreConfiguration storeConfiguration, PineconeStoreConnection pineconeStoreConnection, String storeName, QueryParameters queryParams, int dimension, boolean createStore) {
 
-    super(storeConfiguration, pineconeStoreConnection, storeName, queryParams, dimension);
+    super(storeConfiguration, pineconeStoreConnection, storeName, queryParams, dimension, createStore);
 
     this.apiKey = pineconeStoreConnection.getApiKey();
     this.cloud = pineconeStoreConnection.getCloud();
@@ -26,15 +26,23 @@ public class PineconeStore extends BaseStore {
 
   public EmbeddingStore<TextSegment> buildEmbeddingStore() {
 
-    return PineconeEmbeddingStore.builder()
-        .apiKey(apiKey)
-        .index(storeName)
-        .nameSpace("ns0mc_" + storeName)
-        .createIndex(PineconeServerlessIndexConfig.builder()
-                         .cloud(cloud)
-                         .region(region)
-                         .dimension(dimension)
-                         .build())
-        .build();
+    return createStore ?
+
+        PineconeEmbeddingStore.builder()
+          .apiKey(apiKey)
+          .index(storeName)
+          .nameSpace("ns0mc_" + storeName)
+          .createIndex(PineconeServerlessIndexConfig.builder()
+                           .cloud(cloud)
+                           .region(region)
+                           .dimension(dimension)
+                           .build())
+          .build():
+
+        PineconeEmbeddingStore.builder()
+            .apiKey(apiKey)
+            .index(storeName)
+            .nameSpace("ns0mc_" + storeName)
+            .build();
   }
 }

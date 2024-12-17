@@ -44,7 +44,7 @@ public class MilvusStore extends BaseStore {
 
   public MilvusStore(StoreConfiguration storeConfiguration, MilvusStoreConnection milvusStoreConnection, String storeName, QueryParameters queryParams, int dimension) {
 
-    super(storeConfiguration, milvusStoreConnection, storeName, queryParams, dimension);
+    super(storeConfiguration, milvusStoreConnection, storeName, queryParams, dimension, true);
 
     this.uri = milvusStoreConnection.getUrl();
     this.client = milvusStoreConnection.getClient();

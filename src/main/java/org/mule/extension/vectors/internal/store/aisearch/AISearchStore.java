@@ -25,9 +25,9 @@ public class AISearchStore extends BaseStore {
   private final String apiKey;
   private final String url;
 
-  public AISearchStore(StoreConfiguration compositeConfiguration, AISearchStoreConnection aiSearchStoreConnection, String storeName, QueryParameters queryParams, int dimension) {
+  public AISearchStore(StoreConfiguration compositeConfiguration, AISearchStoreConnection aiSearchStoreConnection, String storeName, QueryParameters queryParams, int dimension, boolean createStore) {
 
-    super(compositeConfiguration, aiSearchStoreConnection, storeName, queryParams, dimension);
+    super(compositeConfiguration, aiSearchStoreConnection, storeName, queryParams, dimension, createStore);
 
     this.url = aiSearchStoreConnection.getUrl();
     this.apiKey = aiSearchStoreConnection.getApiKey();
@@ -40,6 +40,7 @@ public class AISearchStore extends BaseStore {
         .apiKey(apiKey)
         .indexName(storeName)
         .dimensions(dimension)
+        .createOrUpdateIndex(createStore)
         .build();
   }
 
