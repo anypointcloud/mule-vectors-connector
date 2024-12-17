@@ -13,12 +13,18 @@ import java.util.HashMap;
 import java.util.Optional;
 
 /**
- * Utility class for setting metadata.
+ * Utility class for handling metadata-related operations.
  */
 public class MetadataUtils {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MetadataUtils.class);
 
+  /**
+   * Generates ingestion metadata for a document.
+   *
+   * @return a HashMap containing ingestion metadata, including source ID, ingestion datetime,
+   *         and ingestion timestamp.
+   */
   public static HashMap<String, Object> getIngestionMetadata() {
 
     HashMap<String, Object> ingestionMetadata = new HashMap<>();
@@ -28,6 +34,12 @@ public class MetadataUtils {
     return ingestionMetadata;
   }
 
+  /**
+   * Retrieves a display name for the document source based on its metadata.
+   *
+   * @param metadata the Metadata object from which the display name is derived.
+   * @return a string representing the display name, which may include directory path, file name, URL, source, or title.
+   */
   public static String getSourceDisplayName(Metadata metadata) {
 
     // Retrieve fields from metadata
@@ -42,11 +54,15 @@ public class MetadataUtils {
       return absoluteDirectoryPath + "/" + Optional.ofNullable(fileName).orElse("");
     } else {
       return Optional.ofNullable(url).orElse(
-                 Optional.ofNullable(source).orElse(
-                     title));
+          Optional.ofNullable(source).orElse(title));
     }
   }
 
+  /**
+   * Adds ingestion metadata to a given document.
+   *
+   * @param document the Document to which ingestion metadata will be added.
+   */
   public static void addIngestionMetadataToDocument(Document document) {
 
     document.metadata().put(Constants.METADATA_KEY_SOURCE_ID, dev.langchain4j.internal.Utils.randomUUID());
@@ -54,6 +70,12 @@ public class MetadataUtils {
     document.metadata().put(Constants.METADATA_KEY_INGESTION_TIMESTAMP, Utils.getCurrentTimeMillis());
   }
 
+  /**
+   * Adds metadata to a document based on the specified file type.
+   *
+   * @param document the Document to which metadata is added.
+   * @param fileType the type of the file (e.g., "text" or "crawl").
+   */
   public static void addMetadataToDocument(Document document, String fileType) {
 
     if(!fileType.isEmpty()) document.metadata().put(Constants.METADATA_KEY_FILE_TYPE, fileType);
@@ -75,10 +97,10 @@ public class MetadataUtils {
   }
 
   /**
-   * Adds metadata to a Document with specified file type, file name, and file path.
+   * Adds metadata to a document with specified file type, file name, and additional metadata.
    *
    * @param document the Document to which metadata is added.
-   * @param fileType the type of the file (e.g., text, any).
+   * @param fileType the type of the file (e.g., "text" or "any").
    * @param fileName the name of the file.
    */
   public static void addMetadataToDocument(Document document, String fileType, String fileName) {
