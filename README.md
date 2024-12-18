@@ -16,16 +16,24 @@ MAC Vectors provides access to a broad number of external Vector Stores and Data
 - Compilation with Java SDK must be done with JDK 8.
 
 
-### Installation (using Cloud.Anypoint Dependency)
+[//]: # (### Installation &#40;using Cloud.Anypoint Dependency&#41;)
 
-```xml
-<dependency>
-   <groupId>cloud.anypoint</groupId>
-   <artifactId>mule-vectors-connector</artifactId>
-   <version>0.2.50</version>
-   <classifier>mule-plugin</classifier>
-</dependency>
-```
+[//]: # ()
+[//]: # (```xml)
+
+[//]: # (<dependency>)
+
+[//]: # (   <groupId>cloud.anypoint</groupId>)
+
+[//]: # (   <artifactId>mule-vectors-connector</artifactId>)
+
+[//]: # (   <version>0.3.0</version>)
+
+[//]: # (   <classifier>mule-plugin</classifier>)
+
+[//]: # (</dependency>)
+
+[//]: # (```)
 
 ### Installation (building locally)
 
@@ -36,7 +44,7 @@ Then add the following dependency to your application's `pom.xml`:
 <dependency>
     <groupId>com.mulesoft.connectors</groupId>
     <artifactId>mule4-vectors-connector</artifactId>
-    <version>0.2.50</version>
+    <version>0.3.0</version>
     <classifier>mule-plugin</classifier>
 </dependency>
 ```
