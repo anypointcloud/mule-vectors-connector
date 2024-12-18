@@ -4,6 +4,9 @@
 *.iml
 *.ipr
 
+# VSCode
+.vscode
+
 # Maven
 target/
 pom.xml.tag
