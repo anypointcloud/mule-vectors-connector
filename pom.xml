@@ -11,6 +11,11 @@
 	<name>MuleSoft Vectors Connector - Mule 4</name>
 	<description>MuleSoft Vectors Connector provides access to a broad number of external Vector Stores.</description>
 	<url>https://mac-project.ai/docs/ms-vectors/connector-overview</url>
+	<scm>
+		<connection>scm:git:git://github.com/MuleSoft-AI-Chain-Project/mule-vectors-connector.git</connection>
+		<developerConnection>scm:git:ssh://github.com:MuleSoft-AI-Chain-Project/mule-vectors-connector.git</developerConnection>
+		<url>https://github.com/MuleSoft-AI-Chain-Project/mule-vectors-connector/tree/master</url>
+	</scm>
 
 
 	<licenses>
