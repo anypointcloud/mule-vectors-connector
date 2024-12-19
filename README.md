@@ -1,5 +1,5 @@
 # MAC Vectors
-![Maven Central](https://img.shields.io/maven-central/v/cloud.anypoint/mule-vectors-connector)
+![Maven Central](https://img.shields.io/maven-central/v/io.github.mulesoft-ai-chain-project/mule4-vectors-connector)
 
 
 ## <img src="icon/icon.svg" width="6%" alt="banner">   [MuleSoft AI Chain Vectors Connector](https://mac-project.ai/docs/mulechain-vectors)
