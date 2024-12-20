@@ -1,9 +1,7 @@
 # <img src="icon/icon.svg" width="6%" alt="banner"> MuleSoft  Vectors Connector
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.mulesoft-ai-chain-project/mule4-vectors-connector)](https://central.sonatype.com/artifact/io.github.mulesoft-ai-chain-project/mule4-vectors-connector/overview)
 
-
 ## <img src="https://raw.githubusercontent.com/MuleSoft-AI-Chain-Project/.github/main/profile/assets/mulechain-project-logo.png" width="6%" alt="banner">   [MuleSoft AI Chain (MAC) Project](https://mac-project.ai/docs/)
-
 
 ### <img src="icon/icon.svg" width="6%" alt="banner">   [MuleSoft Vectors Connector](https://mac-project.ai/docs/mulechain-vectors)
 
@@ -51,8 +49,8 @@ to make some changes to the `pom.xml`.  For this reason, we recommend you fork t
 Then, follow the MuleSoft [documentation](https://docs.mulesoft.com/exchange/to-publish-assets-maven) to modify and publish the asset.
 
 ### Documentation 
-- Check out the complete documentation in [mac-project.ai](https://mac-project.ai/docs/mulechain-vectors)
-- Learn from the [Getting Started YouTube Playlist](https://www.youtube.com/playlist?list=PLnuJGpEBF6ZAV1JfID1SRKN6OmGORvgv6)
+- Check out the complete documentation in [mac-project.ai](https://mac-project.ai/docs/ms-vectors)
+- Learn from the [Getting Started YouTube Playlist](https://www.youtube.com/playlist?list=PLnuJGpEBF6ZBncyBbgYW46rbvYJwpl9Wj)
 
 ---
 
