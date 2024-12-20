@@ -1,13 +1,13 @@
-# MAC Vectors
-![Maven Central](https://img.shields.io/maven-central/v/io.github.mulesoft-ai-chain-project/mule4-vectors-connector)
+# <img src="icon/icon.svg" width="6%" alt="banner"> MuleSoft  Vectors Connector
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.mulesoft-ai-chain-project/mule4-vectors-connector)](https://central.sonatype.com/artifact/io.github.mulesoft-ai-chain-project/mule4-vectors-connector/overview)
 
 
-## <img src="icon/icon.svg" width="6%" alt="banner">   [MuleSoft AI Chain Vectors Connector](https://mac-project.ai/docs/mulechain-vectors)
+## <img src="https://raw.githubusercontent.com/MuleSoft-AI-Chain-Project/.github/main/profile/assets/mulechain-project-logo.png" width="6%" alt="banner">   [MuleSoft AI Chain (MAC) Project](https://mac-project.ai/docs/)
 
 
-### MuleChain Vectors Extension
+### <img src="icon/icon.svg" width="6%" alt="banner">   [MuleSoft Vectors Connector](https://mac-project.ai/docs/mulechain-vectors)
 
-MAC Vectors provides access to a broad number of external Vector Stores and Databases. It is built to be leveraged by the MAC Projects AI Connectors.
+MuleSoft Vectors provides access to a broad number of external Vector Stores and Databases. It is built to be leveraged by the MAC Projects AI Connectors.
 
 
 ### Requirements
