@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>io.github.mulesoft-ai-chain-project</groupId>
+	<groupId>com.mulesoft.connectors</groupId>
 	<artifactId>mule4-vectors-connector</artifactId>
 	<version>0.2.400-SNAPSHOT</version>
 	<packaging>mule-extension</packaging>
@@ -16,7 +16,6 @@
 		<developerConnection>scm:git:ssh://github.com:MuleSoft-AI-Chain-Project/mule-vectors-connector.git</developerConnection>
 		<url>https://github.com/MuleSoft-AI-Chain-Project/mule-vectors-connector/tree/master</url>
 	</scm>
-
 
 	<licenses>
         <license>

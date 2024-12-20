@@ -29,12 +29,12 @@ MuleSoft Vectors provides access to a broad number of external Vector Stores and
 
 ### Installation (building locally)
 
-To use this connector, first [build and install](https://mac-project.ai/docs/mulechain-ai/getting-started) the connector into your local maven repository.
+To use this connector, first [build and install](https://mac-project.ai/docs/ms-vectors/getting-started) the connector into your local maven repository.
 Then add the following dependency to your application's `pom.xml`:
 
 ```xml
 <dependency>
-    <groupId>io.github.mulesoft-ai-chain-project</groupId>
+    <groupId>com.mulesoft.connectors</groupId>
     <artifactId>mule4-vectors-connector</artifactId>
     <version>0.3.0</version>
     <classifier>mule-plugin</classifier>
