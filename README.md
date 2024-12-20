@@ -16,7 +16,7 @@ MuleSoft Vectors provides access to a broad number of external Vector Stores and
 - Compilation with Java SDK must be done with JDK 8.
 
 
-### Installation (using Cloud.Anypoint Dependency)
+### Installation (using maven central dependency)
 
 ```xml
 <dependency>
