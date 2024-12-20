@@ -1,17 +1,18 @@
 package org.mule.extension.vectors.internal.storage.local;
 
+import dev.langchain4j.data.document.BlankDocumentException;
 import dev.langchain4j.data.document.Document;
 import dev.langchain4j.data.document.DocumentParser;
 import dev.langchain4j.data.document.loader.UrlDocumentLoader;
 import dev.langchain4j.data.document.transformer.jsoup.HtmlToTextDocumentTransformer;
-import okhttp3.internal.Util;
-import org.mule.extension.vectors.internal.config.Configuration;
+import org.mule.extension.vectors.internal.config.DocumentConfiguration;
+import org.mule.extension.vectors.internal.connection.storage.local.LocalStorageConnection;
 import org.mule.extension.vectors.internal.constant.Constants;
+import org.mule.extension.vectors.internal.error.MuleVectorsErrorType;
 import org.mule.extension.vectors.internal.storage.BaseStorage;
-import org.mule.extension.vectors.internal.util.MetadatatUtils;
+import org.mule.extension.vectors.internal.util.MetadataUtils;
 import org.mule.extension.vectors.internal.util.Utils;
-import org.mule.runtime.extension.api.annotation.Alias;
-import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
+import org.mule.runtime.extension.api.exception.ModuleException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,23 +46,19 @@ public class LocalStorage extends BaseStorage {
         // Create an iterator for the list of files
         pathIterator = pathList.iterator();
       } catch (IOException e) {
-        LOGGER.error("Error processing files: ", e);
+        throw new ModuleException(
+            String.format("Error while getting document from %s.", fullPath),
+            MuleVectorsErrorType.STORAGE_SERVICES_FAILURE,
+            e);
       }
     }
     return pathIterator;
   }
 
-  public LocalStorage(LocalStorageConfiguration localStorageConfiguration, String contextPath, String fileType) {
+  public LocalStorage(DocumentConfiguration documentConfiguration, LocalStorageConnection storageConnection, String contextPath, String fileType) {
 
-    super(localStorageConfiguration, contextPath, fileType);
-    this.fullPath = dev.langchain4j.internal.Utils.getOrDefault(localStorageConfiguration.getWorkingDirectory(), "") +
-        contextPath;
-  }
-
-  public LocalStorage(String contextPath, String fileType) {
-
-    super(null, contextPath, fileType);
-    this.fullPath = contextPath;
+    super(documentConfiguration, contextPath, fileType);
+    this.fullPath = storageConnection.getWorkingDir() != null ? storageConnection.getWorkingDir() + "/" + contextPath : contextPath;
   }
 
   // Override hasNext to check if there are files left to process
@@ -76,8 +73,21 @@ public class LocalStorage extends BaseStorage {
     if (hasNext()) {
       Path path = getPathIterator().next();
       LOGGER.debug("File: " + path.getFileName().toString());
-      Document document = loadDocument(path.toString(), documentParser);
-      MetadatatUtils.addMetadataToDocument(document, fileType, path.getFileName().toString());
+      Document document;
+      try {
+        document = loadDocument(path.toString(), documentParser);
+      } catch(BlankDocumentException bde) {
+
+        LOGGER.warn(String.format("BlankDocumentException: Error while parsing document %s.", path.toString()));
+        throw bde;
+      } catch (Exception e) {
+
+        throw new ModuleException(
+            String.format("Error while parsing document %s.", path.toString()),
+            MuleVectorsErrorType.DOCUMENT_PARSING_FAILURE,
+            e);
+      }
+      MetadataUtils.addMetadataToDocument(document, fileType, path.getFileName().toString());
       return document;
     }
     throw new IllegalStateException("No more files to iterate");
@@ -95,7 +105,7 @@ public class LocalStorage extends BaseStorage {
       case Constants.FILE_TYPE_TEXT:
       case Constants.FILE_TYPE_ANY:
         document = loadDocument(path.toString(), documentParser);
-        MetadatatUtils.addMetadataToDocument(document, fileType, Utils.getFileNameFromPath(fullPath));
+        MetadataUtils.addMetadataToDocument(document, fileType, Utils.getFileNameFromPath(fullPath));
         break;
       case Constants.FILE_TYPE_URL:
         document = loadUrlDocument(contextPath);
@@ -115,7 +125,7 @@ public class LocalStorage extends BaseStorage {
       HtmlToTextDocumentTransformer transformer = new HtmlToTextDocumentTransformer(null, null, true);
       document = transformer.transform(htmlDocument);
       document.metadata().put(Constants.METADATA_KEY_URL, contextPath);
-      MetadatatUtils.addMetadataToDocument(document, Constants.FILE_TYPE_URL, "");
+      MetadataUtils.addMetadataToDocument(document, Constants.FILE_TYPE_URL, "");
     } catch (MalformedURLException e) {
       throw new RuntimeException("Invalid URL: " + contextPath, e);
     }

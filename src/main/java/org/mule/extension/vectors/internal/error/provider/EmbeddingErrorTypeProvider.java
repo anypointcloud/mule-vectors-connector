@@ -19,9 +19,9 @@ public class EmbeddingErrorTypeProvider implements ErrorTypeProvider {
   @Override
   public Set<ErrorTypeDefinition> getErrorTypes() {
     return unmodifiableSet(new HashSet<>(asList(
+        INVALID_PARAMETERS_ERROR,
         EMBEDDING_OPERATIONS_FAILURE,
-        AI_SERVICES_FAILURE,
-        STORE_SERVICES_FAILURE,
-        STORAGE_SERVICES_FAILURE)));
+        AI_SERVICES_RATE_LIMITING_ERROR,
+        AI_SERVICES_FAILURE)));
   }
 }

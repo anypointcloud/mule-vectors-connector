@@ -37,7 +37,7 @@ Apache License
 
       "Source" form shall mean the preferred form for making modifications,
       including but not limited to software source code, documentation
-      source, and configuration files.
+      source, and compositeConfiguration files.
 
       "Object" form shall mean any form resulting from mechanical
       transformation or translation of a Source form, including but
@@ -188,7 +188,7 @@ Apache License
    END OF TERMS AND CONDITIONS
 ```
 
-The shorter version of license text should be added as a comment to all Salesforce-authored source code and configuration files that support comments. This include file formats like HTML, CSS, JavaScript, XML, etc. which aren't directly code, but are still critical to your project code. Like:
+The shorter version of license text should be added as a comment to all Salesforce-authored source code and compositeConfiguration files that support comments. This include file formats like HTML, CSS, JavaScript, XML, etc. which aren't directly code, but are still critical to your project code. Like:
 ```
 /*
  * Copyright (c) 2023, Salesforce, Inc.

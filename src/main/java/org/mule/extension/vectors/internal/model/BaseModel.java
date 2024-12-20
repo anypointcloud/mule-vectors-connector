@@ -1,7 +1,14 @@
 package org.mule.extension.vectors.internal.model;
 
 import dev.langchain4j.model.embedding.EmbeddingModel;
-import org.mule.extension.vectors.internal.config.Configuration;
+import org.mule.extension.vectors.internal.config.EmbeddingConfiguration;
+import org.mule.extension.vectors.internal.connection.model.BaseModelConnection;
+import org.mule.extension.vectors.internal.connection.model.azureopenai.AzureOpenAIModelConnection;
+import org.mule.extension.vectors.internal.connection.model.einstein.EinsteinModelConnection;
+import org.mule.extension.vectors.internal.connection.model.huggingface.HuggingFaceModelConnection;
+import org.mule.extension.vectors.internal.connection.model.mistralai.MistralAIModelConnection;
+import org.mule.extension.vectors.internal.connection.model.nomic.NomicModelConnection;
+import org.mule.extension.vectors.internal.connection.model.openai.OpenAIModelConnection;
 import org.mule.extension.vectors.internal.constant.Constants;
 import org.mule.extension.vectors.internal.error.MuleVectorsErrorType;
 import org.mule.extension.vectors.internal.helper.parameter.EmbeddingModelParameters;
@@ -19,12 +26,14 @@ public class BaseModel {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BaseModel.class);
 
-  protected Configuration configuration;
+  protected EmbeddingConfiguration embeddingConfiguration;
+  protected BaseModelConnection modelConnection;
   protected EmbeddingModelParameters embeddingModelParameters;
 
-  public BaseModel(Configuration configuration, EmbeddingModelParameters embeddingModelParameters) {
+  public BaseModel(EmbeddingConfiguration embeddingConfiguration, BaseModelConnection modelConnection, EmbeddingModelParameters embeddingModelParameters) {
 
-    this.configuration = configuration;
+    this.embeddingConfiguration = embeddingConfiguration;
+    this.modelConnection = modelConnection;
     this.embeddingModelParameters = embeddingModelParameters;
   }
 
@@ -40,15 +49,21 @@ public class BaseModel {
 
   public static class Builder {
 
-    private Configuration configuration;
+    private EmbeddingConfiguration embeddingConfiguration;
+    protected BaseModelConnection modelConnection;
     private EmbeddingModelParameters embeddingModelParameters;
 
     public Builder() {
 
     }
 
-    public BaseModel.Builder configuration(Configuration configuration) {
-      this.configuration = configuration;
+    public BaseModel.Builder configuration(EmbeddingConfiguration embeddingConfiguration) {
+      this.embeddingConfiguration = embeddingConfiguration;
+      return this;
+    }
+
+    public BaseModel.Builder connection(BaseModelConnection modelConnection) {
+      this.modelConnection = modelConnection;
       return this;
     }
 
@@ -61,36 +76,36 @@ public class BaseModel {
 
       BaseModel baseModel;
 
-      LOGGER.debug("Embedding Model Service: " + configuration.getModelConfiguration().getEmbeddingModelService());
-      switch (configuration.getModelConfiguration().getEmbeddingModelService()) {
+      LOGGER.debug("Embedding Model Service: " + modelConnection.getEmbeddingModelService());
+      switch (modelConnection.getEmbeddingModelService()) {
 
         case Constants.EMBEDDING_MODEL_SERVICE_AZURE_OPENAI:
-          baseModel = new AzureOpenAIModel(configuration, embeddingModelParameters);
+          baseModel = new AzureOpenAIModel(embeddingConfiguration, (AzureOpenAIModelConnection) modelConnection, embeddingModelParameters);
           break;
 
         case Constants.EMBEDDING_MODEL_SERVICE_OPENAI:
-          baseModel = new OpenAIModel(configuration, embeddingModelParameters);
+          baseModel = new OpenAIModel(embeddingConfiguration, (OpenAIModelConnection) modelConnection, embeddingModelParameters);
           break;
 
         case Constants.EMBEDDING_MODEL_SERVICE_MISTRAL_AI:
-          baseModel = new MistralAIModel(configuration, embeddingModelParameters);
+          baseModel = new MistralAIModel(embeddingConfiguration, (MistralAIModelConnection) modelConnection, embeddingModelParameters);
           break;
 
         case Constants.EMBEDDING_MODEL_SERVICE_NOMIC:
-          baseModel = new NomicModel(configuration, embeddingModelParameters);
+          baseModel = new NomicModel(embeddingConfiguration, (NomicModelConnection) modelConnection, embeddingModelParameters);
           break;
 
         case Constants.EMBEDDING_MODEL_SERVICE_HUGGING_FACE:
-          baseModel = new HuggingFaceModel(configuration, embeddingModelParameters);
+          baseModel = new HuggingFaceModel(embeddingConfiguration, (HuggingFaceModelConnection) modelConnection, embeddingModelParameters);
           break;
 
         case Constants.EMBEDDING_MODEL_SERVICE_EINSTEIN:
-          baseModel = new EinsteinModel(configuration, embeddingModelParameters);
+          baseModel = new EinsteinModel(embeddingConfiguration, (EinsteinModelConnection) modelConnection, embeddingModelParameters);
           break;
 
         default:
           throw new ModuleException(
-              String.format("Error while initializing embedding model service. \"%s\" is not supported.", configuration.getModelConfiguration().getEmbeddingModelService()),
+              String.format("Error while initializing embedding model service. \"%s\" is not supported.", modelConnection.getEmbeddingModelService()),
               MuleVectorsErrorType.AI_SERVICES_FAILURE);
       }
       return baseModel;

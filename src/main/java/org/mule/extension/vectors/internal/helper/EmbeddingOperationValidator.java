@@ -38,7 +38,7 @@ public class EmbeddingOperationValidator {
 
   static {
     // Mapping operation types to supported vector stores
-    EMBEDDING_OPERATION_TYPE_TO_SUPPORTED_VECTOR_STORES.put(Constants.EMBEDDING_OPERATION_TYPE_STORE_METADATA,
+    EMBEDDING_OPERATION_TYPE_TO_SUPPORTED_VECTOR_STORES.put(Constants.STORE_OPERATION_TYPE_STORE_METADATA,
             new HashSet<>(Arrays.asList(
               Constants.VECTOR_STORE_PGVECTOR,
               Constants.VECTOR_STORE_ELASTICSEARCH,
@@ -50,7 +50,7 @@ public class EmbeddingOperationValidator {
               Constants.VECTOR_STORE_QDRANT
             )));
 
-    EMBEDDING_OPERATION_TYPE_TO_SUPPORTED_VECTOR_STORES.put(Constants.EMBEDDING_OPERATION_TYPE_FILTER_BY_METADATA,
+    EMBEDDING_OPERATION_TYPE_TO_SUPPORTED_VECTOR_STORES.put(Constants.STORE_OPERATION_TYPE_FILTER_BY_METADATA,
             new HashSet<>(Arrays.asList(
               Constants.VECTOR_STORE_PGVECTOR,
               Constants.VECTOR_STORE_ELASTICSEARCH,
@@ -62,7 +62,7 @@ public class EmbeddingOperationValidator {
               Constants.VECTOR_STORE_QDRANT
             )));
 
-    EMBEDDING_OPERATION_TYPE_TO_SUPPORTED_VECTOR_STORES.put(Constants.EMBEDDING_OPERATION_TYPE_REMOVE_EMBEDDINGS,
+    EMBEDDING_OPERATION_TYPE_TO_SUPPORTED_VECTOR_STORES.put(Constants.STORE_OPERATION_TYPE_REMOVE_EMBEDDINGS,
             new HashSet<>(Arrays.asList(
               Constants.VECTOR_STORE_PGVECTOR,
               Constants.VECTOR_STORE_ELASTICSEARCH,
@@ -73,7 +73,7 @@ public class EmbeddingOperationValidator {
               Constants.VECTOR_STORE_AI_SEARCH
             )));
 
-    EMBEDDING_OPERATION_TYPE_TO_SUPPORTED_VECTOR_STORES.put(Constants.EMBEDDING_OPERATION_TYPE_QUERY_ALL,
+    EMBEDDING_OPERATION_TYPE_TO_SUPPORTED_VECTOR_STORES.put(Constants.STORE_OPERATION_TYPE_QUERY_ALL,
             new HashSet<>(Arrays.asList(
               Constants.VECTOR_STORE_PGVECTOR,
               // Constants.VECTOR_STORE_ELASTICSEARCH,  // Needs to be tested

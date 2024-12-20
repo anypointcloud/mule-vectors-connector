@@ -3,6 +3,7 @@ package org.mule.extension.vectors.internal.helper.parameter;
 import org.mule.runtime.api.meta.ExpressionSupport;
 import org.mule.runtime.extension.api.annotation.Alias;
 import org.mule.runtime.extension.api.annotation.Expression;
+import org.mule.runtime.extension.api.annotation.param.Optional;
 import org.mule.runtime.extension.api.annotation.param.Parameter;
 import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
 import org.mule.runtime.extension.api.annotation.param.display.Placement;
@@ -16,7 +17,8 @@ public class SegmentationParameters {
   @Summary("Maximum size of a segment in characters.")
   @Placement(order = 1)
   @Expression(ExpressionSupport.SUPPORTED)
-  int maxSegmentSizeInChar;
+  @Optional
+  int maxSegmentSizeInChars;
 
   @Parameter
   @Alias("maxOverlapSizeInChars")
@@ -24,10 +26,11 @@ public class SegmentationParameters {
   @Summary("Maximum overlap between segments in characters.")
   @Placement(order = 2)
   @Expression(ExpressionSupport.SUPPORTED)
+  @Optional
   int maxOverlapSizeInChars;
 
-  public int getMaxSegmentSizeInChar() {
-    return maxSegmentSizeInChar;
+  public int getMaxSegmentSizeInChars() {
+    return maxSegmentSizeInChars;
   }
 
   public int getMaxOverlapSizeInChars() {

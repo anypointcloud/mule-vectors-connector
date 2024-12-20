@@ -4,7 +4,16 @@ import dev.langchain4j.data.embedding.Embedding;
 import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.store.embedding.EmbeddingStore;
 import org.json.JSONObject;
-import org.mule.extension.vectors.internal.config.Configuration;
+import org.mule.extension.vectors.internal.config.StoreConfiguration;
+import org.mule.extension.vectors.internal.connection.store.BaseStoreConnection;
+import org.mule.extension.vectors.internal.connection.store.aisearch.AISearchStoreConnection;
+import org.mule.extension.vectors.internal.connection.store.chroma.ChromaStoreConnection;
+import org.mule.extension.vectors.internal.connection.store.elasticsearch.ElasticsearchStoreConnection;
+import org.mule.extension.vectors.internal.connection.store.milvus.MilvusStoreConnection;
+import org.mule.extension.vectors.internal.connection.store.opensearch.OpenSearchStoreConnection;
+import org.mule.extension.vectors.internal.connection.store.pgvector.PGVectorStoreConnection;
+import org.mule.extension.vectors.internal.connection.store.pinecone.PineconeStoreConnection;
+import org.mule.extension.vectors.internal.connection.store.qdrant.QdrantStoreConnection;
 import org.mule.extension.vectors.internal.constant.Constants;
 import org.mule.extension.vectors.internal.error.MuleVectorsErrorType;
 import org.mule.extension.vectors.internal.helper.parameter.QueryParameters;
@@ -32,16 +41,20 @@ public class BaseStore {
   protected static final Logger LOGGER = LoggerFactory.getLogger(BaseStore.class);
 
   protected String storeName;
-  protected Configuration configuration;
+  protected StoreConfiguration storeConfiguration;
+  protected BaseStoreConnection storeConnection;
   protected QueryParameters queryParams;
   protected int dimension;
+  protected boolean createStore;
 
-  public BaseStore(String storeName, Configuration configuration, QueryParameters queryParams, int dimension) {
+  public BaseStore(StoreConfiguration storeConfiguration, BaseStoreConnection storeConnection, String storeName, QueryParameters queryParams, int dimension, boolean createStore) {
 
+    this.storeConfiguration = storeConfiguration;
+    this.storeConnection = storeConnection;
     this.storeName = storeName;
-    this.configuration = configuration;
     this.queryParams = queryParams;
     this.dimension = dimension;
+    this.createStore = createStore;
   }
 
   public EmbeddingStore<TextSegment> buildEmbeddingStore() {
@@ -196,10 +209,12 @@ public class BaseStore {
    */
   public static class Builder {
 
-    private String storeName;
-    private Configuration configuration;
+    private StoreConfiguration storeConfiguration;
+    private BaseStoreConnection storeConnection;
     private QueryParameters queryParams;
+    private String storeName;
     private int dimension;
+    private boolean createStore = true;
 
     public Builder() {
 
@@ -219,11 +234,16 @@ public class BaseStore {
     /**
      * Sets the configuration for the {@code BaseStore}.
      *
-     * @param configuration the configuration parameters.
+     * @param storeConfiguration the configuration parameters.
      * @return the {@code Builder} instance, for method chaining.
      */
-    public Builder configuration(Configuration configuration) {
-      this.configuration = configuration;
+    public Builder configuration(StoreConfiguration storeConfiguration) {
+      this.storeConfiguration = storeConfiguration;
+      return this;
+    }
+
+    public Builder connection(BaseStoreConnection storeConnection) {
+      this.storeConnection = storeConnection;
       return this;
     }
 
@@ -243,6 +263,11 @@ public class BaseStore {
       return this;
     }
 
+    public Builder createStore(boolean createStore) {
+      this.createStore = createStore;
+      return this;
+    }
+
     /**
      * Builds and returns a new {@link BaseStore} instance based on the builder's configuration.
      * <p>
@@ -258,51 +283,52 @@ public class BaseStore {
 
       BaseStore baseStore;
 
-      switch (configuration.getStoreConfiguration().getVectorStore()) {
+      LOGGER.debug("Vector Store: " + storeConnection.getVectorStore());
+      switch (storeConnection.getVectorStore()) {
 
         case Constants.VECTOR_STORE_MILVUS:
 
-          baseStore = new MilvusStore(storeName, configuration, queryParams, dimension);
+          baseStore = new MilvusStore(storeConfiguration, (MilvusStoreConnection)storeConnection, storeName, queryParams, dimension);
           break;
 
         case Constants.VECTOR_STORE_PGVECTOR:
 
-          baseStore = new PGVectorStore(storeName, configuration, queryParams, dimension);
+          baseStore = new PGVectorStore(storeConfiguration, (PGVectorStoreConnection)storeConnection, storeName, queryParams, dimension, createStore);
           break;
 
         case Constants.VECTOR_STORE_AI_SEARCH:
 
-          baseStore = new AISearchStore(storeName, configuration, queryParams, dimension);
+          baseStore = new AISearchStore(storeConfiguration, (AISearchStoreConnection)storeConnection, storeName, queryParams, dimension, createStore);
           break;
 
         case Constants.VECTOR_STORE_CHROMA:
 
-          baseStore = new ChromaStore(storeName, configuration, queryParams, dimension);
+          baseStore = new ChromaStore(storeConfiguration, (ChromaStoreConnection)storeConnection, storeName, queryParams, dimension);
           break;
 
         case Constants.VECTOR_STORE_PINECONE:
 
-          baseStore = new PineconeStore(storeName, configuration, queryParams, dimension);
+          baseStore = new PineconeStore(storeConfiguration, (PineconeStoreConnection)storeConnection, storeName, queryParams, dimension, createStore);
           break;
 
         case Constants.VECTOR_STORE_ELASTICSEARCH:
 
-          baseStore = new ElasticsearchStore(storeName, configuration, queryParams, dimension);
+          baseStore = new ElasticsearchStore(storeConfiguration, (ElasticsearchStoreConnection)storeConnection, storeName, queryParams);
           break;
 
         case Constants.VECTOR_STORE_OPENSEARCH:
 
-          baseStore = new OpenSearchStore(storeName, configuration, queryParams, dimension);
+          baseStore = new OpenSearchStore(storeConfiguration, (OpenSearchStoreConnection)storeConnection, storeName, queryParams);
           break;
 
         case Constants.VECTOR_STORE_QDRANT:
 
-          baseStore = new QdrantStore(storeName, configuration, queryParams, dimension);
+          baseStore = new QdrantStore(storeConfiguration, (QdrantStoreConnection)storeConnection, storeName, queryParams, dimension, createStore);
           break;
 
         default:
           throw new ModuleException(
-              String.format("Error while initializing embedding store. \"%s\" not supported.", configuration.getStoreConfiguration().getVectorStore()),
+              String.format("Error while initializing embedding store. \"%s\" not supported.", storeConnection.getVectorStore()),
               MuleVectorsErrorType.STORE_SERVICES_FAILURE);
       }
       return baseStore;
