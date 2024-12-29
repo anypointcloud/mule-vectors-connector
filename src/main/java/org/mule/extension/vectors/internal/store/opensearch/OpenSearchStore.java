@@ -4,20 +4,34 @@ import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.internal.Utils;
 import dev.langchain4j.store.embedding.EmbeddingStore;
 import dev.langchain4j.store.embedding.opensearch.OpenSearchEmbeddingStore;
+import org.apache.hc.client5.http.auth.AuthScope;
+import org.apache.hc.client5.http.auth.UsernamePasswordCredentials;
+import org.apache.hc.client5.http.impl.auth.BasicCredentialsProvider;
 import org.apache.hc.client5.http.impl.nio.PoolingAsyncClientConnectionManagerBuilder;
 import org.apache.hc.core5.http.HttpHost;
 import org.apache.hc.core5.http.message.BasicHeader;
+import org.json.JSONObject;
 import org.mule.extension.vectors.internal.config.StoreConfiguration;
 import org.mule.extension.vectors.internal.connection.store.opensearch.OpenSearchStoreConnection;
+import org.mule.extension.vectors.internal.constant.Constants;
 import org.mule.extension.vectors.internal.helper.parameter.QueryParameters;
 import org.mule.extension.vectors.internal.store.BaseStore;
+import org.mule.extension.vectors.internal.util.JsonUtils;
 import org.opensearch.client.json.jackson.JacksonJsonpMapper;
 import org.opensearch.client.opensearch.OpenSearchClient;
+import org.opensearch.client.opensearch._types.Time;
+import org.opensearch.client.opensearch._types.query_dsl.FieldAndFormat;
+import org.opensearch.client.opensearch.core.ScrollRequest;
+import org.opensearch.client.opensearch.core.ScrollResponse;
+import org.opensearch.client.opensearch.core.SearchRequest;
+import org.opensearch.client.opensearch.core.SearchResponse;
+import org.opensearch.client.opensearch.core.search.Hit;
 import org.opensearch.client.transport.OpenSearchTransport;
 import org.opensearch.client.transport.httpclient5.ApacheHttpClient5TransportBuilder;
 
+import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.Collections;
+import java.util.*;
 
 public class OpenSearchStore extends BaseStore {
 
@@ -78,5 +92,97 @@ public class OpenSearchStore extends BaseStore {
           .openSearchClient(openSearchClient)
           .indexName(storeName)
           .build();
+  }
+
+  public JSONObject listSources() {
+
+    HashMap<String, JSONObject> sourceObjectMap = new HashMap<>();
+
+    JSONObject jsonObject = new JSONObject();
+    jsonObject.put(Constants.JSON_KEY_STORE_NAME, storeName);
+
+    long segmentCount = 0; // Counter to track the number of segments processed
+
+    try {
+
+      String[] scrollId = new String[1];
+
+      try {
+
+        // Initial search request with scroll
+        SearchRequest searchRequest = new SearchRequest.Builder()
+            .index(storeName)
+            .source(source -> source.filter(filter -> filter.includes("metadata"))) // Filter to include only metadata
+            .size(queryParams.embeddingPageSize())
+            .scroll(Time.of(t -> t.time("1m")))
+            .build();
+
+        SearchResponse<Object> searchResponse = openSearchClient.search(searchRequest, Object.class);
+
+        // Process initial batch
+        processHits(searchResponse.hits().hits(), sourceObjectMap);
+
+        scrollId[0] = searchResponse.scrollId();
+
+        // Continue scrolling
+        while (!searchResponse.hits().hits().isEmpty()) {
+          ScrollRequest scrollRequest = new ScrollRequest.Builder()
+              .scrollId(scrollId[0])
+              .scroll(Time.of(t -> t.time("1m")))
+              .build();
+
+          ScrollResponse<Object> scrollResponse = openSearchClient.scroll(scrollRequest, Object.class);
+          processHits(scrollResponse.hits().hits(), sourceObjectMap);
+          scrollId[0] = scrollResponse.scrollId();
+
+          if (scrollResponse.hits().hits().isEmpty()) {
+            break;
+          }
+        }
+
+      } finally {
+        cleanup(openSearchClient, scrollId[0]);
+      }
+
+    } catch (IOException e) {
+
+      LOGGER.error("Error while listing sources", e);
+    }
+
+    jsonObject.put(Constants.JSON_KEY_SOURCES, JsonUtils.jsonObjectCollectionToJsonArray(sourceObjectMap.values()));
+    jsonObject.put(Constants.JSON_KEY_SOURCE_COUNT, sourceObjectMap.size());
+
+    return jsonObject;
+  }
+
+  private void processHits(List<Hit<Object>> hits, HashMap<String, JSONObject> sourceObjectMap) {
+
+    for (Hit<Object> hit : hits) {
+
+      // Extract metadata from hit
+      String id = hit.id();  // Document ID
+      Double score = hit.score();  // Document score
+      String index = hit.index();  // Document index
+
+      // Convert the Map to a JSONObject
+      JSONObject jsonObject = new JSONObject((Map<?, ?>) hit.source());
+      // Extract the metadata field from the JSONObject
+      JSONObject metadataObject = jsonObject.optJSONObject("metadata");
+      if(metadataObject != null) {
+
+        JSONObject sourceObject = getSourceObject(metadataObject);
+        addOrUpdateSourceObjectIntoSourceObjectMap(sourceObjectMap, sourceObject);
+      }
+    }
+  }
+
+  private void cleanup(OpenSearchClient client, String scrollId) {
+    if (scrollId != null) {
+      try {
+        client.clearScroll(builder -> builder.scrollId(scrollId));
+      } catch (IOException e) {
+        LOGGER.error("Error while cleaning up scroll when listing sources", e);
+      }
+    }
   }
 }
