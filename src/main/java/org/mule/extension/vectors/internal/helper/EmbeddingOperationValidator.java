@@ -76,8 +76,8 @@ public class EmbeddingOperationValidator {
     EMBEDDING_OPERATION_TYPE_TO_SUPPORTED_VECTOR_STORES.put(Constants.STORE_OPERATION_TYPE_QUERY_ALL,
             new HashSet<>(Arrays.asList(
               Constants.VECTOR_STORE_PGVECTOR,
-              // Constants.VECTOR_STORE_ELASTICSEARCH,  // Needs to be tested
-              Constants.VECTOR_STORE_OPENSEARCH,  // Needs to be tested
+              Constants.VECTOR_STORE_ELASTICSEARCH,  // Needs to be tested
+              Constants.VECTOR_STORE_OPENSEARCH,
               Constants.VECTOR_STORE_MILVUS,
               Constants.VECTOR_STORE_CHROMA,
               // Constants.VECTOR_STORE_PINECONE, // Do not support GTE with strings.

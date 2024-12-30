@@ -159,11 +159,6 @@ public class OpenSearchStore extends BaseStore {
 
     for (Hit<Object> hit : hits) {
 
-      // Extract metadata from hit
-      String id = hit.id();  // Document ID
-      Double score = hit.score();  // Document score
-      String index = hit.index();  // Document index
-
       // Convert the Map to a JSONObject
       JSONObject jsonObject = new JSONObject((Map<?, ?>) hit.source());
       // Extract the metadata field from the JSONObject
