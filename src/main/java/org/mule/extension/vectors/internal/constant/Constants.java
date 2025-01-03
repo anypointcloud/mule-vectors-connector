@@ -15,6 +15,13 @@ public class Constants {
   public static final String STORAGE_TYPE_LOCAL = "Local";
   public static final String STORAGE_TYPE_AWS_S3 = "S3";
   public static final String STORAGE_TYPE_AZURE_BLOB = "AZURE_BLOB";
+  public static final String STORAGE_TYPE_GCS = "GCS";
+
+  public static final String GCS_PREFIX = "gs://";
+  public static final String GCS_AUTH_URI = "https://accounts.google.com/o/oauth2/auth";
+  public static final String GCS_TOKEN_URI = "https://oauth2.googleapis.com/token";
+  public static final String GCS_AUTH_PROVIDER_X509_CERT_URL = "https://www.googleapis.com/oauth2/v1/certs";
+  public static final String GCS_CLIENT_X509_CERT_URL = "https://www.googleapis.com/robot/v1/metadata/x509/";
 
   public static final String EMBEDDING_MODEL_SERVICE_OPENAI = "OPENAI";
   public static final String EMBEDDING_MODEL_SERVICE_AZURE_OPENAI = "AZURE_OPENAI";
