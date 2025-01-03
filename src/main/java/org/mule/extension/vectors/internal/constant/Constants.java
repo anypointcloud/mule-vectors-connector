@@ -17,7 +17,7 @@ public class Constants {
   public static final String STORAGE_TYPE_AZURE_BLOB = "AZURE_BLOB";
   public static final String STORAGE_TYPE_GCS = "GCS";
 
-  public static final String GCS_PREFIX = "gcs://";
+  public static final String GCS_PREFIX = "gs://";
   public static final String GCS_AUTH_URI = "https://accounts.google.com/o/oauth2/auth";
   public static final String GCS_TOKEN_URI = "https://oauth2.googleapis.com/token";
   public static final String GCS_AUTH_PROVIDER_X509_CERT_URL = "https://www.googleapis.com/oauth2/v1/certs";

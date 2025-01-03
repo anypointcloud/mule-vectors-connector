@@ -22,6 +22,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.stream.StreamSupport;
 
 public class GoogleCloudStorage extends BaseStorage {
@@ -60,11 +61,18 @@ public class GoogleCloudStorage extends BaseStorage {
         }
         String pathWithoutPrefix = contextPath.substring(Constants.GCS_PREFIX.length());
         int firstSlashIndex = pathWithoutPrefix.indexOf('/');
+        String bucket;
+        String objectKey = "";
         if (firstSlashIndex == -1) {
-            throw new IllegalArgumentException(String.format("GCS path must contain a bucket and object path: '%s'", contextPath));
+
+            bucket = pathWithoutPrefix;
+
+        } else {
+
+            bucket = pathWithoutPrefix.substring(0, firstSlashIndex);
+            objectKey = pathWithoutPrefix.substring(firstSlashIndex + 1);
         }
-        String bucket = pathWithoutPrefix.substring(0, firstSlashIndex);
-        String objectKey = pathWithoutPrefix.substring(firstSlashIndex + 1);
+
         LOGGER.debug("Parsed GCS Path: Bucket = {}, Object Key = {}", bucket, objectKey);
         return new String[]{bucket, objectKey};
     }
@@ -130,9 +138,23 @@ public class GoogleCloudStorage extends BaseStorage {
     }
 
     private void fetchNextBlobPage() {
-        this.blobPage = (this.blobPage == null)
-                ? getStorageService().list(this.bucket, Storage.BlobListOption.prefix(this.objectKey + "/"))
-                : this.blobPage.getNextPage();
+
+        if(this.blobPage == null) {
+
+            // Checks if items must be filtered by prefix or not
+            if(Objects.equals(this.objectKey, "")){
+
+                this.blobPage = getStorageService().list(this.bucket);
+            } else {
+
+                String prefix = this.objectKey + ((this.objectKey.endsWith("/") ? "" : "/"));
+                this.blobPage = getStorageService().list(this.bucket, Storage.BlobListOption.prefix(prefix));
+            }
+        } else {
+
+            this.blobPage = this.blobPage.getNextPage();
+        }
+
         this.blobIterator = (this.blobPage == null)
                 ? Collections.emptyIterator()
                 : StreamSupport.stream(this.blobPage.getValues().spliterator(), false)
@@ -167,6 +189,12 @@ public class GoogleCloudStorage extends BaseStorage {
 
     public Document getSingleDocument() {
         LOGGER.debug("GCS URL: " + contextPath);
+        if (Objects.equals(this.objectKey, "")) {
+
+            throw new ModuleException(
+                String.format("GCS path must contain a bucket and object path: '%s'", contextPath),
+                MuleVectorsErrorType.INVALID_PARAMETERS_ERROR);
+        }
         Document document = getDocumentLoader().loadDocument(this.bucket, this.objectKey, documentParser);
         MetadataUtils.addMetadataToDocument(document, fileType, this.objectKey);
         return document;
