@@ -20,7 +20,7 @@ MuleSoft Vectors provides access to a broad number of external Vector Stores and
 <dependency>
    <groupId>io.github.mulesoft-ai-chain-project</groupId>
    <artifactId>mule4-vectors-connector</artifactId>
-   <version>0.3.0</version>
+   <version>0.3.10</version>
    <classifier>mule-plugin</classifier>
 </dependency>
 ```
@@ -34,7 +34,7 @@ Then add the following dependency to your application's `pom.xml`:
 <dependency>
     <groupId>com.mulesoft.connectors</groupId>
     <artifactId>mule4-vectors-connector</artifactId>
-    <version>0.3.0</version>
+    <version>0.3.10</version>
     <classifier>mule-plugin</classifier>
 </dependency>
 ```
