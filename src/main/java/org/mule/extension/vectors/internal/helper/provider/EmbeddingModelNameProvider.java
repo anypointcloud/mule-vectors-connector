@@ -48,6 +48,15 @@ public class EmbeddingModelNameProvider implements ValueProvider {
       Constants.EMBEDDING_MODEL_NAME_SFDC_OPENAI_TEXT_EMBEDDING_ADA_002
   );
 
+  private static final Set<Value> VALUES_FOR_VERTEX_AI = ValueBuilder.getValuesFor(
+      Constants.EMBEDDING_MODEL_NAME_VERTEX_TEXT_EMBEDDING_GECKO_001,
+      Constants.EMBEDDING_MODEL_NAME_VERTEX_TEXT_EMBEDDING_GECKO_003,
+      Constants.EMBEDDING_MODEL_NAME_VERTEX_TEXT_EMBEDDING_004,
+      Constants.EMBEDDING_MODEL_NAME_VERTEX_TEXT_EMBEDDING_GECKO_MULTILINGUAL_001,
+      Constants.EMBEDDING_MODEL_NAME_VERTEX_TEXT_MULTILINGUAL_EMBEDDING_002,
+      Constants.EMBEDDING_MODEL_NAME_VERTEX_MULTI_MODAL_EMBEDDING
+  );
+
   @Override
   public Set<Value> resolve() throws ValueResolvingException {
 
@@ -65,6 +74,8 @@ public class EmbeddingModelNameProvider implements ValueProvider {
         return VALUES_FOR_HUGGING_FACE;
       case Constants.EMBEDDING_MODEL_SERVICE_EINSTEIN:
         return VALUES_FOR_EINSTEIN;
+      case Constants.EMBEDDING_MODEL_SERVICE_VERTEX_AI:
+        return VALUES_FOR_VERTEX_AI;
       default:
         return Collections.emptySet();
     }
