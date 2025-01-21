@@ -1,38 +1,25 @@
 package org.mule.extension.vectors.internal.model.vertexai;
 
-import com.google.api.gax.core.FixedCredentialsProvider;
 import com.google.auth.Credentials;
-import com.google.cloud.aiplatform.v1beta1.ComputeTokensRequest;
-import com.google.cloud.aiplatform.v1beta1.ComputeTokensResponse;
-import com.google.cloud.aiplatform.v1beta1.EndpointName;
-import com.google.cloud.aiplatform.v1beta1.LlmUtilityServiceClient;
-import com.google.cloud.aiplatform.v1beta1.LlmUtilityServiceSettings;
-import com.google.cloud.aiplatform.v1beta1.PredictResponse;
-import com.google.cloud.aiplatform.v1beta1.PredictionServiceClient;
-import com.google.cloud.aiplatform.v1beta1.PredictionServiceSettings;
-import com.google.cloud.aiplatform.v1beta1.TokensInfo;
+import com.google.api.gax.core.FixedCredentialsProvider;
+import com.google.cloud.aiplatform.v1beta1.*;
 import com.google.protobuf.Value;
 import com.google.protobuf.util.JsonFormat;
 import dev.langchain4j.data.embedding.Embedding;
 import dev.langchain4j.data.segment.TextSegment;
-import dev.langchain4j.internal.Json;
-import dev.langchain4j.internal.ValidationUtils;
 import dev.langchain4j.model.embedding.DimensionAwareEmbeddingModel;
 import dev.langchain4j.model.output.Response;
 import dev.langchain4j.model.output.TokenUsage;
-import dev.langchain4j.spi.ServiceHelper;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 import static dev.langchain4j.internal.Json.toJson;
 import static dev.langchain4j.internal.RetryUtils.withRetry;
 import static dev.langchain4j.internal.Utils.getOrDefault;
 import static dev.langchain4j.internal.ValidationUtils.ensureGreaterThanZero;
+import static dev.langchain4j.internal.ValidationUtils.ensureNotBlank;
 import static dev.langchain4j.spi.ServiceHelper.loadFactories;
 import static java.util.stream.Collectors.toList;
 
@@ -70,13 +57,14 @@ public class VertexAiEmbeddingModel extends DimensionAwareEmbeddingModel {
                                 Boolean autoTruncate) {
 
     String regionWithBaseAPI = endpoint != null ? endpoint :
-        ValidationUtils.ensureNotBlank(location, "location") + DEFAULT_GOOGLEAPIS_ENDPOINT_SUFFIX;
+        ensureNotBlank(location, "location") + DEFAULT_GOOGLEAPIS_ENDPOINT_SUFFIX;
 
     this.endpointName = EndpointName.ofProjectLocationPublisherModelName(
-        ValidationUtils.ensureNotBlank(project, "project"),
+        ensureNotBlank(project, "project"),
         location,
-        ValidationUtils.ensureNotBlank(publisher, "publisher"),
-        ValidationUtils.ensureNotBlank(modelName, "modelName"));
+        ensureNotBlank(publisher, "publisher"),
+        ensureNotBlank(modelName, "modelName")
+    );
 
     try {
 
