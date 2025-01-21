@@ -48,7 +48,6 @@ public class EmbeddingModelNameProvider implements ValueProvider {
   );
 
   private static final Set<Value> VALUES_FOR_VERTEX_AI = ValueBuilder.getValuesFor(
-      Constants.EMBEDDING_MODEL_NAME_VERTEX_TEXT_EMBEDDING_GECKO_002,
       Constants.EMBEDDING_MODEL_NAME_VERTEX_TEXT_EMBEDDING_GECKO_003,
       Constants.EMBEDDING_MODEL_NAME_VERTEX_TEXT_EMBEDDING_004,
       Constants.EMBEDDING_MODEL_NAME_VERTEX_TEXT_EMBEDDING_GECKO_MULTILINGUAL_001,

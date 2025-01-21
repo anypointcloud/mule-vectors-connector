@@ -42,7 +42,6 @@ public class Constants {
   public static final String EMBEDDING_MODEL_NAME_SFDC_TEXT_EMBEDDING_ADA_002 = "sfdc_ai__DefaultTextEmbeddingAda_002";
   public static final String EMBEDDING_MODEL_NAME_SFDC_AZURE_TEXT_EMBEDDING_ADA_002 = "sfdc_ai__DefaultAzureOpenAITextEmbeddingAda_002";
   public static final String EMBEDDING_MODEL_NAME_SFDC_OPENAI_TEXT_EMBEDDING_ADA_002 = "sfdc_ai__DefaultOpenAITextEmbeddingAda_002";
-  public static final String EMBEDDING_MODEL_NAME_VERTEX_TEXT_EMBEDDING_GECKO_002 = "textembedding-gecko@002";
   public static final String EMBEDDING_MODEL_NAME_VERTEX_TEXT_EMBEDDING_GECKO_003 = "textembedding-gecko@003";
   public static final String EMBEDDING_MODEL_NAME_VERTEX_TEXT_EMBEDDING_004 = "text-embedding-004";
   public static final String EMBEDDING_MODEL_NAME_VERTEX_TEXT_EMBEDDING_GECKO_MULTILINGUAL_001 = "textembedding-gecko-multilingual@001";
