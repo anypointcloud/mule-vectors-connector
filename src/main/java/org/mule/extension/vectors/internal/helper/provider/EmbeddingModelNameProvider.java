@@ -6,7 +6,6 @@ import java.util.Set;
 import org.mule.extension.vectors.internal.connection.model.BaseModelConnection;
 import org.mule.extension.vectors.internal.constant.Constants;
 import org.mule.runtime.api.value.Value;
-import org.mule.runtime.extension.api.annotation.param.Config;
 import org.mule.runtime.extension.api.annotation.param.Connection;
 import org.mule.runtime.extension.api.values.ValueBuilder;
 import org.mule.runtime.extension.api.values.ValueProvider;
@@ -49,7 +48,7 @@ public class EmbeddingModelNameProvider implements ValueProvider {
   );
 
   private static final Set<Value> VALUES_FOR_VERTEX_AI = ValueBuilder.getValuesFor(
-      Constants.EMBEDDING_MODEL_NAME_VERTEX_TEXT_EMBEDDING_GECKO_001,
+      Constants.EMBEDDING_MODEL_NAME_VERTEX_TEXT_EMBEDDING_GECKO_002,
       Constants.EMBEDDING_MODEL_NAME_VERTEX_TEXT_EMBEDDING_GECKO_003,
       Constants.EMBEDDING_MODEL_NAME_VERTEX_TEXT_EMBEDDING_004,
       Constants.EMBEDDING_MODEL_NAME_VERTEX_TEXT_EMBEDDING_GECKO_MULTILINGUAL_001,
