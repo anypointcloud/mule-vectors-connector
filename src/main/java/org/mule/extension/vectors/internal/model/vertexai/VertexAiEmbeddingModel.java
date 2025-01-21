@@ -197,6 +197,15 @@ public class VertexAiEmbeddingModel extends DimensionAwareEmbeddingModel {
    */
   public List<Integer> calculateTokensCounts(List<TextSegment> segments) {
 
+    // Check if the model is multimodal
+    if (endpointName.getModel().contains(VertexAiEmbeddingModelName.MULTIMODALEMBEDDING.toString())) {
+      // For multimodal models, return a conservative estimate
+      // You might want to adjust this based on your specific use case
+      return segments.stream()
+          .map(segment -> segment.text().length() / 4) // Rough estimate of tokens
+          .collect(toList());
+    }
+
     try (LlmUtilityServiceClient utilClient = LlmUtilityServiceClient.create(this.llmUtilitySettings)) {
       List<Integer> tokensCounts = new ArrayList<>();
 
@@ -211,6 +220,9 @@ public class VertexAiEmbeddingModel extends DimensionAwareEmbeddingModel {
           JsonFormat.parser().merge(toJson(new VertexAiEmbeddingInstance(segment.text())), instanceBuilder);
           instances.add(instanceBuilder.build());
         }
+
+        //computeTokens it's a utility endpoint that's free to use. It's primarily used for planning and optimization purposes,
+        //like determining batch sizes and estimating token usage.
 
         ComputeTokensRequest computeTokensRequest = ComputeTokensRequest.newBuilder()
             .setEndpoint(endpointName.toString())
