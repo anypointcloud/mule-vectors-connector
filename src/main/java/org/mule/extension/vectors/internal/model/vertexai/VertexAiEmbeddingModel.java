@@ -10,6 +10,7 @@ import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.model.embedding.DimensionAwareEmbeddingModel;
 import dev.langchain4j.model.output.Response;
 import dev.langchain4j.model.output.TokenUsage;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,10 +24,13 @@ import static dev.langchain4j.internal.ValidationUtils.ensureNotBlank;
 import static dev.langchain4j.spi.ServiceHelper.loadFactories;
 import static java.util.stream.Collectors.toList;
 
+/**
+ * A model class for interacting with the Vertex AI Embedding service.
+ * This model generates embeddings for text segments using Google's Vertex AI platform.
+ */
 public class VertexAiEmbeddingModel extends DimensionAwareEmbeddingModel {
 
   private static final String DEFAULT_GOOGLEAPIS_ENDPOINT_SUFFIX = "-aiplatform.googleapis.com:443";
-
   private static final int COMPUTE_TOKENS_MAX_INPUTS_PER_REQUEST = 2_048;
   private static final int DEFAULT_MAX_SEGMENTS_PER_BATCH = 250;
   private static final int DEFAULT_MAX_TOKENS_PER_BATCH = 20_000;
@@ -42,6 +46,23 @@ public class VertexAiEmbeddingModel extends DimensionAwareEmbeddingModel {
   private final Integer outputDimensionality;
   private final Boolean autoTruncate;
 
+  /**
+   * Constructs a VertexAiEmbeddingModel instance.
+   *
+   * @param endpoint                The API endpoint (optional).
+   * @param project                 The GCP project ID.
+   * @param credentials             The credentials to authenticate the service account.
+   * @param location                The location of the Vertex AI service.
+   * @param publisher               The publisher of the model.
+   * @param modelName               The name of the model.
+   * @param maxRetries              The maximum number of retries for requests.
+   * @param maxSegmentsPerBatch     The maximum number of segments to process in a batch.
+   * @param maxTokensPerBatch       The maximum number of tokens to process in a batch.
+   * @param taskType                The task type for embedding (e.g., classification, semantic similarity).
+   * @param titleMetadataKey        The key used to extract metadata for titles (optional).
+   * @param outputDimensionality    The dimensionality of the output embeddings.
+   * @param autoTruncate            Whether to automatically truncate the embeddings if they exceed a length limit.
+   */
   public VertexAiEmbeddingModel(String endpoint,
                                 String project,
                                 Credentials credentials,
@@ -106,6 +127,12 @@ public class VertexAiEmbeddingModel extends DimensionAwareEmbeddingModel {
     this.autoTruncate = getOrDefault(autoTruncate, false);
   }
 
+  /**
+   * Embeds all the provided text segments.
+   *
+   * @param segments The list of text segments to embed.
+   * @return A response containing the embeddings and token usage statistics.
+   */
   public Response<List<Embedding>> embedAll(List<TextSegment> segments) {
 
     try (PredictionServiceClient client = PredictionServiceClient.create(settings)) {
@@ -162,6 +189,12 @@ public class VertexAiEmbeddingModel extends DimensionAwareEmbeddingModel {
     }
   }
 
+  /**
+   * Calculates the token counts for each text segment.
+   *
+   * @param segments The list of text segments.
+   * @return A list of token counts for each segment.
+   */
   public List<Integer> calculateTokensCounts(List<TextSegment> segments) {
 
     try (LlmUtilityServiceClient utilClient = LlmUtilityServiceClient.create(this.llmUtilitySettings)) {
@@ -214,6 +247,7 @@ public class VertexAiEmbeddingModel extends DimensionAwareEmbeddingModel {
 
     List<Integer> currentBatch = new ArrayList<>();
     int currentBatchSum = 0;
+
     for (Integer tokensCount : tokensCounts) {
       if (currentBatchSum + tokensCount <= maxTokensPerBatch &&
           currentBatch.size() < maxSegmentsPerBatch) {
@@ -226,6 +260,7 @@ public class VertexAiEmbeddingModel extends DimensionAwareEmbeddingModel {
         currentBatchSum = tokensCount;
       }
     }
+
     if (!currentBatch.isEmpty()) {
       batches.add(currentBatch);
     }
@@ -268,6 +303,11 @@ public class VertexAiEmbeddingModel extends DimensionAwareEmbeddingModel {
         .getNumberValue();
   }
 
+  /**
+   * Returns a builder for the VertexAiEmbeddingModel.
+   *
+   * @return A VertexAiEmbeddingModel builder.
+   */
   public static VertexAiEmbeddingModel.Builder builder() {
     for (VertexAiEmbeddingModelBuilderFactory factory : loadFactories(VertexAiEmbeddingModelBuilderFactory.class)) {
       return factory.get();
@@ -275,6 +315,9 @@ public class VertexAiEmbeddingModel extends DimensionAwareEmbeddingModel {
     return new Builder();
   }
 
+  /**
+   * Enum representing different task types supported by Vertex AI embeddings.
+   */
   public static enum TaskType {
     RETRIEVAL_QUERY,
     RETRIEVAL_DOCUMENT,
@@ -284,11 +327,11 @@ public class VertexAiEmbeddingModel extends DimensionAwareEmbeddingModel {
     QUESTION_ANSWERING,
     FACT_VERIFICATION,
     CODE_RETRIEVAL_QUERY;
-
-    private TaskType() {
-    }
   }
 
+  /**
+   * Builder class for constructing a VertexAiEmbeddingModel.
+   */
   public static class Builder {
     private String endpoint;
     private String project;
@@ -303,9 +346,6 @@ public class VertexAiEmbeddingModel extends DimensionAwareEmbeddingModel {
     private String titleMetadataKey;
     private Integer outputDimensionality;
     private Boolean autoTruncate;
-
-    public Builder() {
-    }
 
     public Builder endpoint(String endpoint) {
       this.endpoint = endpoint;
@@ -342,8 +382,8 @@ public class VertexAiEmbeddingModel extends DimensionAwareEmbeddingModel {
       return this;
     }
 
-    public Builder maxSegmentsPerBatch(Integer maxBatchSize) {
-      this.maxSegmentsPerBatch = maxBatchSize;
+    public Builder maxSegmentsPerBatch(Integer maxSegmentsPerBatch) {
+      this.maxSegmentsPerBatch = maxSegmentsPerBatch;
       return this;
     }
 
@@ -391,6 +431,9 @@ public class VertexAiEmbeddingModel extends DimensionAwareEmbeddingModel {
     }
   }
 
+  /**
+   * Helper class for representing embedding instances.
+   */
   class VertexAiEmbeddingInstance {
     private String content;
     private String title;
@@ -409,6 +452,9 @@ public class VertexAiEmbeddingModel extends DimensionAwareEmbeddingModel {
     }
   }
 
+  /**
+   * Helper class for representing embedding parameters.
+   */
   class VertexAiEmbeddingParameters {
     private Integer outputDimensionality;
     private Boolean autoTruncate;
@@ -427,7 +473,9 @@ public class VertexAiEmbeddingModel extends DimensionAwareEmbeddingModel {
     }
   }
 
-  interface VertexAiEmbeddingModelBuilderFactory  extends Supplier<Builder> {
-
+  /**
+   * Interface for factories that produce VertexAiEmbeddingModel builders.
+   */
+  interface VertexAiEmbeddingModelBuilderFactory extends Supplier<Builder> {
   }
 }
