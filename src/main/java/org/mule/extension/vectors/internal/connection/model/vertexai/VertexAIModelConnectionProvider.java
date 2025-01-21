@@ -27,6 +27,7 @@ public class VertexAIModelConnectionProvider extends BaseModelConnectionProvider
         try {
             VertexAIModelConnection vertexAIModelConnection = new VertexAIModelConnection(
                 vertexAIModelConnectionParameters.getProjectId(),
+                vertexAIModelConnectionParameters.getLocation(),
                 vertexAIModelConnectionParameters.getClientEmail(),
                 vertexAIModelConnectionParameters.getClientId(),
                 vertexAIModelConnectionParameters.getPrivateKeyId(),

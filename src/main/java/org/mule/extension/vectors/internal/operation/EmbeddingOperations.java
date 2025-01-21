@@ -79,6 +79,8 @@ public class EmbeddingOperations {
 
       EmbeddingModel embeddingModel = baseModel.buildEmbeddingModel();
 
+      LOGGER.debug(String.format("Embedding model for %s service built.", modelConnection.getEmbeddingModelService()));
+
       List<TextSegment> textSegments;
       if(segmentationParameters.getMaxSegmentSizeInChars() > 0) {
 

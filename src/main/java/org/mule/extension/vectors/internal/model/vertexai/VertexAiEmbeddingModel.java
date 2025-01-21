@@ -16,8 +16,6 @@ import com.google.protobuf.util.JsonFormat;
 import dev.langchain4j.data.embedding.Embedding;
 import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.internal.Json;
-import dev.langchain4j.internal.RetryUtils;
-import dev.langchain4j.internal.Utils;
 import dev.langchain4j.internal.ValidationUtils;
 import dev.langchain4j.model.embedding.DimensionAwareEmbeddingModel;
 import dev.langchain4j.model.output.Response;
@@ -31,30 +29,48 @@ import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import static dev.langchain4j.internal.Json.toJson;
+import static dev.langchain4j.internal.RetryUtils.withRetry;
+import static dev.langchain4j.internal.Utils.getOrDefault;
+import static dev.langchain4j.internal.ValidationUtils.ensureGreaterThanZero;
+import static dev.langchain4j.spi.ServiceHelper.loadFactories;
+import static java.util.stream.Collectors.toList;
+
 public class VertexAiEmbeddingModel extends DimensionAwareEmbeddingModel {
 
   private static final String DEFAULT_GOOGLEAPIS_ENDPOINT_SUFFIX = "-aiplatform.googleapis.com:443";
-  private static final int COMPUTE_TOKENS_MAX_INPUTS_PER_REQUEST = 2048;
+
+  private static final int COMPUTE_TOKENS_MAX_INPUTS_PER_REQUEST = 2_048;
   private static final int DEFAULT_MAX_SEGMENTS_PER_BATCH = 250;
-  private static final int DEFAULT_MAX_TOKENS_PER_BATCH = 20000;
+  private static final int DEFAULT_MAX_TOKENS_PER_BATCH = 20_000;
+
   private final PredictionServiceSettings settings;
   private final LlmUtilityServiceSettings llmUtilitySettings;
   private final EndpointName endpointName;
   private final Integer maxRetries;
   private final Integer maxSegmentsPerBatch;
   private final Integer maxTokensPerBatch;
-  private final VertexAiEmbeddingModel.TaskType taskType;
+  private final TaskType taskType;
   private final String titleMetadataKey;
   private final Integer outputDimensionality;
   private final Boolean autoTruncate;
 
-  public VertexAiEmbeddingModel(String endpoint, String project, Credentials credentials, String location, String publisher,
-                                String modelName, Integer maxRetries, Integer maxSegmentsPerBatch, Integer maxTokensPerBatch,
-                                VertexAiEmbeddingModel.TaskType taskType, String titleMetadataKey, Integer outputDimensionality,
+  public VertexAiEmbeddingModel(String endpoint,
+                                String project,
+                                Credentials credentials,
+                                String location,
+                                String publisher,
+                                String modelName,
+                                Integer maxRetries,
+                                Integer maxSegmentsPerBatch,
+                                Integer maxTokensPerBatch,
+                                TaskType taskType,
+                                String titleMetadataKey,
+                                Integer outputDimensionality,
                                 Boolean autoTruncate) {
 
     String regionWithBaseAPI = endpoint != null ? endpoint :
-        ValidationUtils.ensureNotBlank(location, "location") + "-aiplatform.googleapis.com:443";
+        ValidationUtils.ensureNotBlank(location, "location") + DEFAULT_GOOGLEAPIS_ENDPOINT_SUFFIX;
 
     this.endpointName = EndpointName.ofProjectLocationPublisherModelName(
         ValidationUtils.ensureNotBlank(project, "project"),
@@ -88,143 +104,108 @@ public class VertexAiEmbeddingModel extends DimensionAwareEmbeddingModel {
       throw new RuntimeException(ioException);
     }
 
-    this.maxRetries = (Integer)Utils.getOrDefault(maxRetries, 3);
-    this.maxSegmentsPerBatch = ValidationUtils.ensureGreaterThanZero((Integer)Utils.getOrDefault(maxSegmentsPerBatch, 250), "maxSegmentsPerBatch");
-    this.maxTokensPerBatch = ValidationUtils.ensureGreaterThanZero((Integer)Utils.getOrDefault(maxTokensPerBatch, 20000), "maxTokensPerBatch");
+    this.maxRetries = getOrDefault(maxRetries, 3);
+
+    this.maxSegmentsPerBatch = ensureGreaterThanZero(
+        getOrDefault(maxSegmentsPerBatch, DEFAULT_MAX_SEGMENTS_PER_BATCH), "maxSegmentsPerBatch");
+    this.maxTokensPerBatch = ensureGreaterThanZero(
+        getOrDefault(maxTokensPerBatch, DEFAULT_MAX_TOKENS_PER_BATCH), "maxTokensPerBatch");
+
     this.taskType = taskType;
-    this.titleMetadataKey = (String)Utils.getOrDefault(titleMetadataKey, "title");
+    this.titleMetadataKey = getOrDefault(titleMetadataKey, "title");
+
     this.outputDimensionality = outputDimensionality;
-    this.autoTruncate = (Boolean)Utils.getOrDefault(autoTruncate, false);
+    this.autoTruncate = getOrDefault(autoTruncate, false);
   }
 
   public Response<List<Embedding>> embedAll(List<TextSegment> segments) {
 
-    try {
-      PredictionServiceClient client = PredictionServiceClient.create(this.settings);
+    try (PredictionServiceClient client = PredictionServiceClient.create(settings)) {
 
-      Response response;
-      try {
-        List<Embedding> embeddings = new ArrayList();
-        int inputTokenCount = 0;
-        List<Integer> tokensCounts = this.calculateTokensCounts(segments);
-        List<Integer> batchSizes = this.groupByBatches(tokensCounts);
-        int i = 0;
-        int j = 0;
+      List<Embedding> embeddings = new ArrayList<>();
+      int inputTokenCount = 0;
 
-        while(true) {
-          if (i >= segments.size() || j >= batchSizes.size()) {
-            response = Response.from(embeddings, new TokenUsage(inputTokenCount));
-            break;
-          }
+      List<Integer> tokensCounts = this.calculateTokensCounts(segments);
+      List<Integer> batchSizes = groupByBatches(tokensCounts);
 
-          List<TextSegment> batch = segments.subList(i, i + (Integer)batchSizes.get(j));
-          List<Value> instances = new ArrayList();
-          Iterator batchIterator = batch.iterator();
+      for (int i = 0, j = 0; i < segments.size() && j < batchSizes.size(); i += batchSizes.get(j), j++) {
 
-          while(batchIterator.hasNext()) {
-            TextSegment segment = (TextSegment)batchIterator.next();
-            VertexAiEmbeddingInstance embeddingInstance = new VertexAiEmbeddingInstance(segment.text());
-            if (this.taskType != null) {
-              embeddingInstance.setTaskType(this.taskType);
-              if (this.taskType.equals(VertexAiEmbeddingModel.TaskType.RETRIEVAL_DOCUMENT)) {
-                embeddingInstance.setTitle(segment.metadata().getString(this.titleMetadataKey));
-              }
+        List<TextSegment> batch = segments.subList(i, i + batchSizes.get(j));
+
+        List<Value> instances = new ArrayList<>();
+        for (TextSegment segment : batch) {
+          VertexAiEmbeddingInstance embeddingInstance = new VertexAiEmbeddingInstance(segment.text());
+          // Specify the type of embedding task when specified
+          if (this.taskType != null) {
+            embeddingInstance.setTaskType(taskType);
+            if (this.taskType.equals(TaskType.RETRIEVAL_DOCUMENT)) {
+              // Title metadata is used for calculating embeddings for document retrieval
+              embeddingInstance.setTitle(segment.metadata().getString(titleMetadataKey));
             }
-
-            Value.Builder instanceBuilder = Value.newBuilder();
-            JsonFormat.parser().merge(Json.toJson(embeddingInstance), instanceBuilder);
-            instances.add(instanceBuilder.build());
           }
 
-          VertexAiEmbeddingParameters parameters = new VertexAiEmbeddingParameters(this.outputDimensionality, (Boolean)Utils.getOrDefault(this.autoTruncate, false));
-          Value.Builder parameterBuilder = Value.newBuilder();
-          JsonFormat.parser().merge(Json.toJson(parameters), parameterBuilder);
-          PredictResponse predictResponse = (PredictResponse)RetryUtils.withRetry(() -> {
-            return client.predict(this.endpointName, instances, parameterBuilder.build());
-          }, this.maxRetries);
-          embeddings.addAll((Collection)predictResponse.getPredictionsList().stream().map(
-              VertexAiEmbeddingModel::toEmbedding).collect(Collectors.toList()));
-
-          Value prediction;
-          for(Iterator predictionsIterator = predictResponse.getPredictionsList().iterator(); predictionsIterator.hasNext(); inputTokenCount += extractTokenCount(prediction)) {
-            prediction = (Value)predictionsIterator.next();
-          }
-
-          i += (Integer)batchSizes.get(j);
-          ++j;
-        }
-      } catch (Throwable throwable) {
-        if (client != null) {
-          try {
-            client.close();
-          } catch (Throwable throwable1) {
-            throwable.addSuppressed(throwable1);
-          }
+          Value.Builder instanceBuilder = Value.newBuilder();
+          JsonFormat.parser().merge(toJson(embeddingInstance), instanceBuilder);
+          instances.add(instanceBuilder.build());
         }
 
-        throw throwable;
+        VertexAiEmbeddingParameters parameters = new VertexAiEmbeddingParameters(
+            outputDimensionality, getOrDefault(autoTruncate, false));
+        Value.Builder parameterBuilder = Value.newBuilder();
+        JsonFormat.parser().merge(toJson(parameters), parameterBuilder);
+
+        PredictResponse response = withRetry(() -> client.predict(endpointName, instances, parameterBuilder.build()), maxRetries);
+
+        embeddings.addAll(response.getPredictionsList().stream()
+                              .map(VertexAiEmbeddingModel::toEmbedding)
+                              .collect(toList()));
+
+        for (Value prediction : response.getPredictionsList()) {
+          inputTokenCount += extractTokenCount(prediction);
+        }
       }
 
-      if (client != null) {
-        client.close();
-      }
-
-      return response;
-    } catch (Exception var18) {
-      Exception e = var18;
+      return Response.from(
+          embeddings,
+          new TokenUsage(inputTokenCount)
+      );
+    } catch (Exception e) {
       throw new RuntimeException(e);
     }
   }
 
   public List<Integer> calculateTokensCounts(List<TextSegment> segments) {
 
-    try {
-      LlmUtilityServiceClient utilClient = LlmUtilityServiceClient.create(this.llmUtilitySettings);
+    try (LlmUtilityServiceClient utilClient = LlmUtilityServiceClient.create(this.llmUtilitySettings)) {
+      List<Integer> tokensCounts = new ArrayList<>();
 
-      ArrayList tokenCounts;
-      try {
-        ArrayList<Integer> incrementaltokensCounts = new ArrayList();
-        int i = 0;
+      // The computeTokens endpoint has a limit of up to 2048 input texts per request
+      for (int i = 0; i < segments.size(); i += COMPUTE_TOKENS_MAX_INPUTS_PER_REQUEST) {
+        List<TextSegment> batch = segments.subList(i,
+                                                   Math.min(i + COMPUTE_TOKENS_MAX_INPUTS_PER_REQUEST, segments.size()));
 
-        while(true) {
-          if (i >= segments.size()) {
-            tokenCounts = incrementaltokensCounts;
-            break;
-          }
-
-          List<TextSegment> batch = segments.subList(i, Math.min(i + 2048, segments.size()));
-          List<Value> instances = new ArrayList();
-          Iterator batchIterator = batch.iterator();
-
-          while(batchIterator.hasNext()) {
-            TextSegment segment = (TextSegment)batchIterator.next();
-            Value.Builder instanceBuilder = Value.newBuilder();
-            JsonFormat.parser().merge(Json.toJson(new VertexAiEmbeddingInstance(segment.text())), instanceBuilder);
-            instances.add(instanceBuilder.build());
-          }
-
-          ComputeTokensRequest computeTokensRequest = ComputeTokensRequest.newBuilder().setEndpoint(this.endpointName.toString()).addAllInstances(instances).build();
-          ComputeTokensResponse computeTokensResponse = utilClient.computeTokens(computeTokensRequest);
-          incrementaltokensCounts.addAll((Collection)computeTokensResponse.getTokensInfoList().stream().map(TokensInfo::getTokensCount).collect(Collectors.toList()));
-          i += 2048;
-        }
-      } catch (Throwable var11) {
-        if (utilClient != null) {
-          try {
-            utilClient.close();
-          } catch (Throwable var10) {
-            var11.addSuppressed(var10);
-          }
+        List<Value> instances = new ArrayList<>();
+        for (TextSegment segment : batch) {
+          Value.Builder instanceBuilder = Value.newBuilder();
+          JsonFormat.parser().merge(toJson(new VertexAiEmbeddingInstance(segment.text())), instanceBuilder);
+          instances.add(instanceBuilder.build());
         }
 
-        throw var11;
+        ComputeTokensRequest computeTokensRequest = ComputeTokensRequest.newBuilder()
+            .setEndpoint(endpointName.toString())
+            .addAllInstances(instances)
+            .build();
+
+        ComputeTokensResponse computeTokensResponse = utilClient.computeTokens(computeTokensRequest);
+
+        tokensCounts.addAll(computeTokensResponse
+                                .getTokensInfoList()
+                                .stream()
+                                .map(TokensInfo::getTokensCount)
+                                .collect(toList()));
       }
 
-      if (utilClient != null) {
-        utilClient.close();
-      }
-
-      return tokenCounts;
+      return tokensCounts;
 
     } catch (Exception e) {
       throw new RuntimeException(e);
@@ -236,52 +217,74 @@ public class VertexAiEmbeddingModel extends DimensionAwareEmbeddingModel {
   }
 
   private List<Integer> groupByBatches(List<Integer> tokensCounts) {
-    List<List<Integer>> batches = new ArrayList();
-    List<Integer> currentBatch = new ArrayList();
+
+    // create a list of sublists of tokens counts
+    // where the maximum number of text segments per sublist is 250
+    // and the sum of the tokens counts in each sublist is less than 20_000
+
+    List<List<Integer>> batches = new ArrayList<>();
+
+    List<Integer> currentBatch = new ArrayList<>();
     int currentBatchSum = 0;
-    Iterator var5 = tokensCounts.iterator();
-
-    while(true) {
-      while(var5.hasNext()) {
-        Integer tokensCount = (Integer)var5.next();
-        if (currentBatchSum + tokensCount <= this.maxTokensPerBatch && currentBatch.size() < this.maxSegmentsPerBatch) {
-          currentBatch.add(tokensCount);
-          currentBatchSum += tokensCount;
-        } else {
-          batches.add(currentBatch);
-          currentBatch = new ArrayList();
-          currentBatch.add(tokensCount);
-          currentBatchSum = tokensCount;
-        }
-      }
-
-      if (!currentBatch.isEmpty()) {
+    for (Integer tokensCount : tokensCounts) {
+      if (currentBatchSum + tokensCount <= maxTokensPerBatch &&
+          currentBatch.size() < maxSegmentsPerBatch) {
+        currentBatch.add(tokensCount);
+        currentBatchSum += tokensCount;
+      } else {
         batches.add(currentBatch);
+        currentBatch = new ArrayList<>();
+        currentBatch.add(tokensCount);
+        currentBatchSum = tokensCount;
       }
-
-      return (List)batches.stream().mapToInt(List::size).boxed().collect(Collectors.toList());
     }
+    if (!currentBatch.isEmpty()) {
+      batches.add(currentBatch);
+    }
+
+    // returns the list of number of text segments for each batch of embedding calculations
+
+    return batches.stream()
+        .mapToInt(List::size)
+        .boxed()
+        .collect(toList());
   }
 
   private static Embedding toEmbedding(Value prediction) {
-    List<Float> vector = (List)((Value)prediction.getStructValue().getFieldsMap().get("embeddings")).getStructValue().getFieldsOrThrow("values").getListValue().getValuesList().stream().map((v) -> {
-      return (float)v.getNumberValue();
-    }).collect(Collectors.toList());
+
+    List<Float> vector = prediction.getStructValue()
+        .getFieldsMap()
+        .get("embeddings")
+        .getStructValue()
+        .getFieldsOrThrow("values")
+        .getListValue()
+        .getValuesList()
+        .stream()
+        .map(v -> (float) v.getNumberValue())
+        .collect(toList());
+
     return Embedding.from(vector);
   }
 
   private static int extractTokenCount(Value prediction) {
-    return (int)((Value)((Value)((Value)prediction.getStructValue().getFieldsMap().get("embeddings")).getStructValue().getFieldsMap().get("statistics")).getStructValue().getFieldsMap().get("token_count")).getNumberValue();
+
+    return (int) prediction.getStructValue()
+        .getFieldsMap()
+        .get("embeddings")
+        .getStructValue()
+        .getFieldsMap()
+        .get("statistics")
+        .getStructValue()
+        .getFieldsMap()
+        .get("token_count")
+        .getNumberValue();
   }
 
   public static VertexAiEmbeddingModel.Builder builder() {
-    Iterator var0 = ServiceHelper.loadFactories(VertexAiEmbeddingModelBuilderFactory.class).iterator();
-    if (var0.hasNext()) {
-      VertexAiEmbeddingModelBuilderFactory factory = (VertexAiEmbeddingModelBuilderFactory)var0.next();
-      return (VertexAiEmbeddingModel.Builder)factory.get();
-    } else {
-      return new VertexAiEmbeddingModel.Builder();
+    for (VertexAiEmbeddingModelBuilderFactory factory : loadFactories(VertexAiEmbeddingModelBuilderFactory.class)) {
+      return factory.get();
     }
+    return new Builder();
   }
 
   public static enum TaskType {
@@ -308,7 +311,7 @@ public class VertexAiEmbeddingModel extends DimensionAwareEmbeddingModel {
     private Integer maxRetries;
     private Integer maxSegmentsPerBatch;
     private Integer maxTokensPerBatch;
-    private VertexAiEmbeddingModel.TaskType taskType;
+    private TaskType taskType;
     private String titleMetadataKey;
     private Integer outputDimensionality;
     private Boolean autoTruncate;
@@ -316,81 +319,94 @@ public class VertexAiEmbeddingModel extends DimensionAwareEmbeddingModel {
     public Builder() {
     }
 
-    public VertexAiEmbeddingModel.Builder endpoint(String endpoint) {
+    public Builder endpoint(String endpoint) {
       this.endpoint = endpoint;
       return this;
     }
 
-    public VertexAiEmbeddingModel.Builder project(String project) {
+    public Builder project(String project) {
       this.project = project;
       return this;
     }
 
-    public VertexAiEmbeddingModel.Builder credentials(Credentials credentials) {
+    public Builder credentials(Credentials credentials) {
       this.credentials = credentials;
       return this;
     }
 
-    public VertexAiEmbeddingModel.Builder location(String location) {
+    public Builder location(String location) {
       this.location = location;
       return this;
     }
 
-    public VertexAiEmbeddingModel.Builder publisher(String publisher) {
+    public Builder publisher(String publisher) {
       this.publisher = publisher;
       return this;
     }
 
-    public VertexAiEmbeddingModel.Builder modelName(String modelName) {
+    public Builder modelName(String modelName) {
       this.modelName = modelName;
       return this;
     }
 
-    public VertexAiEmbeddingModel.Builder maxRetries(Integer maxRetries) {
+    public Builder maxRetries(Integer maxRetries) {
       this.maxRetries = maxRetries;
       return this;
     }
 
-    public VertexAiEmbeddingModel.Builder maxSegmentsPerBatch(Integer maxBatchSize) {
+    public Builder maxSegmentsPerBatch(Integer maxBatchSize) {
       this.maxSegmentsPerBatch = maxBatchSize;
       return this;
     }
 
-    public VertexAiEmbeddingModel.Builder maxTokensPerBatch(Integer maxTokensPerBatch) {
+    public Builder maxTokensPerBatch(Integer maxTokensPerBatch) {
       this.maxTokensPerBatch = maxTokensPerBatch;
       return this;
     }
 
-    public VertexAiEmbeddingModel.Builder taskType(
-        VertexAiEmbeddingModel.TaskType taskType) {
+    public Builder taskType(TaskType taskType) {
       this.taskType = taskType;
       return this;
     }
 
-    public VertexAiEmbeddingModel.Builder titleMetadataKey(String titleMetadataKey) {
+    public Builder titleMetadataKey(String titleMetadataKey) {
       this.titleMetadataKey = titleMetadataKey;
       return this;
     }
 
-    public VertexAiEmbeddingModel.Builder autoTruncate(Boolean autoTruncate) {
+    public Builder autoTruncate(Boolean autoTruncate) {
       this.autoTruncate = autoTruncate;
       return this;
     }
 
-    public VertexAiEmbeddingModel.Builder outputDimensionality(Integer outputDimensionality) {
+    public Builder outputDimensionality(Integer outputDimensionality) {
       this.outputDimensionality = outputDimensionality;
       return this;
     }
 
     public VertexAiEmbeddingModel build() {
-      return new VertexAiEmbeddingModel(this.endpoint, this.project, this.credentials, this.location, this.publisher, this.modelName, this.maxRetries, this.maxSegmentsPerBatch, this.maxTokensPerBatch, this.taskType, this.titleMetadataKey, this.outputDimensionality, this.autoTruncate);
+      return new VertexAiEmbeddingModel(
+          endpoint,
+          project,
+          credentials,
+          location,
+          publisher,
+          modelName,
+          maxRetries,
+          maxSegmentsPerBatch,
+          maxTokensPerBatch,
+          taskType,
+          titleMetadataKey,
+          outputDimensionality,
+          autoTruncate
+      );
     }
   }
 
   class VertexAiEmbeddingInstance {
     private String content;
     private String title;
-    private VertexAiEmbeddingModel.TaskType task_type;
+    private TaskType task_type;
 
     VertexAiEmbeddingInstance(String content) {
       this.content = content;
@@ -400,7 +416,7 @@ public class VertexAiEmbeddingModel extends DimensionAwareEmbeddingModel {
       this.title = title;
     }
 
-    public void setTaskType(VertexAiEmbeddingModel.TaskType taskType) {
+    public void setTaskType(TaskType taskType) {
       this.task_type = taskType;
     }
   }
