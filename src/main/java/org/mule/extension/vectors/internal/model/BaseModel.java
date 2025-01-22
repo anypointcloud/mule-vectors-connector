@@ -9,6 +9,7 @@ import org.mule.extension.vectors.internal.connection.model.huggingface.HuggingF
 import org.mule.extension.vectors.internal.connection.model.mistralai.MistralAIModelConnection;
 import org.mule.extension.vectors.internal.connection.model.nomic.NomicModelConnection;
 import org.mule.extension.vectors.internal.connection.model.openai.OpenAIModelConnection;
+import org.mule.extension.vectors.internal.connection.model.vertexai.VertexAIModelConnection;
 import org.mule.extension.vectors.internal.constant.Constants;
 import org.mule.extension.vectors.internal.error.MuleVectorsErrorType;
 import org.mule.extension.vectors.internal.helper.parameter.EmbeddingModelParameters;
@@ -18,6 +19,7 @@ import org.mule.extension.vectors.internal.model.huggingface.HuggingFaceModel;
 import org.mule.extension.vectors.internal.model.mistralai.MistralAIModel;
 import org.mule.extension.vectors.internal.model.nomic.NomicModel;
 import org.mule.extension.vectors.internal.model.openai.OpenAIModel;
+import org.mule.extension.vectors.internal.model.vertexai.VertexAIModel;
 import org.mule.runtime.extension.api.exception.ModuleException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -101,6 +103,10 @@ public class BaseModel {
 
         case Constants.EMBEDDING_MODEL_SERVICE_EINSTEIN:
           baseModel = new EinsteinModel(embeddingConfiguration, (EinsteinModelConnection) modelConnection, embeddingModelParameters);
+          break;
+
+        case Constants.EMBEDDING_MODEL_SERVICE_VERTEX_AI:
+          baseModel = new VertexAIModel(embeddingConfiguration, (VertexAIModelConnection) modelConnection, embeddingModelParameters);
           break;
 
         default:

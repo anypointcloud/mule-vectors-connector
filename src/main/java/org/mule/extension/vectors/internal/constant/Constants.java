@@ -18,10 +18,11 @@ public class Constants {
   public static final String STORAGE_TYPE_GCS = "GCS";
 
   public static final String GCS_PREFIX = "gs://";
-  public static final String GCS_AUTH_URI = "https://accounts.google.com/o/oauth2/auth";
-  public static final String GCS_TOKEN_URI = "https://oauth2.googleapis.com/token";
-  public static final String GCS_AUTH_PROVIDER_X509_CERT_URL = "https://www.googleapis.com/oauth2/v1/certs";
-  public static final String GCS_CLIENT_X509_CERT_URL = "https://www.googleapis.com/robot/v1/metadata/x509/";
+
+  public static final String GCP_AUTH_URI = "https://accounts.google.com/o/oauth2/auth";
+  public static final String GCP_TOKEN_URI = "https://oauth2.googleapis.com/token";
+  public static final String GCP_AUTH_PROVIDER_X509_CERT_URL = "https://www.googleapis.com/oauth2/v1/certs";
+  public static final String GCP_CLIENT_X509_CERT_URL = "https://www.googleapis.com/robot/v1/metadata/x509/";
 
   public static final String EMBEDDING_MODEL_SERVICE_OPENAI = "OPENAI";
   public static final String EMBEDDING_MODEL_SERVICE_AZURE_OPENAI = "AZURE_OPENAI";
@@ -29,6 +30,7 @@ public class Constants {
   public static final String EMBEDDING_MODEL_SERVICE_NOMIC = "NOMIC";
   public static final String EMBEDDING_MODEL_SERVICE_HUGGING_FACE = "HUGGING_FACE";
   public static final String EMBEDDING_MODEL_SERVICE_EINSTEIN = "EINSTEIN";
+  public static final String EMBEDDING_MODEL_SERVICE_VERTEX_AI = "VERTEX_AI";
 
   public static final String EMBEDDING_MODEL_NAME_TEXT_EMBEDDING_3_SMALL = "text-embedding-3-small";
   public static final String EMBEDDING_MODEL_NAME_TEXT_EMBEDDING_3_LARGE = "text-embedding-3-large";
@@ -40,6 +42,11 @@ public class Constants {
   public static final String EMBEDDING_MODEL_NAME_SFDC_TEXT_EMBEDDING_ADA_002 = "sfdc_ai__DefaultTextEmbeddingAda_002";
   public static final String EMBEDDING_MODEL_NAME_SFDC_AZURE_TEXT_EMBEDDING_ADA_002 = "sfdc_ai__DefaultAzureOpenAITextEmbeddingAda_002";
   public static final String EMBEDDING_MODEL_NAME_SFDC_OPENAI_TEXT_EMBEDDING_ADA_002 = "sfdc_ai__DefaultOpenAITextEmbeddingAda_002";
+  public static final String EMBEDDING_MODEL_NAME_VERTEX_TEXT_EMBEDDING_GECKO_003 = "textembedding-gecko@003";
+  public static final String EMBEDDING_MODEL_NAME_VERTEX_TEXT_EMBEDDING_004 = "text-embedding-004";
+  public static final String EMBEDDING_MODEL_NAME_VERTEX_TEXT_EMBEDDING_GECKO_MULTILINGUAL_001 = "textembedding-gecko-multilingual@001";
+  public static final String EMBEDDING_MODEL_NAME_VERTEX_TEXT_MULTILINGUAL_EMBEDDING_002 = "text-multilingual-embedding-002";
+  public static final String EMBEDDING_MODEL_NAME_VERTEX_MULTI_MODAL_EMBEDDING = "multimodalembedding";
 
   public static final String VECTOR_STORE_PGVECTOR = "PGVECTOR";
   public static final String VECTOR_STORE_ELASTICSEARCH = "ELASTICSEARCH";
