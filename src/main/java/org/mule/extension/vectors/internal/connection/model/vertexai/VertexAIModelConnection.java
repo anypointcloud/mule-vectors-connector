@@ -2,8 +2,8 @@ package org.mule.extension.vectors.internal.connection.model.vertexai;
 
 import com.google.auth.Credentials;
 import com.google.auth.oauth2.ServiceAccountCredentials;
-import com.google.cloud.aiplatform.v1.PredictionServiceClient;
-import com.google.cloud.aiplatform.v1.PredictionServiceSettings;
+import com.google.cloud.aiplatform.v1beta1.PredictionServiceClient;
+import com.google.cloud.aiplatform.v1beta1.PredictionServiceSettings;
 import org.mule.extension.vectors.internal.connection.model.BaseModelConnection;
 import org.mule.extension.vectors.internal.constant.Constants;
 import org.mule.runtime.api.connection.ConnectionException;
@@ -13,6 +13,8 @@ import java.io.IOException;
 import java.util.Arrays;
 
 public class VertexAIModelConnection implements BaseModelConnection {
+
+  private static final String DEFAULT_GOOGLEAPIS_ENDPOINT_SUFFIX = "-aiplatform.googleapis.com:443";
 
   private static final String[] SCOPES = {
       "https://www.googleapis.com/auth/cloud-platform",
@@ -70,6 +72,7 @@ public class VertexAIModelConnection implements BaseModelConnection {
     try {
 
       PredictionServiceSettings settings = PredictionServiceSettings.newBuilder()
+          .setEndpoint(location + DEFAULT_GOOGLEAPIS_ENDPOINT_SUFFIX)
           .setCredentialsProvider(() -> getCredentials())
           .build();
 

@@ -1,4 +1,4 @@
-package org.mule.extension.vectors.internal.model.einstein;
+package org.mule.extension.vectors.internal.model.text.einstein;
 
 import dev.langchain4j.data.embedding.Embedding;
 import dev.langchain4j.data.segment.TextSegment;
@@ -10,6 +10,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.mule.extension.vectors.internal.connection.model.einstein.EinsteinModelConnection;
 import org.mule.extension.vectors.internal.constant.Constants;
+import org.mule.extension.vectors.internal.helper.EmbeddingModelHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +39,7 @@ public class EinsteinEmbeddingModel extends DimensionAwareEmbeddingModel {
    */
   private EinsteinEmbeddingModel(EinsteinModelConnection einsteinModelConnection, String modelName, Integer dimensions) {
     // Default to SFDC text embedding model if none specified
-    this.modelName = Utils.getOrDefault(modelName, Constants.EMBEDDING_MODEL_NAME_SFDC_TEXT_EMBEDDING_ADA_002);
+    this.modelName = Utils.getOrDefault(modelName, EmbeddingModelHelper.TextEmbeddingModelNames.SFDC_TEXT_EMBEDDING_ADA_002.getModelName());
     this.dimensions = dimensions;
     this.einsteinModelConnection = einsteinModelConnection;
   }

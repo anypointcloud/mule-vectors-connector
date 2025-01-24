@@ -1,15 +1,16 @@
-package org.mule.extension.vectors.internal.model.einstein;
+package org.mule.extension.vectors.internal.model.text.einstein;
 
 import org.mule.extension.vectors.internal.constant.Constants;
+import org.mule.extension.vectors.internal.helper.EmbeddingModelHelper;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public enum EinsteinEmbeddingModelName {
 
-  DEFAULT_ADA_002(Constants.EMBEDDING_MODEL_NAME_SFDC_TEXT_EMBEDDING_ADA_002, 1536),
-  AZURE_OPENAI_ADA_002(Constants.EMBEDDING_MODEL_NAME_SFDC_AZURE_TEXT_EMBEDDING_ADA_002, 1536),
-  OPENAI_ADA_002(Constants.EMBEDDING_MODEL_NAME_SFDC_OPENAI_TEXT_EMBEDDING_ADA_002, 1536);
+  DEFAULT_ADA_002(EmbeddingModelHelper.TextEmbeddingModelNames.SFDC_TEXT_EMBEDDING_ADA_002.getModelName(), 1536),
+  AZURE_OPENAI_ADA_002(EmbeddingModelHelper.TextEmbeddingModelNames.SFDC_AZURE_TEXT_EMBEDDING_ADA_002.getModelName(), 1536),
+  OPENAI_ADA_002(EmbeddingModelHelper.TextEmbeddingModelNames.SFDC_OPENAI_TEXT_EMBEDDING_ADA_002.getModelName(), 1536);
 
   private final String stringValue;
   private final Integer dimension;

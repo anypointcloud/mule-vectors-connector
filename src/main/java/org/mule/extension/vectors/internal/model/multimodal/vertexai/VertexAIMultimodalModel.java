@@ -1,33 +1,32 @@
-package org.mule.extension.vectors.internal.model.vertexai;
+package org.mule.extension.vectors.internal.model.multimodal.vertexai;
 
 import com.google.auth.Credentials;
 import dev.langchain4j.model.embedding.EmbeddingModel;
 import org.mule.extension.vectors.internal.config.EmbeddingConfiguration;
+import org.mule.extension.vectors.internal.connection.model.BaseModelConnection;
 import org.mule.extension.vectors.internal.connection.model.vertexai.VertexAIModelConnection;
 import org.mule.extension.vectors.internal.error.MuleVectorsErrorType;
 import org.mule.extension.vectors.internal.helper.parameter.EmbeddingModelParameters;
 import org.mule.extension.vectors.internal.model.BaseModel;
+import org.mule.extension.vectors.internal.model.multimodal.EmbeddingMultimodalModel;
+import org.mule.extension.vectors.internal.model.text.vertexai.VertexAiEmbeddingModel;
 import org.mule.runtime.extension.api.exception.ModuleException;
 
-// https://docs.langchain4j.dev/integrations/language-models/google-vertex-ai-gemini/
-public class VertexAIModel extends BaseModel {
+public class VertexAIMultimodalModel extends BaseModel {
 
   private static final String DEFAULT_LOCATION = "us-central1";
   private static final String PUBLISHER = "google";
 
-  private final String projectId;
-  private final String location;
-  private final Credentials credentials;
+  private final VertexAIModelConnection vertexAIModelConnection;
 
-  public VertexAIModel(EmbeddingConfiguration embeddingConfiguration, VertexAIModelConnection vertexAiModelConnection, EmbeddingModelParameters embeddingModelParameters) {
+  public VertexAIMultimodalModel(EmbeddingConfiguration embeddingConfiguration,
+                                 VertexAIModelConnection vertexAIModelConnection,
+                                 EmbeddingModelParameters embeddingModelParameters) {
 
-    super(embeddingConfiguration, vertexAiModelConnection, embeddingModelParameters);
-
+    super(embeddingConfiguration, vertexAIModelConnection, embeddingModelParameters);
     try{
 
-      this.projectId = vertexAiModelConnection.getProjectId();
-      this.location = vertexAiModelConnection.getLocation();
-      this.credentials = vertexAiModelConnection.getCredentials();
+      this.vertexAIModelConnection = vertexAIModelConnection;
     } catch (Exception e) {
 
       throw new ModuleException(
@@ -37,14 +36,14 @@ public class VertexAIModel extends BaseModel {
     }
   }
 
-  public EmbeddingModel buildEmbeddingModel() {
+  public EmbeddingMultimodalModel buildEmbeddingMultimodalModel() {
 
     try {
 
-      return VertexAiEmbeddingModel.builder()
-          .project(projectId)
-          .credentials(credentials)
-          .location(location != null ? location : DEFAULT_LOCATION)
+      return VertexAiEmbeddingMultimodalModel.builder()
+          .client(vertexAIModelConnection.getPredictionClient())
+          .project(vertexAIModelConnection.getProjectId())
+          .location(vertexAIModelConnection.getLocation())
           .publisher(PUBLISHER)
           .modelName(embeddingModelParameters.getEmbeddingModelName())
           .build();

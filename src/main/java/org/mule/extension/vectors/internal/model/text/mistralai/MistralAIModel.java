@@ -1,4 +1,4 @@
-package org.mule.extension.vectors.internal.model.mistralai;
+package org.mule.extension.vectors.internal.model.text.mistralai;
 
 import dev.langchain4j.model.embedding.EmbeddingModel;
 import dev.langchain4j.model.mistralai.MistralAiEmbeddingModel;

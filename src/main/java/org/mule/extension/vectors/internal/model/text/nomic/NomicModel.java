@@ -1,4 +1,4 @@
-package org.mule.extension.vectors.internal.model.nomic;
+package org.mule.extension.vectors.internal.model.text.nomic;
 
 import dev.langchain4j.model.embedding.EmbeddingModel;
 import dev.langchain4j.model.nomic.NomicEmbeddingModel;

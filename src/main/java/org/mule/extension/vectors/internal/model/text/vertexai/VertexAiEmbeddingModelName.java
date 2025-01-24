@@ -1,10 +1,9 @@
-package org.mule.extension.vectors.internal.model.vertexai;
+package org.mule.extension.vectors.internal.model.text.vertexai;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public enum VertexAiEmbeddingModelName {
-  MULTIMODALEMBEDDING("multimodalembedding", 1408),
   TEXT_EMBEDDING_004("text-embedding-004", 768),
   TEXT_EMBEDDING_PREVIEW_0815("text-embedding-preview-0815", 768),
   TEXT_MULTILINGUAL_EMBEDDING_002("text-multilingual-embedding-002", 768),

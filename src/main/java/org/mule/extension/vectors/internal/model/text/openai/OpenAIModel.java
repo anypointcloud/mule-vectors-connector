@@ -1,4 +1,4 @@
-package org.mule.extension.vectors.internal.model.openai;
+package org.mule.extension.vectors.internal.model.text.openai;
 
 import dev.langchain4j.model.embedding.EmbeddingModel;
 import dev.langchain4j.model.openai.OpenAiEmbeddingModel;

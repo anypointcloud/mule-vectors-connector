@@ -1,4 +1,4 @@
-package org.mule.extension.vectors.internal.model.vertexai;
+package org.mule.extension.vectors.internal.model.text.vertexai;
 
 import com.google.auth.Credentials;
 import com.google.api.gax.core.FixedCredentialsProvider;

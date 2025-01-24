@@ -1,4 +1,4 @@
-package org.mule.extension.vectors.internal.model.huggingface;
+package org.mule.extension.vectors.internal.model.text.huggingface;
 
 import dev.langchain4j.model.embedding.EmbeddingModel;
 import dev.langchain4j.model.huggingface.HuggingFaceEmbeddingModel;

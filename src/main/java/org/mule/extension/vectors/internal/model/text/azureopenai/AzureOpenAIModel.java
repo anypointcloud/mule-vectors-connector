@@ -1,4 +1,4 @@
-package org.mule.extension.vectors.internal.model.azureopenai;
+package org.mule.extension.vectors.internal.model.text.azureopenai;
 
 import com.azure.ai.openai.OpenAIClient;
 import dev.langchain4j.model.azure.AzureOpenAiEmbeddingModel;
