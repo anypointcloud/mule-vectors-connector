@@ -6,17 +6,26 @@ import com.google.cloud.aiplatform.v1beta1.EndpointName;
 import com.google.cloud.aiplatform.v1beta1.PredictResponse;
 import com.google.cloud.aiplatform.v1beta1.PredictionServiceClient;
 import com.google.cloud.aiplatform.v1beta1.PredictionServiceSettings;
+import com.google.gson.JsonObject;
+import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
 import com.google.protobuf.util.JsonFormat;
 import dev.langchain4j.data.embedding.Embedding;
 import dev.langchain4j.model.output.Response;
 import org.mule.extension.vectors.internal.model.multimodal.EmbeddingMultimodalModel;
 import org.mule.extension.vectors.internal.model.text.vertexai.VertexAiEmbeddingModelName;
+import org.mule.extension.vectors.internal.operation.EmbeddingOperations;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static dev.langchain4j.internal.Json.toJson;
 import static dev.langchain4j.internal.RetryUtils.withRetry;
@@ -25,6 +34,8 @@ import static dev.langchain4j.internal.RetryUtils.withRetry;
  * Implementation of the EmbeddingMultimodalModel interface for Vertex AI.
  */
 public class VertexAiEmbeddingMultimodalModel implements EmbeddingMultimodalModel {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(VertexAiEmbeddingMultimodalModel.class);
 
   private final PredictionServiceClient client;
   private final EndpointName endpointName;
@@ -54,6 +65,7 @@ public class VertexAiEmbeddingMultimodalModel implements EmbeddingMultimodalMode
     this.maxRetries = maxRetries != null ? maxRetries : 3;
   }
 
+  @Override
   public Integer dimension() {
     return VertexAiEmbeddingMultimodalModelName.knownDimension(this.endpointName.getModel());
   }
@@ -91,12 +103,23 @@ public class VertexAiEmbeddingMultimodalModel implements EmbeddingMultimodalMode
 
   private Response<Embedding> embedSingle(VertexAiMultimodalInput input) {
     try {
-      Value.Builder instanceBuilder = Value.newBuilder();
-      JsonFormat.parser().merge(toJson(input), instanceBuilder);
+      // Log input details for debugging
+      LOGGER.debug("Multimodal Input - Text Length: {}, Image Bytes: {}",
+                   input.getText() != null ? input.getText().length() : "null",
+                   input.getImage() != null ? input.getImage().length : "null");
 
-      Value parameter = Value.newBuilder().build(); // Adjust if additional parameters are needed.
+      List<Value> instances = new ArrayList<>();
+      instances.add(input.instanceValue());
 
-      PredictResponse response = withRetry(() -> client.predict(endpointName, Arrays.asList(instanceBuilder.build()), parameter), maxRetries);
+      Value parameterValue = Value.newBuilder().build();
+
+      // Validate input size before making API call
+      validateInputSize(input);
+
+      PredictResponse response = withRetry(() ->
+           client.predict(endpointName, instances, parameterValue), maxRetries);
+
+      // LOGGER.debug("Predict Response " + response);
 
       Embedding embedding = response.getPredictionsList().stream()
           .map(VertexAiEmbeddingMultimodalModel::toEmbedding)
@@ -104,28 +127,33 @@ public class VertexAiEmbeddingMultimodalModel implements EmbeddingMultimodalMode
           .orElseThrow(() -> new RuntimeException("No embedding found in response"));
 
       return Response.from(embedding);
+
     } catch (Exception e) {
+      LOGGER.error("Embedding generation failed", e);
       throw new RuntimeException("Error during embedding generation", e);
+    }
+  }
+
+  private void validateInputSize(VertexAiMultimodalInput input) {
+
+    int MAX_IMAGE_SIZE = 20 * 1024 * 1024;  // 5MB
+
+    if (input.getImage() != null && input.getImage().length > MAX_IMAGE_SIZE) {
+      throw new IllegalArgumentException("Image input exceeds maximum allowed size");
     }
   }
 
   private Response<List<Embedding>> embedBatch(List<VertexAiMultimodalInput> inputs) {
     try {
       List<Value> instances = inputs.stream()
-          .map(input -> {
-            Value.Builder instanceBuilder = Value.newBuilder();
-            try {
-              JsonFormat.parser().merge(toJson(input), instanceBuilder);
-            } catch (IOException e) {
-              throw new RuntimeException("Error serializing input", e);
-            }
-            return instanceBuilder.build();
-          })
+          .map(input -> { return input.instanceValue(); })
           .collect(Collectors.toList());
 
-      Value parameter = Value.newBuilder().build(); // Adjust if additional parameters are needed.
+      Value parameterValue = Value.newBuilder().build(); // Adjust if additional parameters are needed.
 
-      PredictResponse response = withRetry(() -> client.predict(endpointName, instances, parameter), maxRetries);
+      PredictResponse response = withRetry(() -> client.predict(endpointName, instances, parameterValue), maxRetries);
+
+      //LOGGER.debug("Predict Response " + response);
 
       List<Embedding> embeddings = response.getPredictionsList().stream()
           .map(VertexAiEmbeddingMultimodalModel::toEmbedding)
@@ -138,18 +166,57 @@ public class VertexAiEmbeddingMultimodalModel implements EmbeddingMultimodalMode
   }
 
   private static Embedding toEmbedding(Value prediction) {
-    List<Float> vector = prediction.getStructValue()
-        .getFieldsMap()
-        .get("embeddings")
-        .getStructValue()
-        .getFieldsOrThrow("values")
-        .getListValue()
-        .getValuesList()
-        .stream()
-        .map(v -> (float) v.getNumberValue())
-        .collect(Collectors.toList());
+
+    List<Float> vector = null;
+
+    if (prediction.getStructValue().containsFields("textEmbedding")) {
+
+      LOGGER.debug ("Processing textEmbedding");
+      Value textEmbedding = prediction.getStructValue().getFieldsOrThrow("textEmbedding");
+      float[] textVector = toVector(textEmbedding);
+      vector = IntStream.range(0, textVector.length)
+          .mapToObj(i -> textVector[i])
+          .collect(Collectors.toList());
+    }
+
+    if (prediction.getStructValue().containsFields("imageEmbedding")) {
+
+      LOGGER.debug ("Processing imageEmbedding");
+      Value imageEmbedding = prediction.getStructValue().getFieldsOrThrow("imageEmbedding");
+      float[] imageVector = toVector(imageEmbedding);
+      vector = IntStream.range(0, imageVector.length)
+          .mapToObj(i -> imageVector[i])
+          .collect(Collectors.toList());
+    }
+
+    if (prediction.getStructValue().containsFields("videoEmbeddings")) {
+
+      LOGGER.debug ("Processing videoEmbeddings");
+      Value videoEmbeddings = prediction.getStructValue().getFieldsOrThrow("videoEmbeddings");
+      if (videoEmbeddings.getListValue().getValues(0).getStructValue().containsFields("embedding")) {
+        Value embeddings = videoEmbeddings.getListValue()
+            .getValues(0)
+            .getStructValue()
+            .getFieldsOrThrow("embedding");
+        float[] videoVector = toVector(embeddings);
+        vector = IntStream.range(0, videoVector.length)
+            .mapToObj(i -> videoVector[i])
+            .collect(Collectors.toList());
+      }
+    }
 
     return Embedding.from(vector);
+  }
+
+  private static float[] toVector(Value value) {
+
+    float[] floats = new float[value.getListValue().getValuesList().size()];
+    int index = 0;
+    for (Value v : value.getListValue().getValuesList()) {
+      double d = v.getNumberValue();
+      floats[index++] = Double.valueOf(d).floatValue();
+    }
+    return floats;
   }
 
   /**
@@ -170,6 +237,40 @@ public class VertexAiEmbeddingMultimodalModel implements EmbeddingMultimodalMode
 
     public byte[] getImage() {
       return image;
+    }
+
+    public Value instanceValue() {
+
+      Value instanceValue;
+
+      try {
+        // Convert the image to Base64
+        byte[] imageData = Base64.getEncoder().encode(image);
+        String encodedImage = new String(imageData, StandardCharsets.UTF_8);
+
+        Value.Builder instanceBuilder = Value.newBuilder();
+
+        JsonObject jsonInstance = new JsonObject();
+        if(text != null) {
+
+          jsonInstance.addProperty("text", text);
+        }
+        if(image != null) {
+
+          JsonObject jsonImage = new JsonObject();
+          jsonImage.addProperty("bytesBase64Encoded", encodedImage);
+          jsonInstance.add("image", jsonImage);
+        }
+
+        Value.Builder builder = Value.newBuilder();
+        JsonFormat.parser().merge(jsonInstance.toString(), builder);
+        instanceValue =  builder.build();
+
+      } catch (IOException e) {
+        throw new RuntimeException("Error serializing input", e);
+      }
+
+      return instanceValue;
     }
   }
 

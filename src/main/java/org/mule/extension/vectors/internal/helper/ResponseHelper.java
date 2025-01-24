@@ -2,6 +2,7 @@ package org.mule.extension.vectors.internal.helper;
 
 import org.mule.extension.vectors.api.metadata.DocumentResponseAttributes;
 import org.mule.extension.vectors.api.metadata.EmbeddingResponseAttributes;
+import org.mule.extension.vectors.api.metadata.MultimodalEmbeddingResponseAttributes;
 import org.mule.extension.vectors.api.metadata.StoreResponseAttributes;
 import org.mule.runtime.api.metadata.MediaType;
 import org.mule.runtime.api.streaming.CursorProvider;
@@ -40,6 +41,18 @@ public final class ResponseHelper {
 
     return Result.<InputStream, EmbeddingResponseAttributes>builder()
         .attributes(new EmbeddingResponseAttributes((HashMap<String, Object>) embeddingAttributes))
+        .attributesMediaType(MediaType.APPLICATION_JAVA)
+        .output(toInputStream(response, StandardCharsets.UTF_8))
+        .mediaType(MediaType.APPLICATION_JSON)
+        .build();
+  }
+
+  public static Result<InputStream, MultimodalEmbeddingResponseAttributes> createMultimodalEmbeddingResponse(
+      String response,
+      Map<String, Object> embeddingAttributes) {
+
+    return Result.<InputStream, MultimodalEmbeddingResponseAttributes>builder()
+        .attributes(new MultimodalEmbeddingResponseAttributes((HashMap<String, Object>) embeddingAttributes))
         .attributesMediaType(MediaType.APPLICATION_JAVA)
         .output(toInputStream(response, StandardCharsets.UTF_8))
         .mediaType(MediaType.APPLICATION_JSON)

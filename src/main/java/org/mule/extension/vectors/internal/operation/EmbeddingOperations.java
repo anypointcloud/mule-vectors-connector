@@ -1,6 +1,7 @@
 package org.mule.extension.vectors.internal.operation;
 
 import static org.mule.extension.vectors.internal.helper.ResponseHelper.createEmbeddingResponse;
+import static org.mule.extension.vectors.internal.helper.ResponseHelper.createMultimodalEmbeddingResponse;
 import static org.mule.runtime.extension.api.annotation.param.MediaType.APPLICATION_JSON;
 
 import java.io.InputStream;
@@ -13,10 +14,12 @@ import java.util.stream.IntStream;
 import dev.langchain4j.data.document.Document;
 import dev.langchain4j.data.document.DocumentSplitter;
 import dev.langchain4j.data.document.Metadata;
+import dev.langchain4j.model.output.Response;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.mule.extension.vectors.api.metadata.EmbeddingResponseAttributes;
+import org.mule.extension.vectors.api.metadata.MultimodalEmbeddingResponseAttributes;
 import org.mule.extension.vectors.internal.config.EmbeddingConfiguration;
 import org.mule.extension.vectors.internal.connection.model.BaseModelConnection;
 import org.mule.extension.vectors.internal.constant.Constants;
@@ -24,6 +27,7 @@ import org.mule.extension.vectors.internal.error.MuleVectorsErrorType;
 import org.mule.extension.vectors.internal.error.provider.EmbeddingErrorTypeProvider;
 import org.mule.extension.vectors.internal.helper.parameter.*;
 import org.mule.extension.vectors.internal.model.BaseModel;
+import org.mule.extension.vectors.internal.model.multimodal.EmbeddingMultimodalModel;
 import org.mule.runtime.extension.api.annotation.Alias;
 import org.mule.runtime.extension.api.annotation.error.Throws;
 import org.mule.runtime.extension.api.annotation.metadata.fixed.InputJsonType;
@@ -239,6 +243,73 @@ public class EmbeddingOperations {
 
       throw new ModuleException(
           String.format("Error while generating embedding from document \"%s\"", ""),
+          MuleVectorsErrorType.EMBEDDING_OPERATIONS_FAILURE,
+          e);
+    }
+  }
+
+  @MediaType(value = APPLICATION_JSON, strict = false)
+  @Alias("Embedding-generate-from-image-and-text")
+  @DisplayName("[Embedding] Generate from image and text")
+  @Throws(EmbeddingErrorTypeProvider.class)
+  // @OutputJsonType(schema = "api/metadata/EmbeddingGenerateResponse.json")
+  public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, MultimodalEmbeddingResponseAttributes>
+  generateEmbeddingFromImageAndText(@Config EmbeddingConfiguration embeddingConfiguration,
+                                    @Connection BaseModelConnection modelConnection,
+                                    @Alias("text") @DisplayName("Text") @Content String text,
+                                    @Alias("image") @DisplayName("Image") @Content InputStream imageInputStream,
+                                    @ParameterGroup(name = "Embedding Model") EmbeddingModelParameters embeddingModelParameters) {
+
+    try {
+      // Convert InputStream to byte array
+      byte[] imageBytes = IOUtils.toByteArray(imageInputStream);
+
+      JSONObject jsonObject = new JSONObject();
+
+      List<TextSegment> textSegments = new LinkedList<>();
+      textSegments.add(TextSegment.from(text));
+      JSONArray jsonTextSegments = IntStream.range(0, textSegments.size())
+          .mapToObj(i -> {
+            JSONObject jsonSegment = new JSONObject();
+            jsonSegment.put(Constants.JSON_KEY_TEXT, textSegments.get(i).text());
+            JSONObject jsonMetadata = new JSONObject();
+            jsonMetadata.put(Constants.JSON_KEY_INDEX, i);
+            jsonSegment.put(Constants.JSON_KEY_METADATA, jsonMetadata);
+            return jsonSegment;
+          })
+          .collect(JSONArray::new, JSONArray::put, JSONArray::putAll);
+
+      jsonObject.put(Constants.JSON_KEY_TEXT_SEGMENTS, jsonTextSegments);
+
+      BaseModel baseModel = BaseModel.builder()
+          .configuration(embeddingConfiguration)
+          .connection(modelConnection)
+          .embeddingModelParameters(embeddingModelParameters)
+          .build();
+
+      // Assuming you have a multimodal embedding model method
+      EmbeddingMultimodalModel multimodalEmbeddingModel = (EmbeddingMultimodalModel) baseModel.buildEmbeddingMultimodalModel();
+
+      Embedding embedding = multimodalEmbeddingModel.embedTextAndImage(text, imageBytes).content();
+
+      JSONArray jsonEmbeddings = new JSONArray();
+      jsonEmbeddings.put(embedding.vector());
+
+      jsonObject.put(Constants.JSON_KEY_EMBEDDINGS, jsonEmbeddings);
+
+      jsonObject.put(Constants.JSON_KEY_DIMENSION, multimodalEmbeddingModel.dimension());
+
+      return createMultimodalEmbeddingResponse(
+          jsonObject.toString(),
+          new HashMap<String, Object>() {{
+            put("embeddingModelName", embeddingModelParameters.getEmbeddingModelName());
+            put("embeddingModelDimension", multimodalEmbeddingModel.dimension());
+          }}
+      );
+
+    } catch (Exception e) {
+      throw new ModuleException(
+          "Error while generating embedding from image and text",
           MuleVectorsErrorType.EMBEDDING_OPERATIONS_FAILURE,
           e);
     }

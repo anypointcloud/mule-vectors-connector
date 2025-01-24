@@ -19,17 +19,17 @@ public class EmbeddingResponseAttributes implements Serializable {
   /**
    * The name of the embedding model used.
    */
-  private final String embeddingModelName;
+  protected final String embeddingModelName;
 
   /**
    * The dimension of the embedding model.
    */
-  private final int embeddingModelDimension;
+  protected final int embeddingModelDimension;
 
   /**
    * Additional attributes not explicitly defined as fields in this class.
    */
-  private final HashMap<String, Object> otherAttributes;
+  protected final HashMap<String, Object> otherAttributes;
 
   /**
    * Constructs an {@code EmbeddingResponseAttributes} instance.

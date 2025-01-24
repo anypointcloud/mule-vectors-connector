@@ -10,6 +10,8 @@ import java.util.List;
  */
 public interface EmbeddingMultimodalModel {
 
+  Integer dimension();
+
   /**
    * Generates embeddings for a given text input.
    *
