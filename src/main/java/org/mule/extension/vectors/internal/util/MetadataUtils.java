@@ -4,10 +4,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 import dev.langchain4j.data.document.Document;
 import dev.langchain4j.data.document.Metadata;
 import org.mule.extension.vectors.internal.constant.Constants;
+import org.mule.extension.vectors.internal.data.Media;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.net.URI;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Optional;
@@ -59,18 +63,6 @@ public class MetadataUtils {
   }
 
   /**
-   * Adds ingestion metadata to a given document.
-   *
-   * @param document the Document to which ingestion metadata will be added.
-   */
-  public static void addIngestionMetadataToDocument(Document document) {
-
-    document.metadata().put(Constants.METADATA_KEY_SOURCE_ID, dev.langchain4j.internal.Utils.randomUUID());
-    document.metadata().put(Constants.METADATA_KEY_INGESTION_DATETIME, Utils.getCurrentISO8601Timestamp());
-    document.metadata().put(Constants.METADATA_KEY_INGESTION_TIMESTAMP, Utils.getCurrentTimeMillis());
-  }
-
-  /**
    * Adds metadata to a document based on the specified file type.
    *
    * @param document the Document to which metadata is added.
@@ -107,5 +99,25 @@ public class MetadataUtils {
 
     addMetadataToDocument(document, fileType);
     if(!fileName.isEmpty()) document.metadata().put(Constants.METADATA_KEY_FILE_NAME, fileName);
+  }
+
+  public static void addImageMetadataToMedia(Media media, String mediaType) {
+
+    if(!mediaType.isEmpty()) media.metadata().put(Constants.METADATA_KEY_MEDIA_TYPE, mediaType);
+    if(media.hasImage() && !media.image().mimeType().toString().isEmpty() ) media.metadata().put(Constants.METADATA_KEY_MIME_TYPE, media.image().mimeType().toString());
+
+    if(media.hasImage() && !media.image().url().toString().isEmpty() ) {
+
+      URI uri = media.image().url();
+      media.metadata().put(Constants.METADATA_KEY_URL, media.image().url().toString());
+      switch (uri.getScheme().toLowerCase()) {
+
+        case "file":
+          Path path = Paths.get(uri);
+          media.metadata().put(Constants.METADATA_KEY_ABSOLUTE_DIRECTORY_PATH, path.getParent().toString());
+          media.metadata().put(Constants.METADATA_KEY_FILE_NAME, path.getFileName().toString());
+
+      }
+    }
   }
 }

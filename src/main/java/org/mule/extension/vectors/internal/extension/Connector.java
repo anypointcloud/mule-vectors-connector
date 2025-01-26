@@ -1,6 +1,6 @@
 package org.mule.extension.vectors.internal.extension;
 
-import org.mule.extension.vectors.internal.config.DocumentConfiguration;
+import org.mule.extension.vectors.internal.config.StorageConfiguration;
 import org.mule.extension.vectors.internal.config.EmbeddingConfiguration;
 import org.mule.extension.vectors.internal.config.StoreConfiguration;
 import org.mule.extension.vectors.internal.error.MuleVectorsErrorType;
@@ -21,7 +21,7 @@ import static org.mule.sdk.api.meta.JavaVersion.JAVA_8;
  */
 @Xml(prefix = "ms-vectors")
 @Extension(name = "MuleSoft Vectors Connector", category = Category.SELECT)
-@Configurations({DocumentConfiguration.class, EmbeddingConfiguration.class, StoreConfiguration.class})
+@Configurations({StorageConfiguration.class, EmbeddingConfiguration.class, StoreConfiguration.class})
 @RequiresEnterpriseLicense(allowEvaluationLicense = true)
 @ErrorTypes(MuleVectorsErrorType.class)
 @JavaVersionSupport({JAVA_8, JAVA_11, JAVA_17})

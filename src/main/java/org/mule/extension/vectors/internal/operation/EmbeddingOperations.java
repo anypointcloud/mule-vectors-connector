@@ -252,7 +252,7 @@ public class EmbeddingOperations {
   @Alias("Embedding-generate-from-image-and-text")
   @DisplayName("[Embedding] Generate from image and text")
   @Throws(EmbeddingErrorTypeProvider.class)
-  // @OutputJsonType(schema = "api/metadata/EmbeddingGenerateResponse.json")
+  @OutputJsonType(schema = "api/metadata/EmbeddingGenerateResponse.json")
   public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, MultimodalEmbeddingResponseAttributes>
   generateEmbeddingFromImageAndText(@Config EmbeddingConfiguration embeddingConfiguration,
                                     @Connection BaseModelConnection modelConnection,

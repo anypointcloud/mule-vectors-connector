@@ -12,6 +12,8 @@ public class Constants {
   public static final String FILE_TYPE_CRAWL = "crawl";
   public static final String FILE_TYPE_URL = "url";
 
+  public static final String MEDIA_TYPE_IMAGE = "png";
+
   public static final String STORAGE_TYPE_LOCAL = "Local";
   public static final String STORAGE_TYPE_AWS_S3 = "S3";
   public static final String STORAGE_TYPE_AZURE_BLOB = "AZURE_BLOB";
@@ -49,6 +51,8 @@ public class Constants {
   public static final String METADATA_KEY_INDEX = "index";
   public static final String METADATA_KEY_FILE_NAME = "file_name";
   public static final String METADATA_KEY_FILE_TYPE = "file_type";
+  public static final String METADATA_KEY_MEDIA_TYPE = "media_type";
+  public static final String METADATA_KEY_MIME_TYPE = "mime_type";
   public static final String METADATA_KEY_ABSOLUTE_DIRECTORY_PATH = "absolute_directory_path";
   public static final String METADATA_KEY_URL = "url";
   public static final String METADATA_KEY_SOURCE = "source";
@@ -69,14 +73,12 @@ public class Constants {
   public static final String STORE_OPERATION_TYPE_QUERY_ALL = "QUERY_ALL";
 
   public static final String JSON_KEY_SOURCES = "sources";
-  public static final String JSON_KEY_SEGMENTS = "segments";
   public static final String JSON_KEY_TEXT_SEGMENTS = "text-segments";
   public static final String JSON_KEY_SEGMENT_COUNT = "segmentCount";
   public static final String JSON_KEY_SOURCE_COUNT = "sourceCount";
   public static final String JSON_KEY_STORE_NAME = "storeName";
   public static final String JSON_KEY_TEXT = "text";
   public static final String JSON_KEY_STATUS = "status";
-  public static final String JSON_KEY_EMBEDDING = "embedding";
   public static final String JSON_KEY_EMBEDDINGS = "embeddings";
   public static final String JSON_KEY_DIMENSION = "dimension";
   public static final String JSON_KEY_RESPONSE = "response";
@@ -87,6 +89,7 @@ public class Constants {
   public static final String JSON_KEY_SCORE = "score";
   public static final String JSON_KEY_METADATA = "metadata";
   public static final String JSON_KEY_INDEX = "index";
+  public static final String JSON_KEY_BASE64DATA = "base64Data";
 
   public static final String OPERATION_STATUS_UPDATED = "updated";
   public static final String OPERATION_STATUS_DELETED = "deleted";

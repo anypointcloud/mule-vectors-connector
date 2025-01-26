@@ -108,4 +108,13 @@ public class Utils {
       }
     }
   }
+
+  public static String getFileExtension(String filePath) {
+
+    int lastDotIndex = filePath.lastIndexOf('.');
+    if (lastDotIndex > 0 && lastDotIndex < filePath.length() - 1) {
+      return filePath.substring(lastDotIndex + 1);
+    }
+    return "";
+  }
 }

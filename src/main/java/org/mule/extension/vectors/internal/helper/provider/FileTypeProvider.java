@@ -9,7 +9,7 @@ import org.mule.runtime.extension.api.values.ValueBuilder;
 import org.mule.runtime.extension.api.values.ValueProvider;
 import org.mule.runtime.extension.api.values.ValueResolvingException;
 
-public class FileTypeEmbeddingProvider implements ValueProvider {
+public class FileTypeProvider implements ValueProvider {
 
   @Override
   public Set<Value> resolve() throws ValueResolvingException {

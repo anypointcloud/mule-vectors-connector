@@ -88,6 +88,11 @@ public class Media {
     return new Media(null, image, null, null, metadata);
   }
 
+  // Factory method for image data
+  public static Media fromImage(Image image) {
+    return new Media(null, image, null, null, null);
+  }
+
   // Factory method for video data
   public static Media fromVideo(Video video, Metadata metadata) {
     return new Media(null, null, video, null, metadata);

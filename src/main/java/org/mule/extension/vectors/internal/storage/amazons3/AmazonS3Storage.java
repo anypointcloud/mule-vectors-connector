@@ -1,8 +1,11 @@
 package org.mule.extension.vectors.internal.storage.amazons3;
 
 import dev.langchain4j.data.document.BlankDocumentException;
-import org.mule.extension.vectors.internal.config.DocumentConfiguration;
+import dev.langchain4j.data.image.Image;
+import org.mule.extension.vectors.internal.config.StorageConfiguration;
 import org.mule.extension.vectors.internal.connection.storage.amazons3.AmazonS3StorageConnection;
+import org.mule.extension.vectors.internal.constant.Constants;
+import org.mule.extension.vectors.internal.data.Media;
 import org.mule.extension.vectors.internal.error.MuleVectorsErrorType;
 import org.mule.extension.vectors.internal.storage.BaseStorage;
 import org.mule.extension.vectors.internal.util.MetadataUtils;
@@ -11,6 +14,12 @@ import software.amazon.awssdk.regions.Region;
 import dev.langchain4j.data.document.loader.amazon.s3.AmazonS3DocumentLoader;
 import dev.langchain4j.data.document.loader.amazon.s3.AwsCredentials;
 
+import java.io.IOException;
+import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Base64;
 import java.util.Iterator;
 
 import dev.langchain4j.data.document.Document;
@@ -93,9 +102,10 @@ public class AmazonS3Storage extends BaseStorage {
         return s3ObjectIterator;
     }
 
-    public AmazonS3Storage(DocumentConfiguration documentConfiguration, AmazonS3StorageConnection amazonS3StorageConnection, String contextPath, String fileType) {
+    public AmazonS3Storage(StorageConfiguration storageConfiguration, AmazonS3StorageConnection amazonS3StorageConnection,
+                           String contextPath, String fileType, String mediaType) {
 
-        super(documentConfiguration, amazonS3StorageConnection, contextPath, fileType);
+        super(storageConfiguration, amazonS3StorageConnection, contextPath, fileType, mediaType);
         this.awsAccessKeyId = amazonS3StorageConnection.getAwsAccessKeyId();
         this.awsSecretAccessKey = amazonS3StorageConnection.getAwsSecretAccessKey();
         this.awsRegion = amazonS3StorageConnection.getAwsRegion();
@@ -162,5 +172,40 @@ public class AmazonS3Storage extends BaseStorage {
         int slashIndex = s3Url.indexOf("/");
         String objectKey = slashIndex != -1 ? s3Url.substring(slashIndex + 1) : "";
         return objectKey;
+    }
+
+    public Media getSingleMedia() {
+
+
+        Media media;
+
+        switch (mediaType) {
+
+            case Constants.MEDIA_TYPE_IMAGE:
+
+                //MetadataUtils.addImageMetadataToMedia(media, mediaType);
+                break;
+
+            default:
+                throw new IllegalArgumentException("Unsupported Media Type: " + mediaType);
+        }
+        return null;
+    }
+
+    private Image loadImage() {
+
+        Image image;
+
+        try {
+
+
+
+        } catch (Exception ioe) {
+
+            throw new ModuleException(String.format("Impossible to load the image from %s", ""),
+                                      MuleVectorsErrorType.STORAGE_SERVICES_FAILURE,
+                                      ioe);
+        }
+        return null;
     }
 }

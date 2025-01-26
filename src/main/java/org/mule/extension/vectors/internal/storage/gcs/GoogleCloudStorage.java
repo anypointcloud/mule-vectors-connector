@@ -8,9 +8,11 @@ import com.google.cloud.storage.StorageOptions;
 import dev.langchain4j.data.document.BlankDocumentException;
 import dev.langchain4j.data.document.Document;
 import dev.langchain4j.data.document.loader.gcs.GoogleCloudStorageDocumentLoader;
-import org.mule.extension.vectors.internal.config.DocumentConfiguration;
+import dev.langchain4j.data.image.Image;
+import org.mule.extension.vectors.internal.config.StorageConfiguration;
 import org.mule.extension.vectors.internal.connection.storage.gcs.GoogleCloudStorageConnection;
 import org.mule.extension.vectors.internal.constant.Constants;
+import org.mule.extension.vectors.internal.data.Media;
 import org.mule.extension.vectors.internal.error.MuleVectorsErrorType;
 import org.mule.extension.vectors.internal.storage.BaseStorage;
 import org.mule.extension.vectors.internal.util.MetadataUtils;
@@ -42,8 +44,10 @@ public class GoogleCloudStorage extends BaseStorage {
     private Iterator<Blob> blobIterator;
     private Page<Blob> blobPage;
 
-    public GoogleCloudStorage(DocumentConfiguration documentConfiguration, GoogleCloudStorageConnection googleCloudStorageConnection, String contextPath, String fileType) {
-        super(documentConfiguration, googleCloudStorageConnection, contextPath, fileType);
+    public GoogleCloudStorage(StorageConfiguration storageConfiguration, GoogleCloudStorageConnection googleCloudStorageConnection,
+                              String contextPath, String fileType, String mediaType) {
+
+        super(storageConfiguration, googleCloudStorageConnection, contextPath, fileType, mediaType);
         this.projectId = googleCloudStorageConnection.getProjectId();
         this.clientEmail = googleCloudStorageConnection.getClientEmail();
         this.clientId = googleCloudStorageConnection.getClientId();
@@ -200,4 +204,39 @@ public class GoogleCloudStorage extends BaseStorage {
         return document;
     }
 
+
+    public Media getSingleMedia() {
+
+
+        Media media;
+
+        switch (mediaType) {
+
+            case Constants.MEDIA_TYPE_IMAGE:
+
+                //MetadataUtils.addImageMetadataToMedia(media, mediaType);
+                break;
+
+            default:
+                throw new IllegalArgumentException("Unsupported Media Type: " + mediaType);
+        }
+        return null;
+    }
+
+    private Image loadImage() {
+
+        Image image;
+
+        try {
+
+
+
+        } catch (Exception ioe) {
+
+            throw new ModuleException(String.format("Impossible to load the image from %s", ""),
+                                      MuleVectorsErrorType.STORAGE_SERVICES_FAILURE,
+                                      ioe);
+        }
+        return null;
+    }
 }

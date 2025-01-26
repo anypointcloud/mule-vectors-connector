@@ -4,7 +4,7 @@ import dev.langchain4j.data.document.BlankDocumentException;
 import dev.langchain4j.data.document.Document;
 import org.json.JSONObject;
 import org.mule.extension.vectors.api.metadata.DocumentResponseAttributes;
-import org.mule.extension.vectors.internal.config.DocumentConfiguration;
+import org.mule.extension.vectors.internal.config.StorageConfiguration;
 import org.mule.extension.vectors.internal.connection.storage.BaseStorageConnection;
 import org.mule.extension.vectors.internal.error.MuleVectorsErrorType;
 import org.mule.extension.vectors.internal.helper.parameter.DocumentParameters;
@@ -18,7 +18,6 @@ import org.mule.runtime.extension.api.runtime.operation.Result;
 import org.mule.runtime.extension.api.runtime.streaming.PagingProvider;
 import org.mule.runtime.extension.api.runtime.streaming.StreamingHelper;
 
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 import static org.apache.commons.io.IOUtils.toInputStream;
@@ -28,14 +27,14 @@ public class DocumentPagingProvider implements PagingProvider<BaseStorageConnect
 
   private StreamingHelper streamingHelper;
   private BaseStorage baseStorage;
-  private DocumentConfiguration documentConfiguration;
+  private StorageConfiguration storageConfiguration;
   private DocumentParameters documentParameters;
   private SegmentationParameters segmentationParameters;
 
-  public DocumentPagingProvider(DocumentConfiguration documentConfiguration, DocumentParameters documentParameters,
+  public DocumentPagingProvider(StorageConfiguration storageConfiguration, DocumentParameters documentParameters,
                                 SegmentationParameters segmentationParameters, StreamingHelper streamingHelper) {
 
-    this.documentConfiguration = documentConfiguration;
+    this.storageConfiguration = storageConfiguration;
     this.documentParameters = documentParameters;
     this.segmentationParameters = segmentationParameters;
     this.streamingHelper = streamingHelper;
@@ -48,7 +47,7 @@ public class DocumentPagingProvider implements PagingProvider<BaseStorageConnect
       if(baseStorage == null) {
 
         baseStorage = BaseStorage.builder()
-            .configuration(documentConfiguration)
+            .configuration(storageConfiguration)
             .connection(connection)
             .contextPath(documentParameters.getContextPath())
             .fileType(documentParameters.getFileType())

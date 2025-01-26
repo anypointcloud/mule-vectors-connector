@@ -1,9 +1,6 @@
 package org.mule.extension.vectors.internal.helper;
 
-import org.mule.extension.vectors.api.metadata.DocumentResponseAttributes;
-import org.mule.extension.vectors.api.metadata.EmbeddingResponseAttributes;
-import org.mule.extension.vectors.api.metadata.MultimodalEmbeddingResponseAttributes;
-import org.mule.extension.vectors.api.metadata.StoreResponseAttributes;
+import org.mule.extension.vectors.api.metadata.*;
 import org.mule.runtime.api.metadata.MediaType;
 import org.mule.runtime.api.streaming.CursorProvider;
 import org.mule.runtime.extension.api.runtime.operation.Result;
@@ -65,6 +62,18 @@ public final class ResponseHelper {
 
     return Result.<InputStream, DocumentResponseAttributes>builder()
         .attributes(new DocumentResponseAttributes((HashMap<String, Object>) documentAttributes))
+        .attributesMediaType(MediaType.APPLICATION_JAVA)
+        .output(toInputStream(response, StandardCharsets.UTF_8))
+        .mediaType(MediaType.APPLICATION_JSON)
+        .build();
+  }
+
+  public static Result<InputStream, MediaResponseAttributes> createMediaResponse(
+      String response,
+      Map<String, Object> mediaAttributes) {
+
+    return Result.<InputStream, MediaResponseAttributes>builder()
+        .attributes(new MediaResponseAttributes((HashMap<String, Object>) mediaAttributes))
         .attributesMediaType(MediaType.APPLICATION_JAVA)
         .output(toInputStream(response, StandardCharsets.UTF_8))
         .mediaType(MediaType.APPLICATION_JSON)

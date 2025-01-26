@@ -5,9 +5,12 @@ import dev.langchain4j.data.document.Document;
 import dev.langchain4j.data.document.DocumentParser;
 import dev.langchain4j.data.document.loader.UrlDocumentLoader;
 import dev.langchain4j.data.document.transformer.jsoup.HtmlToTextDocumentTransformer;
-import org.mule.extension.vectors.internal.config.DocumentConfiguration;
+import dev.langchain4j.data.image.Image;
+import dev.langchain4j.service.V;
+import org.mule.extension.vectors.internal.config.StorageConfiguration;
 import org.mule.extension.vectors.internal.connection.storage.local.LocalStorageConnection;
 import org.mule.extension.vectors.internal.constant.Constants;
+import org.mule.extension.vectors.internal.data.Media;
 import org.mule.extension.vectors.internal.error.MuleVectorsErrorType;
 import org.mule.extension.vectors.internal.storage.BaseStorage;
 import org.mule.extension.vectors.internal.util.MetadataUtils;
@@ -18,10 +21,12 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Base64;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -55,9 +60,10 @@ public class LocalStorage extends BaseStorage {
     return pathIterator;
   }
 
-  public LocalStorage(DocumentConfiguration documentConfiguration, LocalStorageConnection storageConnection, String contextPath, String fileType) {
+  public LocalStorage(StorageConfiguration storageConfiguration, LocalStorageConnection storageConnection, String contextPath,
+                      String fileType, String mediaType) {
 
-    super(documentConfiguration, contextPath, fileType);
+    super(storageConfiguration, contextPath, fileType, mediaType);
     this.fullPath = storageConnection.getWorkingDir() != null ? storageConnection.getWorkingDir() + "/" + contextPath : contextPath;
   }
 
@@ -130,5 +136,49 @@ public class LocalStorage extends BaseStorage {
       throw new RuntimeException("Invalid URL: " + contextPath, e);
     }
     return document;
+  }
+
+  public Media getSingleMedia() {
+
+    Path path = Paths.get(fullPath);
+    Media media;
+
+    switch (mediaType) {
+
+      case Constants.MEDIA_TYPE_IMAGE:
+        media = Media.fromImage(loadImage(path));
+        MetadataUtils.addImageMetadataToMedia(media, mediaType);
+        break;
+
+      default:
+        throw new IllegalArgumentException("Unsupported Media Type: " + mediaType);
+    }
+    return media;
+  }
+
+  private Image loadImage(Path path) {
+
+    Image image;
+
+    try {
+
+      URI imageUri = path.toUri();
+      String mimeType = Files.probeContentType(path); // Attempt to determine the MIME type
+      byte[] imageBytes = Files.readAllBytes(path);
+      String base64Data = Base64.getEncoder().encodeToString(imageBytes);
+
+      image = Image.builder()
+          .url(imageUri)
+          .mimeType(mimeType)
+          .base64Data(base64Data)
+          .build();
+
+    } catch (IOException ioe) {
+
+      throw new ModuleException(String.format("Impossible to load the image from %s", path.toString()),
+                                MuleVectorsErrorType.STORAGE_SERVICES_FAILURE,
+                                ioe);
+    }
+    return image;
   }
 }
