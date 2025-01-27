@@ -5,7 +5,7 @@ import java.util.Set;
 
 import org.mule.extension.vectors.internal.connection.model.BaseModelConnection;
 import org.mule.extension.vectors.internal.constant.Constants;
-import org.mule.extension.vectors.internal.helper.EmbeddingModelHelper;
+import org.mule.extension.vectors.internal.helper.model.EmbeddingModelHelper;
 import org.mule.runtime.api.value.Value;
 import org.mule.runtime.extension.api.annotation.param.Connection;
 import org.mule.runtime.extension.api.values.ValueBuilder;

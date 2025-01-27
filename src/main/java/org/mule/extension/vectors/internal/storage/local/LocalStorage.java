@@ -12,6 +12,7 @@ import org.mule.extension.vectors.internal.connection.storage.local.LocalStorage
 import org.mule.extension.vectors.internal.constant.Constants;
 import org.mule.extension.vectors.internal.data.Media;
 import org.mule.extension.vectors.internal.error.MuleVectorsErrorType;
+import org.mule.extension.vectors.internal.helper.media.MediaProcessor;
 import org.mule.extension.vectors.internal.storage.BaseStorage;
 import org.mule.extension.vectors.internal.util.MetadataUtils;
 import org.mule.extension.vectors.internal.util.Utils;
@@ -61,9 +62,9 @@ public class LocalStorage extends BaseStorage {
   }
 
   public LocalStorage(StorageConfiguration storageConfiguration, LocalStorageConnection storageConnection, String contextPath,
-                      String fileType, String mediaType) {
+                      String fileType, String mediaType, MediaProcessor mediaProcessor) {
 
-    super(storageConfiguration, contextPath, fileType, mediaType);
+    super(storageConfiguration, storageConnection, contextPath, fileType, mediaType, mediaProcessor);
     this.fullPath = storageConnection.getWorkingDir() != null ? storageConnection.getWorkingDir() + "/" + contextPath : contextPath;
   }
 
@@ -103,8 +104,6 @@ public class LocalStorage extends BaseStorage {
 
     Path path = Paths.get(fullPath);
 
-    DocumentParser documentParser = getDocumentParser(fileType);
-
     Document document;
     switch (fileType) {
       case Constants.FILE_TYPE_CRAWL:
@@ -138,8 +137,12 @@ public class LocalStorage extends BaseStorage {
     return document;
   }
 
+  /**
+   * Retrieves a single media item.
+   *
+   * @return a Media object representing the media item.
+   */
   public Media getSingleMedia() {
-
     Path path = Paths.get(fullPath);
     Media media;
 
@@ -156,6 +159,13 @@ public class LocalStorage extends BaseStorage {
     return media;
   }
 
+  /**
+   * Loads an image from the specified file path.
+   *
+   * @param path The file path to the image to be loaded.
+   * @return An Image object containing the image data, MIME type, URL, and Base64-encoded string.
+   * @throws ModuleException If there is an error reading the image file or determining its MIME type.
+   */
   private Image loadImage(Path path) {
 
     Image image;
@@ -164,7 +174,14 @@ public class LocalStorage extends BaseStorage {
 
       URI imageUri = path.toUri();
       String mimeType = Files.probeContentType(path); // Attempt to determine the MIME type
+      // Fallback if mimeType is null
+      if (mimeType == null) {
+        mimeType = Utils.getMimeTypeFallback(path);
+      }
       byte[] imageBytes = Files.readAllBytes(path);
+
+      String format = mimeType.contains("/") ? mimeType.substring(mimeType.indexOf("/") + 1) : null;
+      imageBytes = mediaProcessor.process(imageBytes, format);
       String base64Data = Base64.getEncoder().encodeToString(imageBytes);
 
       image = Image.builder()
@@ -179,6 +196,9 @@ public class LocalStorage extends BaseStorage {
                                 MuleVectorsErrorType.STORAGE_SERVICES_FAILURE,
                                 ioe);
     }
+
+    LOGGER.debug(String.format("Image uri: %s, Image mime type: %s", image.url().toString(), image.mimeType()));
+
     return image;
   }
 }

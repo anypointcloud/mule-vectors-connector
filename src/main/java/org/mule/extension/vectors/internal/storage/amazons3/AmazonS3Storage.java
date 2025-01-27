@@ -7,6 +7,7 @@ import org.mule.extension.vectors.internal.connection.storage.amazons3.AmazonS3S
 import org.mule.extension.vectors.internal.constant.Constants;
 import org.mule.extension.vectors.internal.data.Media;
 import org.mule.extension.vectors.internal.error.MuleVectorsErrorType;
+import org.mule.extension.vectors.internal.helper.media.MediaProcessor;
 import org.mule.extension.vectors.internal.storage.BaseStorage;
 import org.mule.extension.vectors.internal.util.MetadataUtils;
 import org.mule.runtime.extension.api.exception.ModuleException;
@@ -103,9 +104,9 @@ public class AmazonS3Storage extends BaseStorage {
     }
 
     public AmazonS3Storage(StorageConfiguration storageConfiguration, AmazonS3StorageConnection amazonS3StorageConnection,
-                           String contextPath, String fileType, String mediaType) {
+                           String contextPath, String fileType, String mediaType, MediaProcessor mediaProcessor) {
 
-        super(storageConfiguration, amazonS3StorageConnection, contextPath, fileType, mediaType);
+        super(storageConfiguration, amazonS3StorageConnection, contextPath, fileType, mediaType, mediaProcessor);
         this.awsAccessKeyId = amazonS3StorageConnection.getAwsAccessKeyId();
         this.awsSecretAccessKey = amazonS3StorageConnection.getAwsSecretAccessKey();
         this.awsRegion = amazonS3StorageConnection.getAwsRegion();

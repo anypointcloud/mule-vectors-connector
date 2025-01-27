@@ -13,6 +13,8 @@ import org.mule.extension.vectors.internal.connection.storage.local.LocalStorage
 import org.mule.extension.vectors.internal.constant.Constants;
 import org.mule.extension.vectors.internal.data.Media;
 import org.mule.extension.vectors.internal.error.MuleVectorsErrorType;
+import org.mule.extension.vectors.internal.helper.media.ImageProcessor;
+import org.mule.extension.vectors.internal.helper.media.MediaProcessor;
 import org.mule.extension.vectors.internal.storage.azureblob.AzureBlobStorage;
 import org.mule.extension.vectors.internal.storage.gcs.GoogleCloudStorage;
 import org.mule.extension.vectors.internal.storage.local.LocalStorage;
@@ -31,27 +33,20 @@ public abstract class BaseStorage implements Iterator<Document> {
   protected BaseStorageConnection storageConnection;
   protected String contextPath;
   protected String fileType;
-  protected String mediaType;
   protected DocumentParser documentParser;
+  protected String mediaType;
+  protected MediaProcessor mediaProcessor;
 
   public BaseStorage(StorageConfiguration storageConfiguration, BaseStorageConnection storageConnection, String contextPath,
-                     String fileType, String mediaType) {
+                     String fileType, String mediaType, MediaProcessor mediaProcessor) {
 
     this.storageConfiguration = storageConfiguration;
     this.storageConnection = storageConnection;
     this.contextPath = contextPath;
     this.fileType = fileType;
     this.mediaType = mediaType;
-    this.documentParser = getDocumentParser(fileType);
-  }
-
-  public BaseStorage(StorageConfiguration storageConfiguration, String contextPath, String fileType, String mediaType) {
-
-    this.storageConfiguration = storageConfiguration;
-    this.contextPath = contextPath;
-    this.fileType = fileType;
-    this.mediaType = mediaType;
-    this.documentParser = getDocumentParser(fileType);
+    if(fileType != null) this.documentParser = getDocumentParser(fileType);
+    this.mediaProcessor = mediaProcessor;
   }
 
   @Override
@@ -108,6 +103,7 @@ public abstract class BaseStorage implements Iterator<Document> {
     private String contextPath;
     private String fileType;
     private String mediaType;
+    private MediaProcessor mediaProcessor;
 
     public Builder() {
 
@@ -138,6 +134,11 @@ public abstract class BaseStorage implements Iterator<Document> {
       return this;
     }
 
+    public BaseStorage.Builder mediaProcessor(MediaProcessor mediaProcessor) {
+      this.mediaProcessor = mediaProcessor;
+      return this;
+    }
+
     public BaseStorage build() {
 
       BaseStorage baseStorage;
@@ -152,25 +153,25 @@ public abstract class BaseStorage implements Iterator<Document> {
           case Constants.STORAGE_TYPE_LOCAL:
 
             baseStorage = new LocalStorage(storageConfiguration, (LocalStorageConnection) storageConnection, contextPath,
-                                           fileType, mediaType);
+                                           fileType, mediaType, mediaProcessor);
             break;
 
           case Constants.STORAGE_TYPE_AWS_S3:
 
             baseStorage = new AmazonS3Storage(storageConfiguration, (AmazonS3StorageConnection) storageConnection, contextPath,
-                                              fileType, mediaType);
+                                              fileType, mediaType, mediaProcessor);
             break;
 
           case Constants.STORAGE_TYPE_AZURE_BLOB:
 
             baseStorage = new AzureBlobStorage(storageConfiguration, (AzureBlobStorageConnection) storageConnection, contextPath,
-                                               fileType, mediaType);
+                                               fileType, mediaType, mediaProcessor);
             break;
 
           case Constants.STORAGE_TYPE_GCS:
 
             baseStorage = new GoogleCloudStorage(storageConfiguration, (GoogleCloudStorageConnection) storageConnection, contextPath,
-                                                 fileType, mediaType);
+                                                 fileType, mediaType, mediaProcessor);
             break;
 
           default:

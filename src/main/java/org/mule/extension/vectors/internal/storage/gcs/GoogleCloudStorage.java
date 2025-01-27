@@ -14,6 +14,7 @@ import org.mule.extension.vectors.internal.connection.storage.gcs.GoogleCloudSto
 import org.mule.extension.vectors.internal.constant.Constants;
 import org.mule.extension.vectors.internal.data.Media;
 import org.mule.extension.vectors.internal.error.MuleVectorsErrorType;
+import org.mule.extension.vectors.internal.helper.media.MediaProcessor;
 import org.mule.extension.vectors.internal.storage.BaseStorage;
 import org.mule.extension.vectors.internal.util.MetadataUtils;
 import org.mule.runtime.extension.api.exception.ModuleException;
@@ -45,9 +46,9 @@ public class GoogleCloudStorage extends BaseStorage {
     private Page<Blob> blobPage;
 
     public GoogleCloudStorage(StorageConfiguration storageConfiguration, GoogleCloudStorageConnection googleCloudStorageConnection,
-                              String contextPath, String fileType, String mediaType) {
+                              String contextPath, String fileType, String mediaType, MediaProcessor mediaProcessor) {
 
-        super(storageConfiguration, googleCloudStorageConnection, contextPath, fileType, mediaType);
+        super(storageConfiguration, googleCloudStorageConnection, contextPath, fileType, mediaType, mediaProcessor);
         this.projectId = googleCloudStorageConnection.getProjectId();
         this.clientEmail = googleCloudStorageConnection.getClientEmail();
         this.clientId = googleCloudStorageConnection.getClientId();

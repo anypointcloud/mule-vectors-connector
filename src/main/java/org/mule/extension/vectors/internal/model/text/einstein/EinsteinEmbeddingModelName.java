@@ -1,7 +1,6 @@
 package org.mule.extension.vectors.internal.model.text.einstein;
 
-import org.mule.extension.vectors.internal.constant.Constants;
-import org.mule.extension.vectors.internal.helper.EmbeddingModelHelper;
+import org.mule.extension.vectors.internal.helper.model.EmbeddingModelHelper;
 
 import java.util.HashMap;
 import java.util.Map;

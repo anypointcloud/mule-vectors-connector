@@ -1,4 +1,4 @@
-package org.mule.extension.vectors.internal.helper;
+package org.mule.extension.vectors.internal.helper.model;
 
 public class EmbeddingModelHelper {
 

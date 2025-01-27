@@ -7,7 +7,11 @@ import org.mule.extension.vectors.internal.connection.storage.BaseStorageConnect
 import org.mule.extension.vectors.internal.data.Media;
 import org.mule.extension.vectors.internal.error.MuleVectorsErrorType;
 import org.mule.extension.vectors.internal.error.provider.MediaErrorTypeProvider;
+import org.mule.extension.vectors.internal.helper.media.ImageProcessor;
+import org.mule.extension.vectors.internal.helper.media.MediaProcessor;
+import org.mule.extension.vectors.internal.helper.parameter.ImageProcessorParameters;
 import org.mule.extension.vectors.internal.helper.parameter.MediaParameters;
+import org.mule.extension.vectors.internal.helper.parameter.MediaProcessorParameters;
 import org.mule.extension.vectors.internal.storage.BaseStorage;
 import org.mule.extension.vectors.internal.util.JsonUtils;
 import org.mule.runtime.extension.api.annotation.Alias;
@@ -26,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import java.io.InputStream;
 import java.util.HashMap;
 
+import static org.mule.extension.vectors.internal.constant.Constants.*;
 import static org.mule.extension.vectors.internal.helper.ResponseHelper.createMediaResponse;
 import static org.mule.runtime.extension.api.annotation.param.MediaType.APPLICATION_JSON;
 
@@ -48,19 +53,39 @@ public class MediaOperations {
   @Alias("Media-load-single")
   @DisplayName("[Media] Load single")
   @Throws(MediaErrorTypeProvider.class)
-  //@OutputJsonType(schema = "api/metadata/MediaLoadSingleResponse.json")
+  @OutputJsonType(schema = "api/metadata/MediaLoadSingleResponse.json")
   public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, MediaResponseAttributes>
   loadSingleMedia(@Config StorageConfiguration storageConfiguration,
-                     @Connection BaseStorageConnection storageConnection,
-                     @ParameterGroup(name = "Media") MediaParameters mediaParameters) {
+                  @Connection BaseStorageConnection storageConnection,
+                  @ParameterGroup(name = "Media") MediaParameters mediaParameters) {
 
     try {
+
+      LOGGER.debug(String.format("Media Parameters: %s",mediaParameters));
+
+      MediaProcessor mediaProcessor = null;
+
+      if(mediaParameters.getMediaProcessorParameters() != null) {
+
+        if(mediaParameters.getMediaType().equals(MEDIA_TYPE_IMAGE)) {
+
+          ImageProcessorParameters imageProcessorParameters = (ImageProcessorParameters) mediaParameters.getMediaProcessorParameters();
+
+          mediaProcessor = ImageProcessor.builder()
+              .targetWidth(imageProcessorParameters.getTargetWidth())
+              .targetHeight(imageProcessorParameters.getTargetHeight())
+              .compressionQuality(imageProcessorParameters.getCompressionQuality())
+              .scaleStrategy(imageProcessorParameters.getScaleStrategy())
+              .build();
+        }
+      }
 
       BaseStorage baseStorage = BaseStorage.builder()
           .configuration(storageConfiguration)
           .connection(storageConnection)
           .contextPath(mediaParameters.getContextPath())
-          .fileType(mediaParameters.getMediaType())
+          .mediaType(mediaParameters.getMediaType())
+          .mediaProcessor(mediaProcessor)
           .build();
 
       Media media = baseStorage.getSingleMedia();
@@ -72,6 +97,9 @@ public class MediaOperations {
           new HashMap<String, Object>() {{
             put("mediaType", mediaParameters.getMediaType());
             put("contextPath", mediaParameters.getContextPath());
+            put("fileType", media.metadata().get(METADATA_KEY_FILE_TYPE));
+            put("mimeType", media.metadata().get(METADATA_KEY_MIME_TYPE));
+            put("source", media.metadata().get(METADATA_KEY_SOURCE));
           }});
 
     } catch (ModuleException me) {

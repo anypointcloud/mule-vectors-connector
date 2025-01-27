@@ -257,7 +257,7 @@ public class EmbeddingOperations {
   generateEmbeddingFromImageAndText(@Config EmbeddingConfiguration embeddingConfiguration,
                                     @Connection BaseModelConnection modelConnection,
                                     @Alias("text") @DisplayName("Text") @Content String text,
-                                    @Alias("image") @DisplayName("Image") @Content InputStream imageInputStream,
+                                    @Alias("image") @DisplayName("Image Content") @Content InputStream imageInputStream,
                                     @ParameterGroup(name = "Embedding Model") EmbeddingModelParameters embeddingModelParameters) {
 
     try {

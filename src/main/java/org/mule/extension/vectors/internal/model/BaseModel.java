@@ -12,7 +12,7 @@ import org.mule.extension.vectors.internal.connection.model.openai.OpenAIModelCo
 import org.mule.extension.vectors.internal.connection.model.vertexai.VertexAIModelConnection;
 import org.mule.extension.vectors.internal.constant.Constants;
 import org.mule.extension.vectors.internal.error.MuleVectorsErrorType;
-import org.mule.extension.vectors.internal.helper.EmbeddingModelHelper;
+import org.mule.extension.vectors.internal.helper.model.EmbeddingModelHelper;
 import org.mule.extension.vectors.internal.helper.parameter.EmbeddingModelParameters;
 import org.mule.extension.vectors.internal.model.multimodal.EmbeddingMultimodalModel;
 import org.mule.extension.vectors.internal.model.multimodal.vertexai.VertexAIMultimodalModel;

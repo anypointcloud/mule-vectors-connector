@@ -14,17 +14,31 @@ import static org.mule.runtime.extension.api.annotation.param.MediaType.APPLICAT
 /**
  * Represents the attributes of a media operation response.
  * <p>
- * This class contains metadata about a media, such as its file type,
- * context path, and any additional attributes.
+ * This class contains metadata about a media, such as its file type, context path, and any additional attributes.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class MediaResponseAttributes implements Serializable {
 
   /**
+   * The type of the media associated with the media.
+   */
+  private final String mediaType;
+
+  /**
    * The type of the file associated with the media.
    */
   private final String fileType;
+
+  /**
+   * The MIME type of the media.
+   */
+  private final String mimeType;
+
+  /**
+   * The URL of the media.
+   */
+  private final String url;
 
   /**
    * The context path of the media.
@@ -39,13 +53,15 @@ public class MediaResponseAttributes implements Serializable {
   /**
    * Constructs a {@code MediaResponseAttributes} instance.
    *
-   * @param requestAttributes a map containing media operation attributes.
-   *                          Expected keys include "fileType" and "contextPath",
-   *                          which are extracted and stored in their respective fields.
-   *                          Remaining entries are stored in {@code otherAttributes}.
+   * @param requestAttributes a map containing media operation attributes. Expected keys include "mediaType", "mimeType", "url",
+   *                          and "contextPath", which are extracted and stored in their respective fields. Remaining entries are
+   *                          stored in {@code otherAttributes}.
    */
   public MediaResponseAttributes(HashMap<String, Object> requestAttributes) {
     this.fileType = requestAttributes.containsKey("fileType") ? (String) requestAttributes.remove("fileType") : null;
+    this.mediaType = requestAttributes.containsKey("mediaType") ? (String) requestAttributes.remove("mediaType") : null;
+    this.mimeType = requestAttributes.containsKey("mimeType") ? (String) requestAttributes.remove("mimeType") : null;
+    this.url = requestAttributes.containsKey("url") ? (String) requestAttributes.remove("url") : null;
     this.contextPath = requestAttributes.containsKey("contextPath") ? (String) requestAttributes.remove("contextPath") : null;
     this.otherAttributes = requestAttributes;
   }
@@ -57,6 +73,33 @@ public class MediaResponseAttributes implements Serializable {
    */
   public String getFileType() {
     return fileType;
+  }
+
+  /**
+   * Gets the media type of the media.
+   *
+   * @return the media type, or {@code null} if not available.
+   */
+  public String getMediaType() {
+    return mediaType;
+  }
+
+  /**
+   * Gets the MIME type of the media.
+   *
+   * @return the MIME type, or {@code null} if not available.
+   */
+  public String getMimeType() {
+    return mimeType;
+  }
+
+  /**
+   * Gets the URL of the media.
+   *
+   * @return the URL, or {@code null} if not available.
+   */
+  public String getUrl() {
+    return url;
   }
 
   /**

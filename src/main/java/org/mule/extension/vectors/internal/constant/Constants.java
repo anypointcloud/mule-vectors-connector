@@ -12,7 +12,8 @@ public class Constants {
   public static final String FILE_TYPE_CRAWL = "crawl";
   public static final String FILE_TYPE_URL = "url";
 
-  public static final String MEDIA_TYPE_IMAGE = "png";
+  public static final String MEDIA_TYPE_IMAGE = "image";
+  public static final String MEDIA_TYPE_VIDEO = "video";
 
   public static final String STORAGE_TYPE_LOCAL = "Local";
   public static final String STORAGE_TYPE_AWS_S3 = "S3";

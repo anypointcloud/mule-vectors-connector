@@ -18,7 +18,7 @@ import org.mule.extension.vectors.internal.connection.store.BaseStoreConnection;
 import org.mule.extension.vectors.internal.constant.Constants;
 import org.mule.extension.vectors.internal.error.MuleVectorsErrorType;
 import org.mule.extension.vectors.internal.error.provider.StoreErrorTypeProvider;
-import org.mule.extension.vectors.internal.helper.EmbeddingOperationValidator;
+import org.mule.extension.vectors.internal.helper.model.EmbeddingOperationValidator;
 import org.mule.extension.vectors.internal.helper.parameter.MetadataFilterParameters;
 import org.mule.extension.vectors.internal.helper.parameter.QueryParameters;
 import org.mule.extension.vectors.internal.store.BaseStore;

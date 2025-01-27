@@ -15,22 +15,30 @@ import org.mule.runtime.extension.api.annotation.values.OfValues;
 public class MediaParameters {
 
   @Parameter
-  @Alias("mediaType")
-  @DisplayName("Media Type")
-  @Summary("The supported types of media.")
-  @Placement(order = 1)
-  @Expression(ExpressionSupport.SUPPORTED)
-  @OfValues(MediaTypeProvider.class)
-  @Optional(defaultValue = Constants.MEDIA_TYPE_PNG)
-  private String mediaType;
-
-  @Parameter
   @Alias("contextPath")
   @DisplayName("Context Path")
   @Summary("The context path.")
-  @Placement(order = 2)
+  @Placement(order = 1)
   @Expression(ExpressionSupport.SUPPORTED)
   private String contextPath;
+
+  @Parameter
+  @Alias("mediaType")
+  @DisplayName("Media Type")
+  @Summary("The supported types of media.")
+  @Placement(order = 2)
+  @Expression(ExpressionSupport.SUPPORTED)
+  @OfValues(MediaTypeProvider.class)
+  @Optional(defaultValue = Constants.MEDIA_TYPE_IMAGE)
+  private String mediaType;
+
+  @Parameter
+  @Alias("mediaProcessorParameters")
+  @DisplayName("Processor Settings")
+  @Summary("The context path.")
+  @Placement(order = 3)
+  @Expression(ExpressionSupport.NOT_SUPPORTED)
+  private MediaProcessorParameters mediaProcessorParameters = new ImageProcessorParameters();
 
 
   public String getMediaType() {
@@ -39,5 +47,18 @@ public class MediaParameters {
 
   public String getContextPath() {
     return contextPath;
+  }
+
+  public MediaProcessorParameters getMediaProcessorParameters() {
+    return mediaProcessorParameters;
+  }
+
+  @Override
+  public String toString() {
+    return "MediaParameters{" +
+        "contextPath='" + contextPath + '\'' +
+        ", mediaType='" + mediaType + '\'' +
+        ", mediaProcessorParameters=" + mediaProcessorParameters +
+        '}';
   }
 }

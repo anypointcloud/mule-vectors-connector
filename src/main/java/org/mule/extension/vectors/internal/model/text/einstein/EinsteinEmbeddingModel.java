@@ -9,8 +9,7 @@ import dev.langchain4j.model.output.TokenUsage;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.mule.extension.vectors.internal.connection.model.einstein.EinsteinModelConnection;
-import org.mule.extension.vectors.internal.constant.Constants;
-import org.mule.extension.vectors.internal.helper.EmbeddingModelHelper;
+import org.mule.extension.vectors.internal.helper.model.EmbeddingModelHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
