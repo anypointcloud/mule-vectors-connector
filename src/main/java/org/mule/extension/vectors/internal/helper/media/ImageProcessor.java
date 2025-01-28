@@ -1,8 +1,13 @@
 package org.mule.extension.vectors.internal.helper.media;
 
 import org.imgscalr.Scalr;
+import org.mule.extension.vectors.internal.operation.StoreOperations;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.MemoryCacheImageInputStream;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
@@ -12,8 +17,13 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Base64;
+import java.util.Iterator;
+
+import static org.mule.extension.vectors.internal.constant.Constants.FILE_TYPE_PNG;
 
 public class ImageProcessor implements MediaProcessor {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(ImageProcessor.class);
 
   public enum ScaleStrategy {
     FIT,
@@ -203,6 +213,37 @@ public class ImageProcessor implements MediaProcessor {
   public byte[] process(byte[] mediaBytes, String format) throws IOException {
 
     return bufferedImageToBytes(process(bytesToBufferedImage(mediaBytes)), format);
+  }
+
+  @Override
+  public byte[] process(byte[] mediaBytes) throws IOException {
+
+    return process(mediaBytes, getImageFormat(mediaBytes));
+  }
+
+  /**
+   * Determines the format of the provided image bytes.
+   *
+   * <p>This method reads the image data from the given byte array and attempts to detect its format
+   * (e.g., "jpeg", "png", "webp"). If the format cannot be determined, it falls back to returning "png".
+   *
+   * @param imageBytes The byte array representing the image data.
+   * @return A string representing the format of the image, such as "jpeg", "png", or "webp".
+   */
+  private String getImageFormat(byte[] imageBytes) {
+
+    try (ByteArrayInputStream bais = new ByteArrayInputStream(imageBytes);
+        MemoryCacheImageInputStream input = new MemoryCacheImageInputStream(bais)) {
+
+      Iterator<ImageReader> readers = ImageIO.getImageReaders(input);
+      if (readers.hasNext()) {
+        ImageReader reader = readers.next();
+        return reader.getFormatName(); // e.g., "jpeg", "png", "webp", etc.
+      }
+    } catch (Exception e) {
+      LOGGER.warn("Unable to determine the image format");
+    }
+    return "png";
   }
 
   public static class Builder {

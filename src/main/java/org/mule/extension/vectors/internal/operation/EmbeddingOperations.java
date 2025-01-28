@@ -27,11 +27,15 @@ import org.mule.extension.vectors.internal.constant.Constants;
 import org.mule.extension.vectors.internal.error.MuleVectorsErrorType;
 import org.mule.extension.vectors.internal.error.provider.EmbeddingErrorTypeProvider;
 import org.mule.extension.vectors.internal.helper.media.ImageProcessor;
+import org.mule.extension.vectors.internal.helper.parameter.ImageProcessorParameters;
+import org.mule.extension.vectors.internal.helper.parameter.MediaProcessorParameters;
 import org.mule.extension.vectors.internal.helper.parameter.SegmentationParameters;
 import org.mule.extension.vectors.internal.helper.parameter.EmbeddingModelParameters;
 import org.mule.extension.vectors.internal.model.BaseModel;
 import org.mule.extension.vectors.internal.model.multimodal.EmbeddingMultimodalModel;
+import org.mule.runtime.api.meta.ExpressionSupport;
 import org.mule.runtime.extension.api.annotation.Alias;
+import org.mule.runtime.extension.api.annotation.Expression;
 import org.mule.runtime.extension.api.annotation.error.Throws;
 import org.mule.runtime.extension.api.annotation.metadata.fixed.InputJsonType;
 import org.mule.runtime.extension.api.annotation.metadata.fixed.OutputJsonType;
@@ -43,6 +47,7 @@ import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.model.embedding.EmbeddingModel;
 
 import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
+import org.mule.runtime.extension.api.annotation.param.display.Placement;
 import org.mule.runtime.extension.api.annotation.param.display.Summary;
 import org.mule.runtime.extension.api.exception.ModuleException;
 import org.slf4j.Logger;
@@ -262,11 +267,22 @@ public class EmbeddingOperations {
                                     @Connection BaseModelConnection modelConnection,
                                     @Alias("image") @DisplayName("Image Binary Content") @Content InputStream imageInputStream,
                                     @Alias("text") @DisplayName("Text") @Summary("Short text describing the image") @Content String text,
+                                    @Alias("mediaProcessorParameters") @ParameterGroup(name="Image Processor Settings")
+                                        @DisplayName("Processor Settings") @Summary("Image Processor Settings") @Expression(ExpressionSupport.NOT_SUPPORTED) ImageProcessorParameters imageProcessorParameters,
                                     @ParameterGroup(name = "Embedding Model") EmbeddingModelParameters embeddingModelParameters) {
 
     try {
       // Convert InputStream to byte array
       byte[] imageBytes = IOUtils.toByteArray(imageInputStream);
+
+      ImageProcessor imageProcessor = ImageProcessor.builder()
+          .targetWidth(imageProcessorParameters.getTargetWidth())
+          .targetHeight(imageProcessorParameters.getTargetHeight())
+          .compressionQuality(imageProcessorParameters.getCompressionQuality())
+          .scaleStrategy(imageProcessorParameters.getScaleStrategy())
+          .build();
+
+      imageBytes =  imageProcessor.process(imageBytes);
 
       JSONObject jsonObject = new JSONObject();
 

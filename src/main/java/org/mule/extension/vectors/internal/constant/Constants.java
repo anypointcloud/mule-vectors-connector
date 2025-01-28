@@ -11,6 +11,10 @@ public class Constants {
   public static final String FILE_TYPE_TEXT = "text";
   public static final String FILE_TYPE_CRAWL = "crawl";
   public static final String FILE_TYPE_URL = "url";
+  public static final String FILE_TYPE_PNG = "png";
+  public static final String FILE_TYPE_BMP = "bmp";
+  public static final String FILE_TYPE_JPEG = "jpeg";
+  public static final String FILE_TYPE_GIF = "gif";
 
   public static final String MEDIA_TYPE_IMAGE = "image";
   public static final String MEDIA_TYPE_VIDEO = "video";
