@@ -1,5 +1,7 @@
 package org.mule.extension.vectors.internal.model.multimodal.vertexai;
 
+import com.google.api.gax.retrying.RetrySettings;
+import com.google.api.gax.rpc.UnaryCallSettings;
 import com.google.auth.Credentials;
 import com.google.api.gax.core.FixedCredentialsProvider;
 import com.google.cloud.aiplatform.v1beta1.EndpointName;
@@ -17,6 +19,7 @@ import org.mule.extension.vectors.internal.model.text.vertexai.VertexAiEmbedding
 import org.mule.extension.vectors.internal.operation.EmbeddingOperations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.threeten.bp.Duration;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -52,12 +55,29 @@ public class VertexAiEmbeddingMultimodalModel implements EmbeddingMultimodalMode
       // Create client using credentials if none provided
       try {
         String regionWithBaseAPI = endpoint != null ? endpoint : location + "-aiplatform.googleapis.com:443";
-        this.client = PredictionServiceClient.create(
-            PredictionServiceSettings.newBuilder()
-                .setCredentialsProvider(FixedCredentialsProvider.create(credentials))
-                .setEndpoint(regionWithBaseAPI)
-                .build()
-        );
+
+        // Configure custom retry settings
+        RetrySettings retrySettings = RetrySettings.newBuilder()
+            .setMaxAttempts(3) // Maximum number of retries
+            .setInitialRetryDelay(Duration.ofMillis(500)) // Initial retry delay
+            .setRetryDelayMultiplier(1.5) // Multiplier for subsequent retries
+            .setMaxRetryDelay(Duration.ofMillis(5000)) // Maximum retry delay
+            .setTotalTimeout(Duration.ofMillis(60000)) // Total timeout for the operation
+            .build();
+
+        // Customize the predict settings
+        PredictionServiceSettings.Builder settingsBuilder = PredictionServiceSettings.newBuilder()
+            .setCredentialsProvider(FixedCredentialsProvider.create(credentials))
+            .setEndpoint(regionWithBaseAPI);
+
+        // Apply retry settings to the predictSettings
+        settingsBuilder
+            .predictSettings()
+            .setRetrySettings(retrySettings);
+
+        // Build the PredictionServiceClient
+        this.client = PredictionServiceClient.create(settingsBuilder.build());
+
       } catch (IOException e) {
         throw new RuntimeException("Failed to initialize Vertex AI settings", e);
       }

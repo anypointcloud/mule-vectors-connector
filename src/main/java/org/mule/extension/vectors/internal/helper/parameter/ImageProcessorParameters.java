@@ -38,7 +38,7 @@ public class ImageProcessorParameters extends MediaProcessorParameters {
   @Summary("The compression quality for media (between 0.0 and 1.0, where 1.0 is highest quality).")
   @Placement(order = 3)
   @Expression(ExpressionSupport.SUPPORTED)
-  @Optional(defaultValue = "0.5")
+  @Optional(defaultValue = "1")
   private float compressionQuality;
 
   @Parameter

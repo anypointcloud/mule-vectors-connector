@@ -1,5 +1,7 @@
 package org.mule.extension.vectors.internal.connection.model.vertexai;
 
+import com.google.api.gax.core.FixedCredentialsProvider;
+import com.google.api.gax.retrying.RetrySettings;
 import com.google.auth.Credentials;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.aiplatform.v1beta1.PredictionServiceClient;
@@ -7,6 +9,15 @@ import com.google.cloud.aiplatform.v1beta1.PredictionServiceSettings;
 import org.mule.extension.vectors.internal.connection.model.BaseModelConnection;
 import org.mule.extension.vectors.internal.constant.Constants;
 import org.mule.runtime.api.connection.ConnectionException;
+import org.mule.runtime.api.meta.ExpressionSupport;
+import org.mule.runtime.extension.api.annotation.Expression;
+import org.mule.runtime.extension.api.annotation.param.Optional;
+import org.mule.runtime.extension.api.annotation.param.Parameter;
+import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
+import org.mule.runtime.extension.api.annotation.param.display.Example;
+import org.mule.runtime.extension.api.annotation.param.display.Placement;
+import org.mule.runtime.extension.api.annotation.param.display.Summary;
+import org.threeten.bp.Duration;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -27,16 +38,29 @@ public class VertexAIModelConnection implements BaseModelConnection {
   private String clientId;
   private String privateKeyId;
   private String privateKey;
+
+  private int maxAttempts;
+  private long initialRetryDelay;
+  private double retryDelayMultiplier;
+  private long maxRetryDelay;
+  private long totalTimeout;
+
   private PredictionServiceClient predictionClient;
 
-  public VertexAIModelConnection(String projectId, String location, String clientEmail, String clientId,
-                                 String privateKeyId, String privateKey) {
+  public VertexAIModelConnection(String projectId, String location, String clientEmail, String clientId, String privateKeyId,
+                                 String privateKey, int maxAttempts, long initialRetryDelay, double retryDelayMultiplier,
+                                 long maxRetryDelay, long totalTimeout) {
     this.projectId = projectId;
     this.location = location;
     this.clientEmail = clientEmail;
     this.clientId = clientId;
     this.privateKeyId = privateKeyId;
     this.privateKey = privateKey;
+    this.maxAttempts = maxAttempts;
+    this.initialRetryDelay = initialRetryDelay;
+    this.retryDelayMultiplier = retryDelayMultiplier;
+    this.maxRetryDelay = maxRetryDelay;
+    this.totalTimeout = totalTimeout;
   }
 
   public String getProjectId() {
@@ -63,20 +87,47 @@ public class VertexAIModelConnection implements BaseModelConnection {
     return privateKey;
   }
 
+  public int getMaxAttempts() { return maxAttempts; }
+
+  public long getInitialRetryDelay() { return initialRetryDelay; }
+
+  public double getRetryDelayMultiplier() { return retryDelayMultiplier; }
+
+  public long getMaxRetryDelay() { return maxRetryDelay; }
+
+  public long getTotalTimeout() { return totalTimeout; }
+
   public PredictionServiceClient getPredictionClient() {
     return predictionClient;
   }
 
   @Override
   public void connect() throws ConnectionException {
+
     try {
 
-      PredictionServiceSettings settings = PredictionServiceSettings.newBuilder()
-          .setEndpoint(location + DEFAULT_GOOGLEAPIS_ENDPOINT_SUFFIX)
-          .setCredentialsProvider(() -> getCredentials())
+      // Configure custom retry settings
+      RetrySettings retrySettings = RetrySettings.newBuilder()
+          .setMaxAttempts(maxAttempts > 0 ? maxAttempts : 3) // Maximum number of retries
+          .setInitialRetryDelay(Duration.ofMillis(initialRetryDelay > 0 ? initialRetryDelay : 500)) // Initial retry delay
+          .setRetryDelayMultiplier(retryDelayMultiplier > 0 ? retryDelayMultiplier : 1.5) // Multiplier for subsequent retries
+          .setMaxRetryDelay(Duration.ofMillis(maxRetryDelay > 0 ? maxRetryDelay : 5000)) // Maximum retry delay
+          .setTotalTimeout(Duration.ofMillis(totalTimeout > 0 ? totalTimeout : 60000)) // Total timeout for the operation
           .build();
 
-      this.predictionClient = PredictionServiceClient.create(settings);
+      // Customize the predict settings
+      PredictionServiceSettings.Builder settingsBuilder = PredictionServiceSettings.newBuilder()
+          .setEndpoint(location + DEFAULT_GOOGLEAPIS_ENDPOINT_SUFFIX)
+          .setCredentialsProvider(() -> getCredentials());
+
+      // Apply retry settings to the predictSettings
+      settingsBuilder
+          .predictSettings()
+          .setRetrySettings(retrySettings);
+
+      // Build the PredictionServiceClient
+      this.predictionClient = PredictionServiceClient.create(settingsBuilder.build());
+
     } catch (Exception e) {
       throw new ConnectionException("Failed to connect to Vertex AI.", e);
     }
