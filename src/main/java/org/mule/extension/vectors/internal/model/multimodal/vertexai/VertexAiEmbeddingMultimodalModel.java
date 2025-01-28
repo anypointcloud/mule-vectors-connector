@@ -264,19 +264,20 @@ public class VertexAiEmbeddingMultimodalModel implements EmbeddingMultimodalMode
       Value instanceValue;
 
       try {
-        // Convert the image to Base64
-        byte[] imageData = Base64.getEncoder().encode(image);
-        String encodedImage = new String(imageData, StandardCharsets.UTF_8);
 
         Value.Builder instanceBuilder = Value.newBuilder();
-
         JsonObject jsonInstance = new JsonObject();
-        if(text != null) {
+
+        if(text != null && !text.isEmpty()) {
 
           jsonInstance.addProperty("text", text);
         }
+
         if(image != null) {
 
+          // Convert the image to Base64
+          byte[] imageData = Base64.getEncoder().encode(image);
+          String encodedImage = new String(imageData, StandardCharsets.UTF_8);
           JsonObject jsonImage = new JsonObject();
           jsonImage.addProperty("bytesBase64Encoded", encodedImage);
           jsonInstance.add("image", jsonImage);

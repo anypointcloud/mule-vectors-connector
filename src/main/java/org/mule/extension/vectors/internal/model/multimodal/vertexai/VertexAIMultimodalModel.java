@@ -40,6 +40,7 @@ public class VertexAIMultimodalModel extends BaseModel {
           .client(vertexAIModelConnection.getPredictionClient())
           .project(vertexAIModelConnection.getProjectId())
           .location(vertexAIModelConnection.getLocation())
+          .maxRetries(vertexAIModelConnection.getMaxAttempts())
           .publisher(PUBLISHER)
           .modelName(embeddingModelParameters.getEmbeddingModelName())
           .build();

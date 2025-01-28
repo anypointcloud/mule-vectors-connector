@@ -7,16 +7,14 @@ import static org.mule.runtime.extension.api.annotation.param.MediaType.APPLICAT
 
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.IntStream;
 
 import dev.langchain4j.data.document.Document;
 import dev.langchain4j.data.document.DocumentSplitter;
 import dev.langchain4j.data.document.Metadata;
 import org.apache.commons.io.IOUtils;
+import org.bouncycastle.oer.Switch;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.mule.extension.vectors.api.metadata.EmbeddingResponseAttributes;
@@ -27,6 +25,7 @@ import org.mule.extension.vectors.internal.constant.Constants;
 import org.mule.extension.vectors.internal.error.MuleVectorsErrorType;
 import org.mule.extension.vectors.internal.error.provider.EmbeddingErrorTypeProvider;
 import org.mule.extension.vectors.internal.helper.media.ImageProcessor;
+import org.mule.extension.vectors.internal.helper.model.EmbeddingModelHelper;
 import org.mule.extension.vectors.internal.helper.parameter.ImageProcessorParameters;
 import org.mule.extension.vectors.internal.helper.parameter.MediaProcessorParameters;
 import org.mule.extension.vectors.internal.helper.parameter.SegmentationParameters;
@@ -47,6 +46,7 @@ import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.model.embedding.EmbeddingModel;
 
 import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
+import org.mule.runtime.extension.api.annotation.param.display.Example;
 import org.mule.runtime.extension.api.annotation.param.display.Placement;
 import org.mule.runtime.extension.api.annotation.param.display.Summary;
 import org.mule.runtime.extension.api.exception.ModuleException;
@@ -84,31 +84,49 @@ public class EmbeddingOperations {
                             @ParameterGroup(name = "Embedding Model") EmbeddingModelParameters embeddingModelParameters) {
 
     try {
+
       BaseModel baseModel = BaseModel.builder()
           .configuration(embeddingConfiguration)
           .connection(modelConnection)
           .embeddingModelParameters(embeddingModelParameters)
           .build();
 
-      EmbeddingModel embeddingModel = baseModel.buildEmbeddingModel();
+      List<TextSegment> textSegments = new LinkedList<>();
+      List<Embedding> embeddings = new LinkedList<>();
+      int dimension = 0;
 
-      LOGGER.debug(String.format("Embedding model for %s service built.", modelConnection.getEmbeddingModelService()));
-
-      List<TextSegment> textSegments;
-      if(segmentationParameters.getMaxSegmentSizeInChars() > 0) {
-
-        DocumentSplitter documentSplitter = DocumentSplitters.recursive(segmentationParameters.getMaxSegmentSizeInChars(),
-                                                                        segmentationParameters.getMaxOverlapSizeInChars());
-        textSegments = documentSplitter.split(new Document(text));
-      } else {
-
-        textSegments = new LinkedList<>();
-        textSegments.add(TextSegment.from(text));
-      }
-      List<Embedding> embeddings;
       try {
 
-        embeddings = embeddingModel.embedAll(textSegments).content();
+        switch(embeddingModelParameters.getEmbeddingModelType()) {
+
+          case MULTIMODAL:
+
+            EmbeddingMultimodalModel embeddingMultimodalModel = baseModel.buildEmbeddingMultimodalModel();
+            LOGGER.debug(String.format("Embedding multimodal model for %s service built.", modelConnection.getEmbeddingModelService()));
+            textSegments.add(TextSegment.from(text));
+            embeddings.add(embeddingMultimodalModel.embedText(text).content());
+            dimension = embeddingMultimodalModel.dimension();
+            break;
+
+          case TEXT:
+          default:
+
+            EmbeddingModel embeddingModel = baseModel.buildEmbeddingModel();
+            LOGGER.debug(String.format("Embedding text model for %s service built.", modelConnection.getEmbeddingModelService()));
+
+            if(segmentationParameters.getMaxSegmentSizeInChars() > 0) {
+
+              DocumentSplitter documentSplitter = DocumentSplitters.recursive(segmentationParameters.getMaxSegmentSizeInChars(),
+                                                                              segmentationParameters.getMaxOverlapSizeInChars());
+              textSegments = documentSplitter.split(new Document(text));
+            } else {
+
+              textSegments.add(TextSegment.from(text));
+            }
+            embeddings = embeddingModel.embedAll(textSegments).content();
+            dimension = embeddingModel.dimension();
+            break;
+        }
 
       }  catch(ModuleException e) {
 
@@ -124,10 +142,11 @@ public class EmbeddingOperations {
 
       JSONObject jsonObject = new JSONObject();
 
+      List<TextSegment> finalTextSegments = textSegments;
       JSONArray jsonTextSegments = IntStream.range(0, textSegments.size())
           .mapToObj(i -> {
             JSONObject jsonSegment = new JSONObject();
-            jsonSegment.put(Constants.JSON_KEY_TEXT, textSegments.get(i).text());
+            jsonSegment.put(Constants.JSON_KEY_TEXT, finalTextSegments.get(i).text());
             JSONObject jsonMetadata = new JSONObject();
             jsonMetadata.put(Constants.JSON_KEY_INDEX, i);
             jsonSegment.put(Constants.JSON_KEY_METADATA, jsonMetadata);
@@ -137,21 +156,23 @@ public class EmbeddingOperations {
 
       jsonObject.put(Constants.JSON_KEY_TEXT_SEGMENTS, jsonTextSegments);
 
+      List<Embedding> finalEmbeddings = embeddings;
       JSONArray jsonEmbeddings = IntStream.range(0, embeddings.size())
           .mapToObj(i -> {
-            return embeddings.get(i).vector();
+            return finalEmbeddings.get(i).vector();
           })
           .collect(JSONArray::new, JSONArray::put, JSONArray::putAll);
 
       jsonObject.put(Constants.JSON_KEY_EMBEDDINGS, jsonEmbeddings);
 
-      jsonObject.put(Constants.JSON_KEY_DIMENSION, embeddingModel.dimension());
+      jsonObject.put(Constants.JSON_KEY_DIMENSION, dimension);
 
+      int finalDimension = dimension;
       return createEmbeddingResponse(
           jsonObject.toString(),
           new HashMap<String, Object>() {{
             put("embeddingModelName", embeddingModelParameters.getEmbeddingModelName());
-            put("embeddingModelDimension", embeddingModel.dimension());
+            put("embeddingModelDimension", finalDimension);
           }});
 
     } catch (ModuleException me) {
@@ -266,7 +287,7 @@ public class EmbeddingOperations {
   generateEmbeddingFromImageAndText(@Config EmbeddingConfiguration embeddingConfiguration,
                                     @Connection BaseModelConnection modelConnection,
                                     @Alias("image") @DisplayName("Image Binary Content") @Content InputStream imageInputStream,
-                                    @Alias("text") @DisplayName("Text") @Summary("Short text describing the image") @Content String text,
+                                    @Alias("text") @DisplayName("Text") @Summary("Short text describing the image") @Example("An image of a sunset") @Content String text,
                                     @Alias("mediaProcessorParameters") @ParameterGroup(name="Image Processor Settings")
                                         @DisplayName("Processor Settings") @Summary("Image Processor Settings") @Expression(ExpressionSupport.NOT_SUPPORTED) ImageProcessorParameters imageProcessorParameters,
                                     @ParameterGroup(name = "Embedding Model") EmbeddingModelParameters embeddingModelParameters) {
@@ -310,7 +331,9 @@ public class EmbeddingOperations {
       // Assuming you have a multimodal embedding model method
       EmbeddingMultimodalModel multimodalEmbeddingModel = (EmbeddingMultimodalModel) baseModel.buildEmbeddingMultimodalModel();
 
-      Embedding embedding = multimodalEmbeddingModel.embedTextAndImage(text, imageBytes).content();
+      Embedding embedding = text != null && !text.isEmpty() ?
+          multimodalEmbeddingModel.embedTextAndImage(text, imageBytes).content() :
+          multimodalEmbeddingModel.embedImage(imageBytes).content();
 
       JSONArray jsonEmbeddings = new JSONArray();
       jsonEmbeddings.put(embedding.vector());
@@ -344,7 +367,7 @@ public class EmbeddingOperations {
   generateEmbeddingFromMediaAndText(@Config EmbeddingConfiguration embeddingConfiguration,
                                     @Connection BaseModelConnection modelConnection,
                                     @Alias("media") @DisplayName("Media") @InputJsonType(schema = "api/metadata/MediaLoadSingleResponse.json") @Content InputStream mediaContent,
-                                    @Alias("text") @DisplayName("Text") @Summary("Short text describing the image") @Content String text,
+                                    @Alias("text") @DisplayName("Text") @Summary("Short text describing the image") @Example("An image of a sunset") @Content String text,
                                     @ParameterGroup(name = "Embedding Model") EmbeddingModelParameters embeddingModelParameters) {
 
     try {
@@ -378,10 +401,9 @@ public class EmbeddingOperations {
       // Assuming you have a multimodal embedding model method
       EmbeddingMultimodalModel multimodalEmbeddingModel = (EmbeddingMultimodalModel) baseModel.buildEmbeddingMultimodalModel();
 
-      Embedding embedding = multimodalEmbeddingModel.embedTextAndImage(
-                                                                          text,
-                                                                          Base64.getDecoder().decode(jsonMediaObject.getString(JSON_KEY_BASE64DATA))
-                                                                      ).content();
+      Embedding embedding = text != null && !text.isEmpty() ?
+          multimodalEmbeddingModel.embedTextAndImage(text, Base64.getDecoder().decode(jsonMediaObject.getString(JSON_KEY_BASE64DATA))).content() :
+          multimodalEmbeddingModel.embedImage(Base64.getDecoder().decode(jsonMediaObject.getString(JSON_KEY_BASE64DATA))).content();
 
       JSONArray jsonEmbeddings = new JSONArray();
       jsonEmbeddings.put(embedding.vector());
