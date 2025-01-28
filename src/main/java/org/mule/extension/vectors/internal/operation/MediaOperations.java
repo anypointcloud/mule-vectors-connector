@@ -11,7 +11,6 @@ import org.mule.extension.vectors.internal.helper.media.ImageProcessor;
 import org.mule.extension.vectors.internal.helper.media.MediaProcessor;
 import org.mule.extension.vectors.internal.helper.parameter.ImageProcessorParameters;
 import org.mule.extension.vectors.internal.helper.parameter.MediaParameters;
-import org.mule.extension.vectors.internal.helper.parameter.MediaProcessorParameters;
 import org.mule.extension.vectors.internal.storage.BaseStorage;
 import org.mule.extension.vectors.internal.util.JsonUtils;
 import org.mule.runtime.extension.api.annotation.Alias;

@@ -1,15 +1,11 @@
 package org.mule.extension.vectors.internal.model.multimodal.vertexai;
 
-import com.google.auth.Credentials;
-import dev.langchain4j.model.embedding.EmbeddingModel;
 import org.mule.extension.vectors.internal.config.EmbeddingConfiguration;
-import org.mule.extension.vectors.internal.connection.model.BaseModelConnection;
 import org.mule.extension.vectors.internal.connection.model.vertexai.VertexAIModelConnection;
 import org.mule.extension.vectors.internal.error.MuleVectorsErrorType;
 import org.mule.extension.vectors.internal.helper.parameter.EmbeddingModelParameters;
 import org.mule.extension.vectors.internal.model.BaseModel;
 import org.mule.extension.vectors.internal.model.multimodal.EmbeddingMultimodalModel;
-import org.mule.extension.vectors.internal.model.text.vertexai.VertexAiEmbeddingModel;
 import org.mule.runtime.extension.api.exception.ModuleException;
 
 public class VertexAIMultimodalModel extends BaseModel {
