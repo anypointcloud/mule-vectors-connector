@@ -222,6 +222,16 @@ public class GoogleCloudStorage extends BaseStorage {
         return image;
     }
 
+    @Override
+    public DocumentIterator documentIterator() {
+        return new DocumentIterator();
+    }
+
+    @Override
+    public MediaIterator mediaIterator() {
+        return new MediaIterator();
+    }
+
     public class DocumentIterator extends BaseStorage.DocumentIterator {
 
         private Iterator<Blob> blobIterator;

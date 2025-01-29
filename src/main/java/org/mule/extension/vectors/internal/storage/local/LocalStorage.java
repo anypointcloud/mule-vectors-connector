@@ -150,6 +150,16 @@ public class LocalStorage extends BaseStorage {
     return image;
   }
 
+  @Override
+  public DocumentIterator documentIterator() {
+    return new DocumentIterator();
+  }
+
+  @Override
+  public MediaIterator mediaIterator() {
+    return new MediaIterator();
+  }
+
   public class DocumentIterator extends BaseStorage.DocumentIterator {
 
     private List<Path> pathList;
@@ -202,6 +212,59 @@ public class LocalStorage extends BaseStorage {
         return document;
       }
       throw new IllegalStateException("No more files to iterate");
+    }
+  }
+
+  public class MediaIterator extends BaseStorage.MediaIterator {
+
+    private List<Path> pathList;
+    private Iterator<Path> pathIterator;
+
+    private Iterator<Path> getPathIterator() {
+      if (pathList == null) {  // Only load files if not already loaded
+        try (Stream<Path> paths = Files.walk(Paths.get(fullPath))) {
+          // Collect all files as a list
+          pathList = paths.filter(Files::isRegularFile).collect(Collectors.toList());
+          // Create an iterator for the list of files
+          pathIterator = pathList.iterator();
+        } catch (IOException e) {
+          throw new ModuleException(
+              String.format("Error while getting document from %s.", fullPath),
+              MuleVectorsErrorType.STORAGE_SERVICES_FAILURE,
+              e);
+        }
+      }
+      return pathIterator;
+    }
+
+    // Override hasNext to check if there are files left to process
+    @Override
+    public boolean hasNext() {
+      return getPathIterator() != null && getPathIterator().hasNext();
+    }
+
+    // Override next to return the next document
+    @Override
+    public Media next() {
+      if (hasNext()) {
+        Path path = getPathIterator().next();
+        LOGGER.debug("Media file: " + path.getFileName().toString());
+        Media media;
+        try {
+
+          media = Media.fromImage(loadImage(path));
+          MetadataUtils.addImageMetadataToMedia(media, mediaType);
+
+        } catch (Exception e) {
+
+          throw new ModuleException(
+              String.format("Error while parsing document %s.", path.toString()),
+              MuleVectorsErrorType.DOCUMENT_PARSING_FAILURE,
+              e);
+        }
+        return media;
+      }
+      throw new IllegalStateException("No more media files to iterate");
     }
   }
 }
