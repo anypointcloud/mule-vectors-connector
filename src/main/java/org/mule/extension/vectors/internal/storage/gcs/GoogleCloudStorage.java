@@ -42,8 +42,6 @@ public class GoogleCloudStorage extends BaseStorage {
 
     private GoogleCloudStorageDocumentLoader documentLoader;
     private Storage storageService;
-    private Iterator<Blob> blobIterator;
-    private Page<Blob> blobPage;
 
     public GoogleCloudStorage(StorageConfiguration storageConfiguration, GoogleCloudStorageConnection googleCloudStorageConnection,
                               String contextPath, String fileType, String mediaType, MediaProcessor mediaProcessor) {
@@ -135,63 +133,6 @@ public class GoogleCloudStorage extends BaseStorage {
         return this.storageService;
     }
 
-    private Iterator<Blob> getBlobIterator() {
-        if (this.blobIterator == null || (!this.blobIterator.hasNext() && this.blobPage != null)) {
-            fetchNextBlobPage();
-        }
-        return this.blobIterator;
-    }
-
-    private void fetchNextBlobPage() {
-
-        if(this.blobPage == null) {
-
-            // Checks if items must be filtered by prefix or not
-            if(Objects.equals(this.objectKey, "")){
-
-                this.blobPage = getStorageService().list(this.bucket);
-            } else {
-
-                String prefix = this.objectKey + ((this.objectKey.endsWith("/") ? "" : "/"));
-                this.blobPage = getStorageService().list(this.bucket, Storage.BlobListOption.prefix(prefix));
-            }
-        } else {
-
-            this.blobPage = this.blobPage.getNextPage();
-        }
-
-        this.blobIterator = (this.blobPage == null)
-                ? Collections.emptyIterator()
-                : StreamSupport.stream(this.blobPage.getValues().spliterator(), false)
-                .filter(blob -> !(blob.getName().endsWith("/") && blob.getSize() == 0))
-                .iterator();
-    }
-
-    @Override
-    public Document next() {
-        Blob blob = getBlobIterator().next();
-        LOGGER.debug("Processing GCS object key: " + blob.getName());
-        Document document;
-        try {
-            document = getDocumentLoader().loadDocument(this.bucket, blob.getName(), documentParser);
-        } catch(BlankDocumentException bde) {
-            LOGGER.warn(String.format("BlankDocumentException: Error while parsing document %s.", contextPath));
-            throw bde;
-        } catch (Exception e) {
-            throw new ModuleException(
-                    String.format("Error while parsing document %s.", contextPath),
-                    MuleVectorsErrorType.DOCUMENT_PARSING_FAILURE,
-                    e);
-        }
-        MetadataUtils.addMetadataToDocument(document, fileType, blob.getName());
-        return document;
-    }
-
-    @Override
-    public boolean hasNext() {
-        return getBlobIterator().hasNext();
-    }
-
     public Document getSingleDocument() {
         LOGGER.debug("GCS URL: " + contextPath);
         if (Objects.equals(this.objectKey, "")) {
@@ -204,7 +145,6 @@ public class GoogleCloudStorage extends BaseStorage {
         MetadataUtils.addMetadataToDocument(document, fileType, this.objectKey);
         return document;
     }
-
 
     public Media getSingleMedia() {
 
@@ -239,5 +179,68 @@ public class GoogleCloudStorage extends BaseStorage {
                                       ioe);
         }
         return null;
+    }
+
+    public class DocumentIterator extends BaseStorage.DocumentIterator {
+
+        private Iterator<Blob> blobIterator;
+        private Page<Blob> blobPage;
+
+        @Override
+        public Document next() {
+            Blob blob = getBlobIterator().next();
+            LOGGER.debug("Processing GCS object key: " + blob.getName());
+            Document document;
+            try {
+                document = getDocumentLoader().loadDocument(bucket, blob.getName(), documentParser);
+            } catch(BlankDocumentException bde) {
+                LOGGER.warn(String.format("BlankDocumentException: Error while parsing document %s.", contextPath));
+                throw bde;
+            } catch (Exception e) {
+                throw new ModuleException(
+                    String.format("Error while parsing document %s.", contextPath),
+                    MuleVectorsErrorType.DOCUMENT_PARSING_FAILURE,
+                    e);
+            }
+            MetadataUtils.addMetadataToDocument(document, fileType, blob.getName());
+            return document;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return getBlobIterator().hasNext();
+        }
+
+        private Iterator<Blob> getBlobIterator() {
+            if (this.blobIterator == null || (!this.blobIterator.hasNext() && this.blobPage != null)) {
+                fetchNextBlobPage();
+            }
+            return this.blobIterator;
+        }
+
+        private void fetchNextBlobPage() {
+
+            if(this.blobPage == null) {
+
+                // Checks if items must be filtered by prefix or not
+                if(Objects.equals(objectKey, "")){
+
+                    this.blobPage = getStorageService().list(bucket);
+                } else {
+
+                    String prefix = objectKey + ((objectKey.endsWith("/") ? "" : "/"));
+                    this.blobPage = getStorageService().list(bucket, Storage.BlobListOption.prefix(prefix));
+                }
+            } else {
+
+                this.blobPage = this.blobPage.getNextPage();
+            }
+
+            this.blobIterator = (this.blobPage == null)
+                ? Collections.emptyIterator()
+                : StreamSupport.stream(this.blobPage.getValues().spliterator(), false)
+                    .filter(blob -> !(blob.getName().endsWith("/") && blob.getSize() == 0))
+                    .iterator();
+        }
     }
 }

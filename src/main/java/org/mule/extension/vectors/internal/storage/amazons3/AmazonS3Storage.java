@@ -113,35 +113,6 @@ public class AmazonS3Storage extends BaseStorage {
         this.s3Client = amazonS3StorageConnection.getS3Client();
     }
 
-    @Override
-    public boolean hasNext() {
-
-        return getS3ObjectIterator().hasNext();
-    }
-
-    @Override
-    public Document next() {
-
-        S3Object object = getS3ObjectIterator().next();
-        LOGGER.debug("AWS S3 Object Key: " + object.key());
-        Document document;
-        try {
-            document = getLoader().loadDocument(getAWSS3Bucket(), object.key(), documentParser);
-        } catch(BlankDocumentException bde) {
-
-            LOGGER.warn(String.format("BlankDocumentException: Error while parsing document %s.", contextPath));
-            throw bde;
-        } catch (Exception e) {
-
-            throw new ModuleException(
-                String.format("Error while parsing document %s.", contextPath),
-                MuleVectorsErrorType.DOCUMENT_PARSING_FAILURE,
-                e);
-        }
-        MetadataUtils.addMetadataToDocument(document, fileType, object.key());
-        return document;
-    }
-
     public Document getSingleDocument() {
 
         LOGGER.debug("S3 URL: " + contextPath);
@@ -208,5 +179,37 @@ public class AmazonS3Storage extends BaseStorage {
                                       ioe);
         }
         return null;
+    }
+
+    public class DocumentIterator extends BaseStorage.DocumentIterator {
+
+        @Override
+        public boolean hasNext() {
+
+            return getS3ObjectIterator().hasNext();
+        }
+
+        @Override
+        public Document next() {
+
+            S3Object object = getS3ObjectIterator().next();
+            LOGGER.debug("AWS S3 Object Key: " + object.key());
+            Document document;
+            try {
+                document = getLoader().loadDocument(getAWSS3Bucket(), object.key(), documentParser);
+            } catch(BlankDocumentException bde) {
+
+                LOGGER.warn(String.format("BlankDocumentException: Error while parsing document %s.", contextPath));
+                throw bde;
+            } catch (Exception e) {
+
+                throw new ModuleException(
+                    String.format("Error while parsing document %s.", contextPath),
+                    MuleVectorsErrorType.DOCUMENT_PARSING_FAILURE,
+                    e);
+            }
+            MetadataUtils.addMetadataToDocument(document, fileType, object.key());
+            return document;
+        }
     }
 }

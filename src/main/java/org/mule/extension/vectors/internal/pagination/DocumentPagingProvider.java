@@ -27,6 +27,7 @@ public class DocumentPagingProvider implements PagingProvider<BaseStorageConnect
 
   private StreamingHelper streamingHelper;
   private BaseStorage baseStorage;
+  private Iterator<Document> documentIterator;
   private StorageConfiguration storageConfiguration;
   private DocumentParameters documentParameters;
   private SegmentationParameters segmentationParameters;
@@ -52,13 +53,15 @@ public class DocumentPagingProvider implements PagingProvider<BaseStorageConnect
             .contextPath(documentParameters.getContextPath())
             .fileType(documentParameters.getFileType())
             .build();
+
+        documentIterator = baseStorage.documentIterator();
       }
 
-      while(baseStorage.hasNext()) {
+      while(documentIterator.hasNext()) {
 
         try {
 
-          Document document = baseStorage.next();
+          Document document = documentIterator.next();
 
           JSONObject jsonObject =
               JsonUtils.docToTextSegmentsJson(document,

@@ -85,33 +85,6 @@ public class AzureBlobStorage extends BaseStorage {
         this.blobServiceClient = azureBlobStorageConnection.getBlobServiceClient();
     }
 
-    @Override
-    public boolean hasNext() {
-        return getBlobIterator().hasNext();
-    }
-
-    @Override
-    public Document next() {
-
-        BlobItem blobItem = blobIterator.next();
-        LOGGER.debug("Blob name: " + blobItem.getName());
-        Document document;
-        try {
-            document = getLoader().loadDocument(contextPath, blobItem.getName(), documentParser);
-        } catch(BlankDocumentException bde) {
-
-            LOGGER.warn(String.format("BlankDocumentException: Error while parsing document %s.", contextPath));
-            throw bde;
-        } catch (Exception e) {
-            throw new ModuleException(
-                String.format("Error while parsing document %s.", contextPath),
-                MuleVectorsErrorType.DOCUMENT_PARSING_FAILURE,
-                e);
-        }
-        MetadataUtils.addMetadataToDocument(document, fileType, blobItem.getName());
-        return document;
-    }
-
     public Document getSingleDocument() {
 
         String[] parts = contextPath.split("/", 2);
@@ -157,5 +130,35 @@ public class AzureBlobStorage extends BaseStorage {
                                       ioe);
         }
         return null;
+    }
+
+    public class DocumentIterator extends BaseStorage.DocumentIterator {
+
+        @Override
+        public boolean hasNext() {
+            return getBlobIterator().hasNext();
+        }
+
+        @Override
+        public Document next() {
+
+            BlobItem blobItem = blobIterator.next();
+            LOGGER.debug("Blob name: " + blobItem.getName());
+            Document document;
+            try {
+                document = getLoader().loadDocument(contextPath, blobItem.getName(), documentParser);
+            } catch(BlankDocumentException bde) {
+
+                LOGGER.warn(String.format("BlankDocumentException: Error while parsing document %s.", contextPath));
+                throw bde;
+            } catch (Exception e) {
+                throw new ModuleException(
+                    String.format("Error while parsing document %s.", contextPath),
+                    MuleVectorsErrorType.DOCUMENT_PARSING_FAILURE,
+                    e);
+            }
+            MetadataUtils.addMetadataToDocument(document, fileType, blobItem.getName());
+            return document;
+        }
     }
 }

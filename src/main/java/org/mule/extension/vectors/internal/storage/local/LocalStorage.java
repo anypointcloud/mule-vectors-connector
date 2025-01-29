@@ -41,63 +41,11 @@ public class LocalStorage extends BaseStorage {
 
   private final String fullPath;
 
-  private List<Path> pathList;
-  private Iterator<Path> pathIterator;
-
-  private Iterator<Path> getPathIterator() {
-    if (pathList == null) {  // Only load files if not already loaded
-      try (Stream<Path> paths = Files.walk(Paths.get(fullPath))) {
-        // Collect all files as a list
-        pathList = paths.filter(Files::isRegularFile).collect(Collectors.toList());
-        // Create an iterator for the list of files
-        pathIterator = pathList.iterator();
-      } catch (IOException e) {
-        throw new ModuleException(
-            String.format("Error while getting document from %s.", fullPath),
-            MuleVectorsErrorType.STORAGE_SERVICES_FAILURE,
-            e);
-      }
-    }
-    return pathIterator;
-  }
-
   public LocalStorage(StorageConfiguration storageConfiguration, LocalStorageConnection storageConnection, String contextPath,
                       String fileType, String mediaType, MediaProcessor mediaProcessor) {
 
     super(storageConfiguration, storageConnection, contextPath, fileType, mediaType, mediaProcessor);
     this.fullPath = storageConnection.getWorkingDir() != null ? storageConnection.getWorkingDir() + "/" + contextPath : contextPath;
-  }
-
-  // Override hasNext to check if there are files left to process
-  @Override
-  public boolean hasNext() {
-    return getPathIterator() != null && getPathIterator().hasNext();
-  }
-
-  // Override next to return the next document
-  @Override
-  public Document next() {
-    if (hasNext()) {
-      Path path = getPathIterator().next();
-      LOGGER.debug("File: " + path.getFileName().toString());
-      Document document;
-      try {
-        document = loadDocument(path.toString(), documentParser);
-      } catch(BlankDocumentException bde) {
-
-        LOGGER.warn(String.format("BlankDocumentException: Error while parsing document %s.", path.toString()));
-        throw bde;
-      } catch (Exception e) {
-
-        throw new ModuleException(
-            String.format("Error while parsing document %s.", path.toString()),
-            MuleVectorsErrorType.DOCUMENT_PARSING_FAILURE,
-            e);
-      }
-      MetadataUtils.addMetadataToDocument(document, fileType, path.getFileName().toString());
-      return document;
-    }
-    throw new IllegalStateException("No more files to iterate");
   }
 
   public Document getSingleDocument() {
@@ -200,5 +148,60 @@ public class LocalStorage extends BaseStorage {
     LOGGER.debug(String.format("Image uri: %s, Image mime type: %s", image.url().toString(), image.mimeType()));
 
     return image;
+  }
+
+  public class DocumentIterator extends BaseStorage.DocumentIterator {
+
+    private List<Path> pathList;
+    private Iterator<Path> pathIterator;
+
+    private Iterator<Path> getPathIterator() {
+      if (pathList == null) {  // Only load files if not already loaded
+        try (Stream<Path> paths = Files.walk(Paths.get(fullPath))) {
+          // Collect all files as a list
+          pathList = paths.filter(Files::isRegularFile).collect(Collectors.toList());
+          // Create an iterator for the list of files
+          pathIterator = pathList.iterator();
+        } catch (IOException e) {
+          throw new ModuleException(
+              String.format("Error while getting document from %s.", fullPath),
+              MuleVectorsErrorType.STORAGE_SERVICES_FAILURE,
+              e);
+        }
+      }
+      return pathIterator;
+    }
+
+    // Override hasNext to check if there are files left to process
+    @Override
+    public boolean hasNext() {
+      return getPathIterator() != null && getPathIterator().hasNext();
+    }
+
+    // Override next to return the next document
+    @Override
+    public Document next() {
+      if (hasNext()) {
+        Path path = getPathIterator().next();
+        LOGGER.debug("File: " + path.getFileName().toString());
+        Document document;
+        try {
+          document = loadDocument(path.toString(), documentParser);
+        } catch(BlankDocumentException bde) {
+
+          LOGGER.warn(String.format("BlankDocumentException: Error while parsing document %s.", path.toString()));
+          throw bde;
+        } catch (Exception e) {
+
+          throw new ModuleException(
+              String.format("Error while parsing document %s.", path.toString()),
+              MuleVectorsErrorType.DOCUMENT_PARSING_FAILURE,
+              e);
+        }
+        MetadataUtils.addMetadataToDocument(document, fileType, path.getFileName().toString());
+        return document;
+      }
+      throw new IllegalStateException("No more files to iterate");
+    }
   }
 }

@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Iterator;
 
-public abstract class BaseStorage implements Iterator<Document> {
+public abstract class BaseStorage {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BaseStorage.class);
 
@@ -36,6 +36,8 @@ public abstract class BaseStorage implements Iterator<Document> {
   protected DocumentParser documentParser;
   protected String mediaType;
   protected MediaProcessor mediaProcessor;
+  protected DocumentIterator documentIterator;
+  protected MediaIterator mediaIterator;
 
   public BaseStorage(StorageConfiguration storageConfiguration, BaseStorageConnection storageConnection, String contextPath,
                      String fileType, String mediaType, MediaProcessor mediaProcessor) {
@@ -45,18 +47,9 @@ public abstract class BaseStorage implements Iterator<Document> {
     this.contextPath = contextPath;
     this.fileType = fileType;
     this.mediaType = mediaType;
-    if(fileType != null) this.documentParser = getDocumentParser(fileType);
+    if (fileType != null)
+      this.documentParser = getDocumentParser(fileType);
     this.mediaProcessor = mediaProcessor;
-  }
-
-  @Override
-  public boolean hasNext() {
-    throw new UnsupportedOperationException("This method should be overridden by subclasses");
-  }
-
-  @Override
-  public Document next() {
-    throw new UnsupportedOperationException("This method should be overridden by subclasses");
   }
 
   public Document getSingleDocument() {
@@ -75,7 +68,7 @@ public abstract class BaseStorage implements Iterator<Document> {
   protected DocumentParser getDocumentParser(String fileType) {
 
     DocumentParser documentParser = null;
-    switch (fileType){
+    switch (fileType) {
 
       case Constants.FILE_TYPE_TEXT:
       case Constants.FILE_TYPE_CRAWL:
@@ -94,6 +87,14 @@ public abstract class BaseStorage implements Iterator<Document> {
   public static BaseStorage.Builder builder() {
 
     return new BaseStorage.Builder();
+  }
+
+  public DocumentIterator documentIterator() {
+    return new DocumentIterator();
+  }
+
+  public MediaIterator mediaIterator() {
+    return new MediaIterator();
   }
 
   public static class Builder {
@@ -170,8 +171,9 @@ public abstract class BaseStorage implements Iterator<Document> {
 
           case Constants.STORAGE_TYPE_GCS:
 
-            baseStorage = new GoogleCloudStorage(storageConfiguration, (GoogleCloudStorageConnection) storageConnection, contextPath,
-                                                 fileType, mediaType, mediaProcessor);
+            baseStorage =
+                new GoogleCloudStorage(storageConfiguration, (GoogleCloudStorageConnection) storageConnection, contextPath,
+                                       fileType, mediaType, mediaProcessor);
             break;
 
           default:
@@ -193,6 +195,32 @@ public abstract class BaseStorage implements Iterator<Document> {
             e);
       }
       return baseStorage;
+    }
+  }
+
+  public class DocumentIterator implements Iterator<Document> {
+
+    @Override
+    public boolean hasNext() {
+      throw new UnsupportedOperationException("This method should be overridden by subclasses");
+    }
+
+    @Override
+    public Document next() {
+      throw new UnsupportedOperationException("This method should be overridden by subclasses");
+    }
+  }
+
+  public class MediaIterator implements Iterator<Document> {
+
+    @Override
+    public boolean hasNext() {
+      throw new UnsupportedOperationException("This method should be overridden by subclasses");
+    }
+
+    @Override
+    public Document next() {
+      throw new UnsupportedOperationException("This method should be overridden by subclasses");
     }
   }
 }
