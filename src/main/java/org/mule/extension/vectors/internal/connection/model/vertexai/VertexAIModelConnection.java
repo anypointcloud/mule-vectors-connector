@@ -1,22 +1,17 @@
 package org.mule.extension.vectors.internal.connection.model.vertexai;
 
-import com.google.api.gax.core.FixedCredentialsProvider;
 import com.google.api.gax.retrying.RetrySettings;
 import com.google.auth.Credentials;
 import com.google.auth.oauth2.ServiceAccountCredentials;
+import com.google.cloud.aiplatform.v1beta1.LlmUtilityServiceClient;
+import com.google.cloud.aiplatform.v1beta1.LlmUtilityServiceSettings;
 import com.google.cloud.aiplatform.v1beta1.PredictionServiceClient;
 import com.google.cloud.aiplatform.v1beta1.PredictionServiceSettings;
 import org.mule.extension.vectors.internal.connection.model.BaseModelConnection;
 import org.mule.extension.vectors.internal.constant.Constants;
+import org.mule.extension.vectors.internal.error.MuleVectorsErrorType;
 import org.mule.runtime.api.connection.ConnectionException;
-import org.mule.runtime.api.meta.ExpressionSupport;
-import org.mule.runtime.extension.api.annotation.Expression;
-import org.mule.runtime.extension.api.annotation.param.Optional;
-import org.mule.runtime.extension.api.annotation.param.Parameter;
-import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
-import org.mule.runtime.extension.api.annotation.param.display.Example;
-import org.mule.runtime.extension.api.annotation.param.display.Placement;
-import org.mule.runtime.extension.api.annotation.param.display.Summary;
+import org.mule.runtime.extension.api.exception.ModuleException;
 import org.threeten.bp.Duration;
 
 import java.io.ByteArrayInputStream;
@@ -46,6 +41,31 @@ public class VertexAIModelConnection implements BaseModelConnection {
   private long totalTimeout;
 
   private PredictionServiceClient predictionClient;
+  private LlmUtilityServiceClient llmUtilityServiceClient;
+
+  public LlmUtilityServiceClient getLlmUtilityServiceClient() {
+
+    if(this.llmUtilityServiceClient == null) {
+
+      try {
+
+        LlmUtilityServiceSettings llmUtilityServiceSettings = LlmUtilityServiceSettings.newBuilder()
+            .setEndpoint(location + DEFAULT_GOOGLEAPIS_ENDPOINT_SUFFIX)
+            .setCredentialsProvider(() -> getCredentials())
+            .build();
+
+        this.llmUtilityServiceClient = LlmUtilityServiceClient.create(llmUtilityServiceSettings);
+
+      } catch (IOException e) {
+
+        throw new ModuleException(
+            "Failed to initiate LlmUtilityService client for VERTEX AI service.",
+            MuleVectorsErrorType.AI_SERVICES_FAILURE,
+            e);
+      }
+    }
+    return this.llmUtilityServiceClient;
+  }
 
   public VertexAIModelConnection(String projectId, String location, String clientEmail, String clientId, String privateKeyId,
                                  String privateKey, int maxAttempts, long initialRetryDelay, double retryDelayMultiplier,
@@ -155,7 +175,7 @@ public class VertexAIModelConnection implements BaseModelConnection {
     return Constants.EMBEDDING_MODEL_SERVICE_VERTEX_AI;
   }
 
-  public Credentials getCredentials() throws IOException {
+  private Credentials getCredentials() throws IOException {
 
     ServiceAccountCredentials credentials = ServiceAccountCredentials.fromStream(
         new ByteArrayInputStream(buildJsonCredentials().getBytes())

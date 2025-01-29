@@ -1,7 +1,5 @@
 package org.mule.extension.vectors.internal.model.text.vertexai;
 
-import com.google.auth.Credentials;
-import com.google.api.gax.core.FixedCredentialsProvider;
 import com.google.cloud.aiplatform.v1beta1.*;
 import com.google.protobuf.Value;
 import com.google.protobuf.util.JsonFormat;
@@ -11,7 +9,6 @@ import dev.langchain4j.model.embedding.DimensionAwareEmbeddingModel;
 import dev.langchain4j.model.output.Response;
 import dev.langchain4j.model.output.TokenUsage;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
@@ -35,9 +32,10 @@ public class VertexAiEmbeddingModel extends DimensionAwareEmbeddingModel {
   private static final int DEFAULT_MAX_SEGMENTS_PER_BATCH = 250;
   private static final int DEFAULT_MAX_TOKENS_PER_BATCH = 20_000;
 
-  private final PredictionServiceSettings settings;
-  private final LlmUtilityServiceSettings llmUtilitySettings;
+  private final PredictionServiceClient predictionServiceClient;
+  private final LlmUtilityServiceClient llmUtilityServiceClient;
   private final EndpointName endpointName;
+
   private final Integer maxRetries;
   private final Integer maxSegmentsPerBatch;
   private final Integer maxTokensPerBatch;
@@ -47,25 +45,26 @@ public class VertexAiEmbeddingModel extends DimensionAwareEmbeddingModel {
   private final Boolean autoTruncate;
 
   /**
-   * Constructs a VertexAiEmbeddingModel instance.
+   * Constructs a new VertexAiEmbeddingModel.
    *
-   * @param endpoint                The API endpoint (optional).
-   * @param project                 The GCP project ID.
-   * @param credentials             The credentials to authenticate the service account.
-   * @param location                The location of the Vertex AI service.
+   * @param predictionServiceClient The client interface for making predictions.
+   * @param llmUtilityServiceClient The client interface for utility services related to large language models.
+   * @param project                 The Google Cloud project ID.
+   * @param location                The location where the model is deployed.
    * @param publisher               The publisher of the model.
    * @param modelName               The name of the model.
-   * @param maxRetries              The maximum number of retries for requests.
-   * @param maxSegmentsPerBatch     The maximum number of segments to process in a batch.
-   * @param maxTokensPerBatch       The maximum number of tokens to process in a batch.
-   * @param taskType                The task type for embedding (e.g., classification, semantic similarity).
-   * @param titleMetadataKey        The key used to extract metadata for titles (optional).
-   * @param outputDimensionality    The dimensionality of the output embeddings.
-   * @param autoTruncate            Whether to automatically truncate the embeddings if they exceed a length limit.
+   * @param maxRetries              The maximum number of retries for prediction calls. Defaults to 3 if null.
+   * @param maxSegmentsPerBatch     The maximum number of segments to process per batch. Must be greater than zero.
+   * @param maxTokensPerBatch       The maximum number of tokens to process per batch. Must be greater than zero.
+   * @param taskType                The type of task the model is designed to perform.
+   * @param titleMetadataKey        The metadata key for the title. Defaults to "title" if null.
+   * @param outputDimensionality    The dimensionality of the embedding output.
+   * @param autoTruncate            Whether to automatically truncate inputs that exceed the model's limits. Defaults to false if
+   *                                null.
    */
-  public VertexAiEmbeddingModel(String endpoint,
+  public VertexAiEmbeddingModel(PredictionServiceClient predictionServiceClient,
+                                LlmUtilityServiceClient llmUtilityServiceClient,
                                 String project,
-                                Credentials credentials,
                                 String location,
                                 String publisher,
                                 String modelName,
@@ -77,52 +76,21 @@ public class VertexAiEmbeddingModel extends DimensionAwareEmbeddingModel {
                                 Integer outputDimensionality,
                                 Boolean autoTruncate) {
 
-    String regionWithBaseAPI = endpoint != null ? endpoint :
-        ensureNotBlank(location, "location") + DEFAULT_GOOGLEAPIS_ENDPOINT_SUFFIX;
-
     this.endpointName = EndpointName.ofProjectLocationPublisherModelName(
         ensureNotBlank(project, "project"),
         location,
         ensureNotBlank(publisher, "publisher"),
         ensureNotBlank(modelName, "modelName")
     );
-
-    try {
-
-      if(credentials != null) {
-
-        this.settings = PredictionServiceSettings.newBuilder()
-            .setCredentialsProvider(FixedCredentialsProvider.create(credentials))
-            .setEndpoint(regionWithBaseAPI)
-            .build();
-        this.llmUtilitySettings = LlmUtilityServiceSettings.newBuilder()
-            .setCredentialsProvider(FixedCredentialsProvider.create(credentials))
-            .setEndpoint(regionWithBaseAPI)
-            .build();
-
-      } else {
-
-        this.settings = ((PredictionServiceSettings.Builder) PredictionServiceSettings.newBuilder()
-            .setEndpoint(regionWithBaseAPI)).build();
-        this.llmUtilitySettings = ((LlmUtilityServiceSettings.Builder)LlmUtilityServiceSettings.newBuilder()
-            .setEndpoint(this.settings.getEndpoint())).build();
-      }
-
-    } catch (IOException ioException) {
-
-      throw new RuntimeException(ioException);
-    }
-
+    this.predictionServiceClient = predictionServiceClient;
+    this.llmUtilityServiceClient = llmUtilityServiceClient;
     this.maxRetries = getOrDefault(maxRetries, 3);
-
-    this.maxSegmentsPerBatch = ensureGreaterThanZero(
-        getOrDefault(maxSegmentsPerBatch, DEFAULT_MAX_SEGMENTS_PER_BATCH), "maxSegmentsPerBatch");
-    this.maxTokensPerBatch = ensureGreaterThanZero(
-        getOrDefault(maxTokensPerBatch, DEFAULT_MAX_TOKENS_PER_BATCH), "maxTokensPerBatch");
-
+    this.maxSegmentsPerBatch =
+        ensureGreaterThanZero(getOrDefault(maxSegmentsPerBatch, DEFAULT_MAX_SEGMENTS_PER_BATCH), "maxSegmentsPerBatch");
+    this.maxTokensPerBatch =
+        ensureGreaterThanZero(getOrDefault(maxTokensPerBatch, DEFAULT_MAX_TOKENS_PER_BATCH), "maxTokensPerBatch");
     this.taskType = taskType;
     this.titleMetadataKey = getOrDefault(titleMetadataKey, "title");
-
     this.outputDimensionality = outputDimensionality;
     this.autoTruncate = getOrDefault(autoTruncate, false);
   }
@@ -135,7 +103,7 @@ public class VertexAiEmbeddingModel extends DimensionAwareEmbeddingModel {
    */
   public Response<List<Embedding>> embedAll(List<TextSegment> segments) {
 
-    try (PredictionServiceClient client = PredictionServiceClient.create(settings)) {
+    try {
 
       List<Embedding> embeddings = new ArrayList<>();
       int inputTokenCount = 0;
@@ -169,7 +137,7 @@ public class VertexAiEmbeddingModel extends DimensionAwareEmbeddingModel {
         Value.Builder parameterBuilder = Value.newBuilder();
         JsonFormat.parser().merge(toJson(parameters), parameterBuilder);
 
-        PredictResponse response = withRetry(() -> client.predict(endpointName, instances, parameterBuilder.build()), maxRetries);
+        PredictResponse response = withRetry(() -> predictionServiceClient.predict(endpointName, instances, parameterBuilder.build()), maxRetries);
 
         embeddings.addAll(response.getPredictionsList().stream()
                               .map(VertexAiEmbeddingModel::toEmbedding)
@@ -197,7 +165,8 @@ public class VertexAiEmbeddingModel extends DimensionAwareEmbeddingModel {
    */
   public List<Integer> calculateTokensCounts(List<TextSegment> segments) {
 
-    try (LlmUtilityServiceClient utilClient = LlmUtilityServiceClient.create(this.llmUtilitySettings)) {
+    try{
+
       List<Integer> tokensCounts = new ArrayList<>();
 
       // The computeTokens endpoint has a limit of up to 2048 input texts per request
@@ -220,7 +189,7 @@ public class VertexAiEmbeddingModel extends DimensionAwareEmbeddingModel {
             .addAllInstances(instances)
             .build();
 
-        ComputeTokensResponse computeTokensResponse = utilClient.computeTokens(computeTokensRequest);
+        ComputeTokensResponse computeTokensResponse = llmUtilityServiceClient.computeTokens(computeTokensRequest);
 
         tokensCounts.addAll(computeTokensResponse
                                 .getTokensInfoList()
@@ -336,9 +305,10 @@ public class VertexAiEmbeddingModel extends DimensionAwareEmbeddingModel {
    * Builder class for constructing a VertexAiEmbeddingModel.
    */
   public static class Builder {
-    private String endpoint;
+
+    private PredictionServiceClient predictionServiceClient;
+    private LlmUtilityServiceClient llmUtilityServiceClient;
     private String project;
-    private Credentials credentials;
     private String location;
     private String publisher;
     private String modelName;
@@ -350,18 +320,18 @@ public class VertexAiEmbeddingModel extends DimensionAwareEmbeddingModel {
     private Integer outputDimensionality;
     private Boolean autoTruncate;
 
-    public Builder endpoint(String endpoint) {
-      this.endpoint = endpoint;
+    public Builder predictionServiceClient(PredictionServiceClient predictionClient) {
+      this.predictionServiceClient = predictionClient;
+      return this;
+    }
+
+    public Builder llmUtilityServiceClient(LlmUtilityServiceClient llmUtilityServiceClient) {
+      this.llmUtilityServiceClient = llmUtilityServiceClient;
       return this;
     }
 
     public Builder project(String project) {
       this.project = project;
-      return this;
-    }
-
-    public Builder credentials(Credentials credentials) {
-      this.credentials = credentials;
       return this;
     }
 
@@ -417,9 +387,9 @@ public class VertexAiEmbeddingModel extends DimensionAwareEmbeddingModel {
 
     public VertexAiEmbeddingModel build() {
       return new VertexAiEmbeddingModel(
-          endpoint,
+          predictionServiceClient,
+          llmUtilityServiceClient,
           project,
-          credentials,
           location,
           publisher,
           modelName,
