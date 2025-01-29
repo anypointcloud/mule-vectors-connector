@@ -11,6 +11,7 @@ import org.mule.extension.vectors.internal.helper.media.MediaProcessor;
 import org.mule.extension.vectors.internal.storage.BaseStorage;
 import org.mule.extension.vectors.internal.util.MetadataUtils;
 import org.mule.runtime.extension.api.exception.ModuleException;
+import software.amazon.awssdk.core.ResponseBytes;
 import software.amazon.awssdk.regions.Region;
 import dev.langchain4j.data.document.loader.amazon.s3.AmazonS3DocumentLoader;
 import dev.langchain4j.data.document.loader.amazon.s3.AwsCredentials;
@@ -29,9 +30,7 @@ import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
-import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
-import software.amazon.awssdk.services.s3.model.S3Object;
+import software.amazon.awssdk.services.s3.model.*;
 
 public class AmazonS3Storage extends BaseStorage {
 
@@ -148,14 +147,14 @@ public class AmazonS3Storage extends BaseStorage {
 
     public Media getSingleMedia() {
 
-
         Media media;
 
         switch (mediaType) {
 
             case Constants.MEDIA_TYPE_IMAGE:
 
-                //MetadataUtils.addImageMetadataToMedia(media, mediaType);
+                media = Media.fromImage(loadImage(getAWSS3Bucket(), getAWSS3ObjectKey()));
+                MetadataUtils.addImageMetadataToMedia(media, mediaType);
                 break;
 
             default:
@@ -164,13 +163,31 @@ public class AmazonS3Storage extends BaseStorage {
         return null;
     }
 
-    private Image loadImage() {
+    private Image loadImage(String bucketName, String objectKey) {
 
         Image image;
 
         try {
 
+            GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+                .bucket(bucketName)
+                .key(objectKey)
+                .build();
+            ResponseBytes<GetObjectResponse> objectBytes = getS3Client().getObjectAsBytes(getObjectRequest);
+            GetObjectResponse response = objectBytes.response();
 
+            String mimeType = response.contentType();
+            byte[] imageBytes = objectBytes.asByteArray();
+
+            String format = mimeType.contains("/") ? mimeType.substring(mimeType.indexOf("/") + 1) : null;
+            if(mediaProcessor!= null) imageBytes = mediaProcessor.process(objectBytes.asByteArray(), format);
+            String base64Data = Base64.getEncoder().encodeToString(imageBytes);
+
+            image = Image.builder()
+                .url("s3://" + bucketName + "/" + objectKey)
+                .mimeType(mimeType)
+                .base64Data(base64Data)
+                .build();
 
         } catch (Exception ioe) {
 
@@ -178,7 +195,7 @@ public class AmazonS3Storage extends BaseStorage {
                                       MuleVectorsErrorType.STORAGE_SERVICES_FAILURE,
                                       ioe);
         }
-        return null;
+        return image;
     }
 
     public class DocumentIterator extends BaseStorage.DocumentIterator {

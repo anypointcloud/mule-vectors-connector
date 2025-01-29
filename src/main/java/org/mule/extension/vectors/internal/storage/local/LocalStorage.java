@@ -129,7 +129,7 @@ public class LocalStorage extends BaseStorage {
       byte[] imageBytes = Files.readAllBytes(path);
 
       String format = mimeType.contains("/") ? mimeType.substring(mimeType.indexOf("/") + 1) : null;
-      imageBytes = mediaProcessor.process(imageBytes, format);
+      if(mediaProcessor!= null) imageBytes = mediaProcessor.process(imageBytes, format);
       String base64Data = Base64.getEncoder().encodeToString(imageBytes);
 
       image = Image.builder()
