@@ -96,4 +96,21 @@ public final class ResponseHelper {
 
     return page;
   }
+
+  public static List<Result<CursorProvider, MediaResponseAttributes>> createPageMediaResponse(
+      String response,
+      Map<String, Object> mediaAttributes,
+      StreamingHelper streamingHelper) {
+
+    List<Result<CursorProvider, MediaResponseAttributes>> page =  new LinkedList();
+
+    page.add(Result.<CursorProvider, MediaResponseAttributes>builder()
+                 .attributes(new MediaResponseAttributes((HashMap<String, Object>) mediaAttributes))
+                 .output((CursorProvider) streamingHelper.resolveCursorProvider(toInputStream(response, StandardCharsets.UTF_8)))
+                 .mediaType(org.mule.runtime.api.metadata.MediaType.APPLICATION_JSON)
+                 .attributesMediaType(org.mule.runtime.api.metadata.MediaType.APPLICATION_JAVA)
+                 .build());
+
+    return page;
+  }
 }

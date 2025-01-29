@@ -211,7 +211,7 @@ public abstract class BaseStorage {
     }
   }
 
-  public class MediaIterator implements Iterator<Document> {
+  public class MediaIterator implements Iterator<Media> {
 
     @Override
     public boolean hasNext() {
@@ -219,7 +219,7 @@ public abstract class BaseStorage {
     }
 
     @Override
-    public Document next() {
+    public Media next() {
       throw new UnsupportedOperationException("This method should be overridden by subclasses");
     }
   }

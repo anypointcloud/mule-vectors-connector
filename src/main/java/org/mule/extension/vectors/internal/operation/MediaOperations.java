@@ -1,20 +1,30 @@
 package org.mule.extension.vectors.internal.operation;
 
 import org.json.JSONObject;
+import org.mule.extension.vectors.api.metadata.DocumentResponseAttributes;
 import org.mule.extension.vectors.api.metadata.MediaResponseAttributes;
 import org.mule.extension.vectors.internal.config.StorageConfiguration;
 import org.mule.extension.vectors.internal.connection.storage.BaseStorageConnection;
 import org.mule.extension.vectors.internal.data.Media;
 import org.mule.extension.vectors.internal.error.MuleVectorsErrorType;
+import org.mule.extension.vectors.internal.error.provider.DocumentErrorTypeProvider;
 import org.mule.extension.vectors.internal.error.provider.MediaErrorTypeProvider;
 import org.mule.extension.vectors.internal.helper.media.ImageProcessor;
 import org.mule.extension.vectors.internal.helper.media.MediaProcessor;
+import org.mule.extension.vectors.internal.helper.parameter.DocumentParameters;
 import org.mule.extension.vectors.internal.helper.parameter.ImageProcessorParameters;
 import org.mule.extension.vectors.internal.helper.parameter.MediaParameters;
+import org.mule.extension.vectors.internal.helper.parameter.SegmentationParameters;
+import org.mule.extension.vectors.internal.metadata.DocumentsOutputTypeMetadataResolver;
+import org.mule.extension.vectors.internal.metadata.MediasOutputTypeMetadataResolver;
+import org.mule.extension.vectors.internal.pagination.DocumentPagingProvider;
+import org.mule.extension.vectors.internal.pagination.MediaPagingProvider;
 import org.mule.extension.vectors.internal.storage.BaseStorage;
 import org.mule.extension.vectors.internal.util.JsonUtils;
+import org.mule.runtime.api.streaming.CursorProvider;
 import org.mule.runtime.extension.api.annotation.Alias;
 import org.mule.runtime.extension.api.annotation.error.Throws;
+import org.mule.runtime.extension.api.annotation.metadata.OutputResolver;
 import org.mule.runtime.extension.api.annotation.metadata.fixed.OutputJsonType;
 import org.mule.runtime.extension.api.annotation.param.Config;
 import org.mule.runtime.extension.api.annotation.param.Connection;
@@ -23,6 +33,8 @@ import org.mule.runtime.extension.api.annotation.param.ParameterGroup;
 import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
 import org.mule.runtime.extension.api.exception.ModuleException;
 import org.mule.runtime.extension.api.runtime.operation.Result;
+import org.mule.runtime.extension.api.runtime.streaming.PagingProvider;
+import org.mule.runtime.extension.api.runtime.streaming.StreamingHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,6 +43,7 @@ import java.util.HashMap;
 
 import static org.mule.extension.vectors.internal.constant.Constants.*;
 import static org.mule.extension.vectors.internal.helper.ResponseHelper.createMediaResponse;
+import static org.mule.runtime.extension.api.annotation.param.MediaType.ANY;
 import static org.mule.runtime.extension.api.annotation.param.MediaType.APPLICATION_JSON;
 
 public class MediaOperations {
@@ -108,6 +121,53 @@ public class MediaOperations {
       throw new ModuleException(
           String.format("Error while loading media at '%s'.", mediaParameters.getContextPath()),
           MuleVectorsErrorType.MEDIA_OPERATIONS_FAILURE,
+          e);
+    }
+  }
+
+  @MediaType(value = ANY, strict = false)
+  @Alias("Media-load-list")
+  @DisplayName("[Media] Load list")
+  @Throws(MediaErrorTypeProvider.class)
+  @OutputResolver(output = MediasOutputTypeMetadataResolver.class)
+  public PagingProvider<BaseStorageConnection, Result<CursorProvider, MediaResponseAttributes>>
+  loadDocumentList(@Config StorageConfiguration storageConfiguration,
+                   @ParameterGroup(name = "Media") MediaParameters mediaParameters,
+                   StreamingHelper streamingHelper) {
+
+    try {
+
+      LOGGER.debug(String.format("Media Parameters: %s",mediaParameters));
+
+      MediaProcessor mediaProcessor = null;
+
+      if(mediaParameters.getMediaProcessorParameters() != null) {
+
+        if(mediaParameters.getMediaType().equals(MEDIA_TYPE_IMAGE)) {
+
+          ImageProcessorParameters imageProcessorParameters = (ImageProcessorParameters) mediaParameters.getMediaProcessorParameters();
+
+          mediaProcessor = ImageProcessor.builder()
+              .targetWidth(imageProcessorParameters.getTargetWidth())
+              .targetHeight(imageProcessorParameters.getTargetHeight())
+              .compressionQuality(imageProcessorParameters.getCompressionQuality())
+              .scaleStrategy(imageProcessorParameters.getScaleStrategy())
+              .build();
+        }
+      }
+
+      return new MediaPagingProvider(storageConfiguration,
+                                     mediaParameters,
+                                     mediaProcessor,
+                                     streamingHelper);
+
+    } catch (ModuleException me) {
+      throw me;
+
+    } catch (Exception e) {
+      throw new ModuleException(
+          String.format("Error while loading medias for path '%s'.", mediaParameters.getContextPath()),
+          MuleVectorsErrorType.DOCUMENT_OPERATIONS_FAILURE,
           e);
     }
   }
