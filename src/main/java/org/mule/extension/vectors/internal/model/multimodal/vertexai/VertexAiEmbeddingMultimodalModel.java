@@ -1,36 +1,25 @@
 package org.mule.extension.vectors.internal.model.multimodal.vertexai;
 
-import com.google.api.gax.retrying.RetrySettings;
-import com.google.api.gax.rpc.UnaryCallSettings;
-import com.google.auth.Credentials;
-import com.google.api.gax.core.FixedCredentialsProvider;
 import com.google.cloud.aiplatform.v1beta1.EndpointName;
 import com.google.cloud.aiplatform.v1beta1.PredictResponse;
 import com.google.cloud.aiplatform.v1beta1.PredictionServiceClient;
-import com.google.cloud.aiplatform.v1beta1.PredictionServiceSettings;
 import com.google.gson.JsonObject;
-import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
 import com.google.protobuf.util.JsonFormat;
 import dev.langchain4j.data.embedding.Embedding;
 import dev.langchain4j.model.output.Response;
 import org.mule.extension.vectors.internal.model.multimodal.EmbeddingMultimodalModel;
-import org.mule.extension.vectors.internal.model.text.vertexai.VertexAiEmbeddingModelName;
-import org.mule.extension.vectors.internal.operation.EmbeddingOperations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.threeten.bp.Duration;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static dev.langchain4j.internal.Json.toJson;
 import static dev.langchain4j.internal.RetryUtils.withRetry;
 
 /**
@@ -40,48 +29,36 @@ public class VertexAiEmbeddingMultimodalModel implements EmbeddingMultimodalMode
 
   private static final Logger LOGGER = LoggerFactory.getLogger(VertexAiEmbeddingMultimodalModel.class);
 
-  private final PredictionServiceClient client;
+  private static final String DEFAULT_LOCATION = "us-central1";
+
+  private static final String TEXT_EMBEDDING_FIELD_NAME = "textEmbedding";
+  private static final String IMAGE_EMBEDDING_FIELD_NAME = "imageEmbedding";
+  private static final String VIDEO_EMBEDDING_FIELD_NAME = "videoEmbedding";
+
+  private final PredictionServiceClient predictionServiceClient;
   private final EndpointName endpointName;
   private final Integer maxRetries;
 
-  // Constructor that handles both cases: with or without an existing PredictionServiceClient
-  public VertexAiEmbeddingMultimodalModel(PredictionServiceClient client, Credentials credentials, String endpoint, String project,
-                                          String location, String publisher, String modelName, Integer maxRetries) {
+  /**
+   * Constructs a new VertexAiEmbeddingMultimodalModel instance.
+   *
+   * @param predictionServiceClient The PredictionServiceClient used for predictions.
+   * @param project                 The Google Cloud project ID.
+   * @param location                The location of the model.
+   * @param publisher               The publisher of the model.
+   * @param modelName               The name of the model.
+   * @param maxRetries              The maximum number of retry attempts for predictions. Defaults to 3 if null.
+   */
+  public VertexAiEmbeddingMultimodalModel(PredictionServiceClient predictionServiceClient,
+                                          String project,
+                                          String location,
+                                          String publisher,
+                                          String modelName,
+                                          Integer maxRetries) {
 
+    if(location == null || location.isEmpty()) location = DEFAULT_LOCATION;
     this.endpointName = EndpointName.ofProjectLocationPublisherModelName(project, location, publisher, modelName);
-    if (client != null) {
-      this.client = client;  // Use provided client
-    } else {
-      // Create client using credentials if none provided
-      try {
-        String regionWithBaseAPI = endpoint != null ? endpoint : location + "-aiplatform.googleapis.com:443";
-
-        // Configure custom retry settings
-        RetrySettings retrySettings = RetrySettings.newBuilder()
-            .setMaxAttempts(3) // Maximum number of retries
-            .setInitialRetryDelay(Duration.ofMillis(500)) // Initial retry delay
-            .setRetryDelayMultiplier(1.5) // Multiplier for subsequent retries
-            .setMaxRetryDelay(Duration.ofMillis(5000)) // Maximum retry delay
-            .setTotalTimeout(Duration.ofMillis(60000)) // Total timeout for the operation
-            .build();
-
-        // Customize the predict settings
-        PredictionServiceSettings.Builder settingsBuilder = PredictionServiceSettings.newBuilder()
-            .setCredentialsProvider(FixedCredentialsProvider.create(credentials))
-            .setEndpoint(regionWithBaseAPI);
-
-        // Apply retry settings to the predictSettings
-        settingsBuilder
-            .predictSettings()
-            .setRetrySettings(retrySettings);
-
-        // Build the PredictionServiceClient
-        this.client = PredictionServiceClient.create(settingsBuilder.build());
-
-      } catch (IOException e) {
-        throw new RuntimeException("Failed to initialize Vertex AI settings", e);
-      }
-    }
+    this.predictionServiceClient = predictionServiceClient;
     this.maxRetries = maxRetries != null ? maxRetries : 3;
   }
 
@@ -137,7 +114,7 @@ public class VertexAiEmbeddingMultimodalModel implements EmbeddingMultimodalMode
       validateInputSize(input);
 
       PredictResponse response = withRetry(() ->
-           client.predict(endpointName, instances, parameterValue), maxRetries);
+           predictionServiceClient.predict(endpointName, instances, parameterValue), maxRetries);
 
       // LOGGER.debug("Predict Response " + response);
 
@@ -171,7 +148,7 @@ public class VertexAiEmbeddingMultimodalModel implements EmbeddingMultimodalMode
 
       Value parameterValue = Value.newBuilder().build(); // Adjust if additional parameters are needed.
 
-      PredictResponse response = withRetry(() -> client.predict(endpointName, instances, parameterValue), maxRetries);
+      PredictResponse response = withRetry(() -> predictionServiceClient.predict(endpointName, instances, parameterValue), maxRetries);
 
       //LOGGER.debug("Predict Response " + response);
 
@@ -189,30 +166,30 @@ public class VertexAiEmbeddingMultimodalModel implements EmbeddingMultimodalMode
 
     List<Float> vector = null;
 
-    if (prediction.getStructValue().containsFields("textEmbedding")) {
+    if (prediction.getStructValue().containsFields(TEXT_EMBEDDING_FIELD_NAME)) {
 
       LOGGER.debug ("Processing textEmbedding");
-      Value textEmbedding = prediction.getStructValue().getFieldsOrThrow("textEmbedding");
+      Value textEmbedding = prediction.getStructValue().getFieldsOrThrow(TEXT_EMBEDDING_FIELD_NAME);
       float[] textVector = toVector(textEmbedding);
       vector = IntStream.range(0, textVector.length)
           .mapToObj(i -> textVector[i])
           .collect(Collectors.toList());
     }
 
-    if (prediction.getStructValue().containsFields("imageEmbedding")) {
+    if (prediction.getStructValue().containsFields(IMAGE_EMBEDDING_FIELD_NAME)) {
 
       LOGGER.debug ("Processing imageEmbedding");
-      Value imageEmbedding = prediction.getStructValue().getFieldsOrThrow("imageEmbedding");
+      Value imageEmbedding = prediction.getStructValue().getFieldsOrThrow(IMAGE_EMBEDDING_FIELD_NAME);
       float[] imageVector = toVector(imageEmbedding);
       vector = IntStream.range(0, imageVector.length)
           .mapToObj(i -> imageVector[i])
           .collect(Collectors.toList());
     }
 
-    if (prediction.getStructValue().containsFields("videoEmbeddings")) {
+    if (prediction.getStructValue().containsFields(VIDEO_EMBEDDING_FIELD_NAME)) {
 
       LOGGER.debug ("Processing videoEmbeddings");
-      Value videoEmbeddings = prediction.getStructValue().getFieldsOrThrow("videoEmbeddings");
+      Value videoEmbeddings = prediction.getStructValue().getFieldsOrThrow(VIDEO_EMBEDDING_FIELD_NAME);
       if (videoEmbeddings.getListValue().getValues(0).getStructValue().containsFields("embedding")) {
         Value embeddings = videoEmbeddings.getListValue()
             .getValues(0)
@@ -296,32 +273,21 @@ public class VertexAiEmbeddingMultimodalModel implements EmbeddingMultimodalMode
   }
 
   public static class Builder {
-    private PredictionServiceClient client;
-    private Credentials credentials;
-    private String endpoint;
-    private String project;
+
+    private PredictionServiceClient predictionServiceClient;
+    private String projectId;
     private String location;
     private String publisher;
     private String modelName;
     private Integer maxRetries = 3;
 
-    public Builder client(PredictionServiceClient client) {
-      this.client = client;
+    public Builder predictionServiceClient(PredictionServiceClient predictionServiceClient) {
+      this.predictionServiceClient = predictionServiceClient;
       return this;
     }
 
-    public Builder credentials(Credentials credentials) {
-      this.credentials = credentials;
-      return this;
-    }
-
-    public Builder endpoint(String endpoint) {
-      this.endpoint = endpoint;
-      return this;
-    }
-
-    public Builder project(String project) {
-      this.project = project;
+    public Builder projectId(String projectId) {
+      this.projectId = projectId;
       return this;
     }
 
@@ -346,10 +312,8 @@ public class VertexAiEmbeddingMultimodalModel implements EmbeddingMultimodalMode
     }
 
     public VertexAiEmbeddingMultimodalModel build() {
-      return new VertexAiEmbeddingMultimodalModel(
-          client, credentials, endpoint, project,
-          location, publisher, modelName, maxRetries
-      );
+
+      return new VertexAiEmbeddingMultimodalModel(predictionServiceClient, projectId, location, publisher, modelName, maxRetries);
     }
   }
 

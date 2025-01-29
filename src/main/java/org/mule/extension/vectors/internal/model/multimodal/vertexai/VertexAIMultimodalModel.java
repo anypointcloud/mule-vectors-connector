@@ -10,8 +10,7 @@ import org.mule.runtime.extension.api.exception.ModuleException;
 
 public class VertexAIMultimodalModel extends BaseModel {
 
-  private static final String DEFAULT_LOCATION = "us-central1";
-  private static final String PUBLISHER = "google";
+  private static final String DEFAULT_PUBLISHER = "google";
 
   private final VertexAIModelConnection vertexAIModelConnection;
 
@@ -37,11 +36,11 @@ public class VertexAIMultimodalModel extends BaseModel {
     try {
 
       return VertexAiEmbeddingMultimodalModel.builder()
-          .client(vertexAIModelConnection.getPredictionClient())
-          .project(vertexAIModelConnection.getProjectId())
+          .predictionServiceClient(vertexAIModelConnection.getPredictionClient())
+          .projectId(vertexAIModelConnection.getProjectId())
           .location(vertexAIModelConnection.getLocation())
           .maxRetries(vertexAIModelConnection.getMaxAttempts())
-          .publisher(PUBLISHER)
+          .publisher(DEFAULT_PUBLISHER)
           .modelName(embeddingModelParameters.getEmbeddingModelName())
           .build();
 
