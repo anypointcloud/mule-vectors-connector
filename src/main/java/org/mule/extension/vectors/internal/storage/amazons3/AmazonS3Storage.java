@@ -180,7 +180,7 @@ public class AmazonS3Storage extends BaseStorage {
             byte[] imageBytes = objectBytes.asByteArray();
 
             String format = mimeType.contains("/") ? mimeType.substring(mimeType.indexOf("/") + 1) : null;
-            if(mediaProcessor!= null) imageBytes = mediaProcessor.process(objectBytes.asByteArray(), format);
+            if(mediaProcessor!= null) imageBytes = mediaProcessor.process(imageBytes, format);
             String base64Data = Base64.getEncoder().encodeToString(imageBytes);
 
             image = Image.builder()

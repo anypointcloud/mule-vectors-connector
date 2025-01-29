@@ -3,8 +3,10 @@ package org.mule.extension.vectors.internal.storage.gcs;
 import com.google.api.gax.paging.Page;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.storage.Blob;
+import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
+import com.google.common.io.ByteStreams;
 import dev.langchain4j.data.document.BlankDocumentException;
 import dev.langchain4j.data.document.Document;
 import dev.langchain4j.data.document.loader.gcs.GoogleCloudStorageDocumentLoader;
@@ -22,7 +24,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Objects;
@@ -134,6 +142,7 @@ public class GoogleCloudStorage extends BaseStorage {
     }
 
     public Document getSingleDocument() {
+
         LOGGER.debug("GCS URL: " + contextPath);
         if (Objects.equals(this.objectKey, "")) {
 
@@ -148,14 +157,14 @@ public class GoogleCloudStorage extends BaseStorage {
 
     public Media getSingleMedia() {
 
-
+        LOGGER.debug("GCS URL: " + contextPath);
         Media media;
-
         switch (mediaType) {
 
             case Constants.MEDIA_TYPE_IMAGE:
 
-                //MetadataUtils.addImageMetadataToMedia(media, mediaType);
+                media = Media.fromImage(loadImage(bucket, objectKey));
+                MetadataUtils.addImageMetadataToMedia(media, mediaType);
                 break;
 
             default:
@@ -164,13 +173,45 @@ public class GoogleCloudStorage extends BaseStorage {
         return null;
     }
 
-    private Image loadImage() {
+    private Image loadImage(String bucketName, String objectName) {
 
         Image image;
-
         try {
 
+            // Get the blob from the bucket
+            BlobId blobId = BlobId.of(bucketName, objectName);
+            Blob blob = storageService.get(blobId);
+            // Get MIME type
+            String mimeType = blob.getContentType();
+            // Download blob into a byte array
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            ReadableByteChannel readChannel = null;
+            try {
+                readChannel = blob.reader();
+                ByteBuffer buffer = ByteBuffer.allocate(8192); // Larger buffer for better performance
+                while (readChannel.read(buffer) > 0) {
+                    buffer.flip();
+                    outputStream.write(buffer.array(), 0, buffer.limit());
+                    buffer.clear();
+                }
+                byte[] imageBytes = outputStream.toByteArray();
 
+                String format = mimeType.contains("/") ? mimeType.substring(mimeType.indexOf("/") + 1) : null;
+                if(mediaProcessor!= null) imageBytes = mediaProcessor.process(imageBytes, format);
+                String base64Data = Base64.getEncoder().encodeToString(imageBytes);
+
+                image = Image.builder()
+                    .url(Constants.GCS_PREFIX + "/" + bucketName + "/" + objectName)
+                    .mimeType(mimeType)
+                    .base64Data(base64Data)
+                    .build();
+
+            } finally {
+                if (readChannel != null) {
+                    readChannel.close();
+                }
+                outputStream.close();
+            }
 
         } catch (Exception ioe) {
 
@@ -178,7 +219,7 @@ public class GoogleCloudStorage extends BaseStorage {
                                       MuleVectorsErrorType.STORAGE_SERVICES_FAILURE,
                                       ioe);
         }
-        return null;
+        return image;
     }
 
     public class DocumentIterator extends BaseStorage.DocumentIterator {

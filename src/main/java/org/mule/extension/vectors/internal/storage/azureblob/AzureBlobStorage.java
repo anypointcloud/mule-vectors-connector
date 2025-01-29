@@ -1,13 +1,17 @@
 package org.mule.extension.vectors.internal.storage.azureblob;
 
+import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobServiceClient;
 import com.azure.storage.blob.BlobServiceClientBuilder;
 import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.models.BlobItem;
+import com.azure.storage.blob.models.BlobProperties;
 import com.azure.storage.common.StorageSharedKeyCredential;
 import dev.langchain4j.data.document.BlankDocumentException;
 import dev.langchain4j.data.document.loader.azure.storage.blob.AzureBlobStorageDocumentLoader;
 
+import java.io.ByteArrayOutputStream;
+import java.util.Base64;
 import java.util.Iterator;
 
 import dev.langchain4j.data.document.Document;
@@ -99,6 +103,9 @@ public class AzureBlobStorage extends BaseStorage {
 
     public Media getSingleMedia() {
 
+        String[] parts = contextPath.split("/", 2);
+        String containerName = parts[0];
+        String blobName = parts[1];
 
         Media media;
 
@@ -106,7 +113,8 @@ public class AzureBlobStorage extends BaseStorage {
 
             case Constants.MEDIA_TYPE_IMAGE:
 
-                //MetadataUtils.addImageMetadataToMedia(media, mediaType);
+                media = Media.fromImage(loadImage(containerName, blobName));
+                MetadataUtils.addImageMetadataToMedia(media, mediaType);
                 break;
 
             default:
@@ -115,13 +123,38 @@ public class AzureBlobStorage extends BaseStorage {
         return null;
     }
 
-    private Image loadImage() {
+    private Image loadImage(String containerName, String blobName) {
 
         Image image;
 
         try {
 
+            // Get ContainerClient
+            BlobContainerClient blobContainerClient = getBlobServiceClient().getBlobContainerClient(containerName);
+            // Get BlobClient
+            BlobClient blobClient = blobContainerClient.getBlobClient(blobName);
 
+            // Get Blob properties (to fetch MIME type)
+            BlobProperties properties = blobClient.getProperties();
+            String mimeType = properties.getContentType();
+
+            // Download blob into a byte array
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            blobClient.download(outputStream);
+            byte[] imageBytes = outputStream.toByteArray();
+
+            // Get the blob URL (public or signed)
+            String blobUrl = String.format("https://%s.blob.core.windows.net/%s/%s", azureName, containerName, blobName);
+
+            String format = mimeType.contains("/") ? mimeType.substring(mimeType.indexOf("/") + 1) : null;
+            if(mediaProcessor!= null) imageBytes = mediaProcessor.process(imageBytes, format);
+            String base64Data = Base64.getEncoder().encodeToString(imageBytes);
+
+            image = Image.builder()
+                .url(String.format("https://%s.blob.core.windows.net/%s/%s", azureName, containerName, blobName))
+                .mimeType(mimeType)
+                .base64Data(base64Data)
+                .build();
 
         } catch (Exception ioe) {
 
@@ -129,7 +162,7 @@ public class AzureBlobStorage extends BaseStorage {
                                       MuleVectorsErrorType.STORAGE_SERVICES_FAILURE,
                                       ioe);
         }
-        return null;
+        return image;
     }
 
     public class DocumentIterator extends BaseStorage.DocumentIterator {
