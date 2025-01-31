@@ -6,7 +6,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.mulesoft.connectors</groupId>
 	<artifactId>mule4-vectors-connector</artifactId>
-    <version>0.3.40-SNAPSHOT</version>
+    <version>0.3.41-SNAPSHOT</version>
 	<packaging>mule-extension</packaging>
 	<name>MuleSoft Vectors Connector - Mule 4</name>
 	<description>MuleSoft Vectors Connector provides access to a broad number of external Vector Stores.</description>
@@ -239,12 +239,12 @@
 		<dependency>
 			<groupId>com.twelvemonkeys.imageio</groupId>
 			<artifactId>imageio-core</artifactId>
-			<version>3.7.0</version>
+			<version>3.9.4</version>
 		</dependency>
 		<dependency>
 			<groupId>com.twelvemonkeys.imageio</groupId>
 			<artifactId>imageio-jpeg</artifactId>
-			<version>3.7.0</version>
+			<version>3.9.4</version>
 		</dependency>
 
 		<!-- LangChain Required Dependencies -->
