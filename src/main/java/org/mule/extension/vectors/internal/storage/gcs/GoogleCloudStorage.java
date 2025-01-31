@@ -210,7 +210,7 @@ public class GoogleCloudStorage extends BaseStorage {
                     .replace("%2F", "/"); // Keep `/` in the path
 
                 image = Image.builder()
-                    .url(Constants.GCS_PREFIX + "/" + bucketName + "/" + encodedObjectName)
+                    .url(Constants.GCS_PREFIX + bucketName + "/" + encodedObjectName)
                     .mimeType(mimeType)
                     .base64Data(base64Data)
                     .build();
