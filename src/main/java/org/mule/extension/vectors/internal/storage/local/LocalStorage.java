@@ -41,6 +41,9 @@ public class LocalStorage extends BaseStorage {
 
   private final String fullPath;
 
+  private List<Path> pathList;
+  private Iterator<Path> pathIterator;
+
   public LocalStorage(StorageConfiguration storageConfiguration, LocalStorageConnection storageConnection, String contextPath,
                       String fileType, String mediaType, MediaProcessor mediaProcessor) {
 
@@ -160,27 +163,24 @@ public class LocalStorage extends BaseStorage {
     return new MediaIterator();
   }
 
-  public class DocumentIterator extends BaseStorage.DocumentIterator {
-
-    private List<Path> pathList;
-    private Iterator<Path> pathIterator;
-
-    private Iterator<Path> getPathIterator() {
-      if (pathList == null) {  // Only load files if not already loaded
-        try (Stream<Path> paths = Files.walk(Paths.get(fullPath))) {
-          // Collect all files as a list
-          pathList = paths.filter(Files::isRegularFile).collect(Collectors.toList());
-          // Create an iterator for the list of files
-          pathIterator = pathList.iterator();
-        } catch (IOException e) {
-          throw new ModuleException(
-              String.format("Error while getting document from %s.", fullPath),
-              MuleVectorsErrorType.STORAGE_SERVICES_FAILURE,
-              e);
-        }
+  private Iterator<Path> getPathIterator() {
+    if (pathList == null) {  // Only load files if not already loaded
+      try (Stream<Path> paths = Files.walk(Paths.get(fullPath))) {
+        // Collect all files as a list
+        pathList = paths.filter(Files::isRegularFile).collect(Collectors.toList());
+        // Create an iterator for the list of files
+        pathIterator = pathList.iterator();
+      } catch (IOException e) {
+        throw new ModuleException(
+            String.format("Error while getting document from %s.", fullPath),
+            MuleVectorsErrorType.STORAGE_SERVICES_FAILURE,
+            e);
       }
-      return pathIterator;
     }
+    return pathIterator;
+  }
+
+  public class DocumentIterator extends BaseStorage.DocumentIterator {
 
     // Override hasNext to check if there are files left to process
     @Override
@@ -216,26 +216,6 @@ public class LocalStorage extends BaseStorage {
   }
 
   public class MediaIterator extends BaseStorage.MediaIterator {
-
-    private List<Path> pathList;
-    private Iterator<Path> pathIterator;
-
-    private Iterator<Path> getPathIterator() {
-      if (pathList == null) {  // Only load files if not already loaded
-        try (Stream<Path> paths = Files.walk(Paths.get(fullPath))) {
-          // Collect all files as a list
-          pathList = paths.filter(Files::isRegularFile).collect(Collectors.toList());
-          // Create an iterator for the list of files
-          pathIterator = pathList.iterator();
-        } catch (IOException e) {
-          throw new ModuleException(
-              String.format("Error while getting document from %s.", fullPath),
-              MuleVectorsErrorType.STORAGE_SERVICES_FAILURE,
-              e);
-        }
-      }
-      return pathIterator;
-    }
 
     // Override hasNext to check if there are files left to process
     @Override

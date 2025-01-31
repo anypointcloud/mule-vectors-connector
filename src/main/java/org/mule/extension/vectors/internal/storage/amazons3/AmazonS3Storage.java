@@ -246,4 +246,33 @@ public class AmazonS3Storage extends BaseStorage {
             return document;
         }
     }
+
+    public class MediaIterator extends BaseStorage.MediaIterator {
+
+        @Override
+        public boolean hasNext() {
+
+            return getS3ObjectIterator().hasNext();
+        }
+
+        @Override
+        public Media next() {
+
+            S3Object object = getS3ObjectIterator().next();
+            LOGGER.debug("AWS S3 Object Key: " + object.key());
+            Media media;
+            try {
+
+                media = Media.fromImage(loadImage(getAWSS3Bucket(), object.key()));
+                MetadataUtils.addImageMetadataToMedia(media, mediaType);
+
+            } catch (Exception e) {
+                throw new ModuleException(
+                    String.format("Error while loading media %s.", contextPath),
+                    MuleVectorsErrorType.MEDIA_OPERATIONS_FAILURE,
+                    e);
+            }
+            return media;
+        }
+    }
 }

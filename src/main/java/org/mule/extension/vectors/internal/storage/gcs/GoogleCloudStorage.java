@@ -49,6 +49,9 @@ public class GoogleCloudStorage extends BaseStorage {
     private final String bucket;
     private final String objectKey;
 
+    private Iterator<Blob> blobIterator;
+    private Page<Blob> blobPage;
+
     private GoogleCloudStorageDocumentLoader documentLoader;
     private Storage storageService;
 
@@ -228,6 +231,38 @@ public class GoogleCloudStorage extends BaseStorage {
         return image;
     }
 
+    private void fetchNextBlobPage() {
+
+        if(this.blobPage == null) {
+
+            // Checks if items must be filtered by prefix or not
+            if(Objects.equals(objectKey, "")){
+
+                this.blobPage = getStorageService().list(bucket);
+            } else {
+
+                String prefix = objectKey + ((objectKey.endsWith("/") ? "" : "/"));
+                this.blobPage = getStorageService().list(bucket, Storage.BlobListOption.prefix(prefix));
+            }
+        } else {
+
+            this.blobPage = this.blobPage.getNextPage();
+        }
+
+        this.blobIterator = (this.blobPage == null)
+            ? Collections.emptyIterator()
+            : StreamSupport.stream(this.blobPage.getValues().spliterator(), false)
+                .filter(blob -> !(blob.getName().endsWith("/") && blob.getSize() == 0))
+                .iterator();
+    }
+
+    private Iterator<Blob> getBlobIterator() {
+        if (blobIterator == null || (!blobIterator.hasNext() && blobPage != null)) {
+            fetchNextBlobPage();
+        }
+        return blobIterator;
+    }
+
     @Override
     public DocumentIterator documentIterator() {
         return new DocumentIterator();
@@ -239,9 +274,6 @@ public class GoogleCloudStorage extends BaseStorage {
     }
 
     public class DocumentIterator extends BaseStorage.DocumentIterator {
-
-        private Iterator<Blob> blobIterator;
-        private Page<Blob> blobPage;
 
         @Override
         public Document next() {
@@ -267,37 +299,42 @@ public class GoogleCloudStorage extends BaseStorage {
         public boolean hasNext() {
             return getBlobIterator().hasNext();
         }
+    }
 
-        private Iterator<Blob> getBlobIterator() {
-            if (this.blobIterator == null || (!this.blobIterator.hasNext() && this.blobPage != null)) {
-                fetchNextBlobPage();
+    public class MediaIterator extends BaseStorage.MediaIterator {
+
+        @Override
+        public Media next() {
+
+            Blob blob = getBlobIterator().next();
+            LOGGER.debug("Processing GCS object key: " + blob.getName());
+            Media media;
+            try {
+
+                switch (mediaType) {
+
+                    case Constants.MEDIA_TYPE_IMAGE:
+
+                        media = Media.fromImage(loadImage(bucket, blob.getName()));
+                        MetadataUtils.addImageMetadataToMedia(media, mediaType);
+                        break;
+
+                    default:
+                        throw new IllegalArgumentException("Unsupported Media Type: " + mediaType);
+                }
+
+            } catch (Exception e) {
+                throw new ModuleException(
+                    String.format("Error while loading media %s.", contextPath),
+                    MuleVectorsErrorType.MEDIA_OPERATIONS_FAILURE,
+                    e);
             }
-            return this.blobIterator;
+            return media;
         }
 
-        private void fetchNextBlobPage() {
-
-            if(this.blobPage == null) {
-
-                // Checks if items must be filtered by prefix or not
-                if(Objects.equals(objectKey, "")){
-
-                    this.blobPage = getStorageService().list(bucket);
-                } else {
-
-                    String prefix = objectKey + ((objectKey.endsWith("/") ? "" : "/"));
-                    this.blobPage = getStorageService().list(bucket, Storage.BlobListOption.prefix(prefix));
-                }
-            } else {
-
-                this.blobPage = this.blobPage.getNextPage();
-            }
-
-            this.blobIterator = (this.blobPage == null)
-                ? Collections.emptyIterator()
-                : StreamSupport.stream(this.blobPage.getValues().spliterator(), false)
-                    .filter(blob -> !(blob.getName().endsWith("/") && blob.getSize() == 0))
-                    .iterator();
+        @Override
+        public boolean hasNext() {
+            return getBlobIterator().hasNext();
         }
     }
 }

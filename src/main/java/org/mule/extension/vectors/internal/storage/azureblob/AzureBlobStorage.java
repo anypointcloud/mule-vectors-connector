@@ -210,4 +210,32 @@ public class AzureBlobStorage extends BaseStorage {
             return document;
         }
     }
+
+    public class MediaIterator extends BaseStorage.MediaIterator {
+
+        @Override
+        public boolean hasNext() {
+            return getBlobIterator().hasNext();
+        }
+
+        @Override
+        public Media next() {
+
+            BlobItem blobItem = blobIterator.next();
+            LOGGER.debug("Blob name: " + blobItem.getName());
+            Media media;
+            try {
+
+                media = Media.fromImage(loadImage(contextPath, blobItem.getName()));
+                MetadataUtils.addImageMetadataToMedia(media, mediaType);
+
+            } catch (Exception e) {
+                throw new ModuleException(
+                    String.format("Error while loading media %s.", contextPath),
+                    MuleVectorsErrorType.MEDIA_OPERATIONS_FAILURE,
+                    e);
+            }
+            return media;
+        }
+    }
 }
