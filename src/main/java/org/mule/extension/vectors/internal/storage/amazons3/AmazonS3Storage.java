@@ -18,6 +18,8 @@ import dev.langchain4j.data.document.loader.amazon.s3.AwsCredentials;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -160,7 +162,7 @@ public class AmazonS3Storage extends BaseStorage {
             default:
                 throw new IllegalArgumentException("Unsupported Media Type: " + mediaType);
         }
-        return null;
+        return media;
     }
 
     private Image loadImage(String bucketName, String objectKey) {
@@ -183,8 +185,13 @@ public class AmazonS3Storage extends BaseStorage {
             if(mediaProcessor!= null) imageBytes = mediaProcessor.process(imageBytes, format);
             String base64Data = Base64.getEncoder().encodeToString(imageBytes);
 
+            // Encode only special characters, but keep `/`
+            String encodedObjectKey = URLEncoder.encode(objectKey, "UTF-8")
+                .replace("+", "%20") // Fix space encoding
+                .replace("%2F", "/"); // Keep `/` in the path
+
             image = Image.builder()
-                .url("s3://" + bucketName + "/" + objectKey)
+                .url("s3://" + bucketName + "/" + encodedObjectKey)
                 .mimeType(mimeType)
                 .base64Data(base64Data)
                 .build();

@@ -11,6 +11,7 @@ import dev.langchain4j.data.document.BlankDocumentException;
 import dev.langchain4j.data.document.loader.azure.storage.blob.AzureBlobStorageDocumentLoader;
 
 import java.io.ByteArrayOutputStream;
+import java.net.URLEncoder;
 import java.util.Base64;
 import java.util.Iterator;
 
@@ -120,7 +121,7 @@ public class AzureBlobStorage extends BaseStorage {
             default:
                 throw new IllegalArgumentException("Unsupported Media Type: " + mediaType);
         }
-        return null;
+        return media;
     }
 
     private Image loadImage(String containerName, String blobName) {
@@ -150,8 +151,13 @@ public class AzureBlobStorage extends BaseStorage {
             if(mediaProcessor!= null) imageBytes = mediaProcessor.process(imageBytes, format);
             String base64Data = Base64.getEncoder().encodeToString(imageBytes);
 
+            // Encode only special characters, but keep `/`
+            String encodedBlobName = URLEncoder.encode(blobName, "UTF-8")
+                .replace("+", "%20") // Fix space encoding
+                .replace("%2F", "/"); // Keep `/` in the path
+
             image = Image.builder()
-                .url(String.format("https://%s.blob.core.windows.net/%s/%s", azureName, containerName, blobName))
+                .url(String.format("https://%s.blob.core.windows.net/%s/%s", azureName, containerName, encodedBlobName))
                 .mimeType(mimeType)
                 .base64Data(base64Data)
                 .build();

@@ -27,6 +27,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URLEncoder;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
@@ -170,7 +171,7 @@ public class GoogleCloudStorage extends BaseStorage {
             default:
                 throw new IllegalArgumentException("Unsupported Media Type: " + mediaType);
         }
-        return null;
+        return media;
     }
 
     private Image loadImage(String bucketName, String objectName) {
@@ -200,8 +201,13 @@ public class GoogleCloudStorage extends BaseStorage {
                 if(mediaProcessor!= null) imageBytes = mediaProcessor.process(imageBytes, format);
                 String base64Data = Base64.getEncoder().encodeToString(imageBytes);
 
+                // Encode only special characters, but keep `/`
+                String encodedObjectName = URLEncoder.encode(objectName, "UTF-8")
+                    .replace("+", "%20") // Fix space encoding
+                    .replace("%2F", "/"); // Keep `/` in the path
+
                 image = Image.builder()
-                    .url(Constants.GCS_PREFIX + "/" + bucketName + "/" + objectName)
+                    .url(Constants.GCS_PREFIX + "/" + bucketName + "/" + encodedObjectName)
                     .mimeType(mimeType)
                     .base64Data(base64Data)
                     .build();
