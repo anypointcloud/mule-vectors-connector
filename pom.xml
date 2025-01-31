@@ -238,6 +238,11 @@
 		<!-- TwelveMonkeys ImageIO for enhanced image compression and format support -->
 		<dependency>
 			<groupId>com.twelvemonkeys.imageio</groupId>
+			<artifactId>imageio-core</artifactId>
+			<version>3.7.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.twelvemonkeys.imageio</groupId>
 			<artifactId>imageio-jpeg</artifactId>
 			<version>3.7.0</version>
 		</dependency>
@@ -403,6 +408,10 @@
 			<id>mule-releases</id>
 			<name>Nexus Public Releases</name>
 			<url>https://repository-master.mulesoft.org/nexus/content/repositories/releases/</url>
+		</repository>
+		<repository>
+			<id>central</id>
+			<url>https://repo.maven.apache.org/maven2</url>
 		</repository>
 	</repositories>
 
