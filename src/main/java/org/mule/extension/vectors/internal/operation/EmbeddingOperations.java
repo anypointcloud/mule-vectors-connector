@@ -1,6 +1,7 @@
 package org.mule.extension.vectors.internal.operation;
 
 import static org.mule.extension.vectors.internal.constant.Constants.JSON_KEY_BASE64DATA;
+import static org.mule.extension.vectors.internal.constant.Constants.MEDIA_TYPE_IMAGE;
 import static org.mule.extension.vectors.internal.helper.ResponseHelper.createEmbeddingResponse;
 import static org.mule.extension.vectors.internal.helper.ResponseHelper.createMultimodalEmbeddingResponse;
 import static org.mule.runtime.extension.api.annotation.param.MediaType.APPLICATION_JSON;
@@ -25,11 +26,10 @@ import org.mule.extension.vectors.internal.constant.Constants;
 import org.mule.extension.vectors.internal.error.MuleVectorsErrorType;
 import org.mule.extension.vectors.internal.error.provider.EmbeddingErrorTypeProvider;
 import org.mule.extension.vectors.internal.helper.media.ImageProcessor;
+import org.mule.extension.vectors.internal.helper.media.MediaProcessor;
 import org.mule.extension.vectors.internal.helper.model.EmbeddingModelHelper;
-import org.mule.extension.vectors.internal.helper.parameter.ImageProcessorParameters;
-import org.mule.extension.vectors.internal.helper.parameter.MediaProcessorParameters;
-import org.mule.extension.vectors.internal.helper.parameter.SegmentationParameters;
-import org.mule.extension.vectors.internal.helper.parameter.EmbeddingModelParameters;
+import org.mule.extension.vectors.internal.helper.parameter.*;
+import org.mule.extension.vectors.internal.helper.provider.MediaTypeProvider;
 import org.mule.extension.vectors.internal.model.BaseModel;
 import org.mule.extension.vectors.internal.model.multimodal.EmbeddingMultimodalModel;
 import org.mule.runtime.api.meta.ExpressionSupport;
@@ -45,10 +45,12 @@ import dev.langchain4j.data.embedding.Embedding;
 import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.model.embedding.EmbeddingModel;
 
+import org.mule.runtime.extension.api.annotation.param.Optional;
 import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
 import org.mule.runtime.extension.api.annotation.param.display.Example;
 import org.mule.runtime.extension.api.annotation.param.display.Placement;
 import org.mule.runtime.extension.api.annotation.param.display.Summary;
+import org.mule.runtime.extension.api.annotation.values.OfValues;
 import org.mule.runtime.extension.api.exception.ModuleException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -279,31 +281,18 @@ public class EmbeddingOperations {
   }
 
   @MediaType(value = APPLICATION_JSON, strict = false)
-  @Alias("Embedding-generate-from-image-and-text")
-  @DisplayName("[Embedding] Generate from image and text")
+  @Alias("Embedding-generate-from-binary-and-text")
+  @DisplayName("[Embedding] Generate from binary and text")
   @Throws(EmbeddingErrorTypeProvider.class)
   @OutputJsonType(schema = "api/metadata/EmbeddingGenerateResponse.json")
   public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, MultimodalEmbeddingResponseAttributes>
-  generateEmbeddingFromImageAndText(@Config EmbeddingConfiguration embeddingConfiguration,
+  generateEmbeddingFromBinaryAndText(@Config EmbeddingConfiguration embeddingConfiguration,
                                     @Connection BaseModelConnection modelConnection,
-                                    @Alias("image") @DisplayName("Image Binary Content") @Content InputStream imageInputStream,
+                                    @ParameterGroup(name = "Media") MediaBinaryParameters mediaBinaryParameters,
                                     @Alias("text") @DisplayName("Text") @Summary("Short text describing the image") @Example("An image of a sunset") @Content String text,
-                                    @Alias("mediaProcessorParameters") @ParameterGroup(name="Image Processor Settings")
-                                        @DisplayName("Processor Settings") @Summary("Image Processor Settings") @Expression(ExpressionSupport.NOT_SUPPORTED) ImageProcessorParameters imageProcessorParameters,
                                     @ParameterGroup(name = "Embedding Model") EmbeddingModelParameters embeddingModelParameters) {
 
     try {
-      // Convert InputStream to byte array
-      byte[] imageBytes = IOUtils.toByteArray(imageInputStream);
-
-      ImageProcessor imageProcessor = ImageProcessor.builder()
-          .targetWidth(imageProcessorParameters.getTargetWidth())
-          .targetHeight(imageProcessorParameters.getTargetHeight())
-          .compressionQuality(imageProcessorParameters.getCompressionQuality())
-          .scaleStrategy(imageProcessorParameters.getScaleStrategy())
-          .build();
-
-      imageBytes =  imageProcessor.process(imageBytes);
 
       JSONObject jsonObject = new JSONObject();
 
@@ -331,12 +320,36 @@ public class EmbeddingOperations {
       // Assuming you have a multimodal embedding model method
       EmbeddingMultimodalModel multimodalEmbeddingModel = (EmbeddingMultimodalModel) baseModel.buildEmbeddingMultimodalModel();
 
-      Embedding embedding = text != null && !text.isEmpty() ?
-          multimodalEmbeddingModel.embedTextAndImage(text, imageBytes).content() :
-          multimodalEmbeddingModel.embedImage(imageBytes).content();
-
       JSONArray jsonEmbeddings = new JSONArray();
-      jsonEmbeddings.put(embedding.vector());
+
+      // Convert InputStream to byte array
+      byte[] mediaBytes = IOUtils.toByteArray(mediaBinaryParameters.getBinaryInputStream());
+
+      MediaProcessor mediaProcessor = null;
+
+      if(mediaBinaryParameters.getMediaProcessorParameters() != null) {
+
+        if(mediaBinaryParameters.getMediaType().equals(MEDIA_TYPE_IMAGE)) {
+
+          ImageProcessorParameters imageProcessorParameters =
+              (ImageProcessorParameters) mediaBinaryParameters.getMediaProcessorParameters();
+
+          mediaProcessor = ImageProcessor.builder()
+              .targetWidth(imageProcessorParameters.getTargetWidth())
+              .targetHeight(imageProcessorParameters.getTargetHeight())
+              .compressionQuality(imageProcessorParameters.getCompressionQuality())
+              .scaleStrategy(imageProcessorParameters.getScaleStrategy())
+              .build();
+
+          mediaBytes = mediaProcessor.process(mediaBytes);
+
+          Embedding embedding = text != null && !text.isEmpty() ?
+              multimodalEmbeddingModel.embedTextAndImage(text, mediaBytes).content() :
+              multimodalEmbeddingModel.embedImage(mediaBytes).content();
+
+          jsonEmbeddings.put(embedding.vector());
+        }
+      }
 
       jsonObject.put(Constants.JSON_KEY_EMBEDDINGS, jsonEmbeddings);
 

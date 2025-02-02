@@ -6,6 +6,7 @@ import com.azure.storage.blob.BlobServiceClientBuilder;
 import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.models.BlobItem;
 import com.azure.storage.blob.models.BlobProperties;
+import com.azure.storage.blob.models.ListBlobsOptions;
 import com.azure.storage.common.StorageSharedKeyCredential;
 import dev.langchain4j.data.document.BlankDocumentException;
 import dev.langchain4j.data.document.loader.azure.storage.blob.AzureBlobStorageDocumentLoader;
@@ -73,12 +74,39 @@ public class AzureBlobStorage extends BaseStorage {
         if(blobIterator == null) {
 
             // Get a BlobContainerClient
-            BlobContainerClient containerClient = getBlobServiceClient().getBlobContainerClient(contextPath);
+            BlobContainerClient containerClient = getBlobServiceClient().getBlobContainerClient(getContainerName());
             // Get an iterator for all blobs in the container
-            this.blobIterator = containerClient.listBlobs().iterator();
+            this.blobIterator = containerClient.listBlobs(new ListBlobsOptions().setPrefix(getBlobName()),null).iterator();
 
         }
         return blobIterator;
+    }
+
+    private String getContainerName() {
+
+        String azureBlobStorageUrl = this.contextPath;
+        String endpoint = String.format("https://%s.blob.core.windows.net/", azureName);
+        // Remove the "s3://" prefix
+        if (azureBlobStorageUrl.startsWith(endpoint)) {
+            azureBlobStorageUrl = azureBlobStorageUrl.substring(endpoint.length());
+        }
+        // Extract the bucket name
+        String bucket = azureBlobStorageUrl.contains("/") ? azureBlobStorageUrl.substring(0, azureBlobStorageUrl.indexOf("/")) : azureBlobStorageUrl;
+        return bucket;
+    }
+
+    private String getBlobName() {
+
+        String azureBlobStorageUrl = this.contextPath;
+        String endpoint = String.format("https://%s.blob.core.windows.net/", azureName);
+        // Remove the "s3://" prefix
+        if (azureBlobStorageUrl.startsWith(endpoint)) {
+            azureBlobStorageUrl = azureBlobStorageUrl.substring(endpoint.length());
+        }
+        // Extract the bucket name and object key
+        int slashIndex = azureBlobStorageUrl.indexOf("/");
+        String objectKey = slashIndex != -1 ? azureBlobStorageUrl.substring(slashIndex + 1) : "";
+        return objectKey;
     }
 
     public AzureBlobStorage(StorageConfiguration storageConfiguration, AzureBlobStorageConnection azureBlobStorageConnection,
@@ -93,8 +121,8 @@ public class AzureBlobStorage extends BaseStorage {
     public Document getSingleDocument() {
 
         String[] parts = contextPath.split("/", 2);
-        String containerName = parts[0];
-        String blobName = parts[1];
+        String containerName = getContainerName();
+        String blobName = getBlobName();
         LOGGER.debug("Blob name: " + blobName);
         Document document = getLoader().loadDocument(containerName, blobName, documentParser);
         MetadataUtils.addMetadataToDocument(document, fileType, blobName);

@@ -131,7 +131,7 @@ public class MediaOperations {
   @Throws(MediaErrorTypeProvider.class)
   @OutputResolver(output = MediasOutputTypeMetadataResolver.class)
   public PagingProvider<BaseStorageConnection, Result<CursorProvider, MediaResponseAttributes>>
-  loadDocumentList(@Config StorageConfiguration storageConfiguration,
+  loadMediaList(@Config StorageConfiguration storageConfiguration,
                    @ParameterGroup(name = "Media") MediaParameters mediaParameters,
                    StreamingHelper streamingHelper) {
 

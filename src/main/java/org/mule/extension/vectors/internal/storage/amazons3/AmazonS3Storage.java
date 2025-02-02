@@ -91,6 +91,10 @@ public class AmazonS3Storage extends BaseStorage {
             // Build the request
             ListObjectsV2Request.Builder requestBuilder = ListObjectsV2Request.builder()
                 .bucket(getAWSS3Bucket());
+            String prefix = getAWSS3ObjectKey();
+            if (!prefix.isEmpty()) {
+                requestBuilder.prefix(prefix); // Add prefix filter only if it is not empty
+            }
             if (continuationToken != null) {
                 requestBuilder.continuationToken(continuationToken); // Set continuation token
             }
