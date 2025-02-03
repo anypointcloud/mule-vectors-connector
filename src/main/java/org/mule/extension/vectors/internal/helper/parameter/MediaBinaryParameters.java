@@ -9,6 +9,7 @@ import org.mule.runtime.extension.api.annotation.param.Content;
 import org.mule.runtime.extension.api.annotation.param.Optional;
 import org.mule.runtime.extension.api.annotation.param.Parameter;
 import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
+import org.mule.runtime.extension.api.annotation.param.display.Example;
 import org.mule.runtime.extension.api.annotation.param.display.Placement;
 import org.mule.runtime.extension.api.annotation.param.display.Summary;
 import org.mule.runtime.extension.api.annotation.values.OfValues;
@@ -26,10 +27,20 @@ public class MediaBinaryParameters {
   private @Content InputStream binaryInputStream;
 
   @Parameter
+  @Alias("label")
+  @DisplayName("Media Label")
+  @Summary("Short text describing the image. " +
+      "Not all models allow to generate embedding for a combination of label and image.")
+  @Placement(order = 2)
+  @Example("An image of a sunset")
+  @Expression(ExpressionSupport.SUPPORTED)
+  private @Content String label;
+
+  @Parameter
   @Alias("mediaType")
   @DisplayName("Media Type")
   @Summary("The supported types of media.")
-  @Placement(order = 2)
+  @Placement(order = 3)
   @Expression(ExpressionSupport.SUPPORTED)
   @OfValues(MediaTypeProvider.class)
   @Optional(defaultValue = Constants.MEDIA_TYPE_IMAGE)
@@ -39,7 +50,7 @@ public class MediaBinaryParameters {
   @Alias("mediaProcessorParameters")
   @DisplayName("Processor Settings")
   @Summary("The context path.")
-  @Placement(order = 3)
+  @Placement(order = 4)
   @Expression(ExpressionSupport.NOT_SUPPORTED)
   private MediaProcessorParameters mediaProcessorParameters = new ImageProcessorParameters();
 
@@ -48,9 +59,9 @@ public class MediaBinaryParameters {
     return mediaType;
   }
 
-  public InputStream getBinaryInputStream() {
-    return binaryInputStream;
-  }
+  public InputStream getBinaryInputStream() { return binaryInputStream;}
+
+  public String getLabel() { return label; }
 
   public MediaProcessorParameters getMediaProcessorParameters() {
     return mediaProcessorParameters;

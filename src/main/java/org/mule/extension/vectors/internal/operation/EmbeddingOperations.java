@@ -281,17 +281,14 @@ public class EmbeddingOperations {
   }
 
   @MediaType(value = APPLICATION_JSON, strict = false)
-  @Alias("Embedding-generate-from-binary-and-text")
-  @DisplayName("[Embedding] Generate from binary and text")
+  @Alias("Embedding-generate-from-binary")
+  @DisplayName("[Embedding] Generate from binary")
   @Throws(EmbeddingErrorTypeProvider.class)
   @OutputJsonType(schema = "api/metadata/EmbeddingGenerateResponse.json")
   public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, MultimodalEmbeddingResponseAttributes>
-  generateEmbeddingFromBinaryAndText(@Config EmbeddingConfiguration embeddingConfiguration,
+  generateEmbeddingFromBinary(@Config EmbeddingConfiguration embeddingConfiguration,
                                     @Connection BaseModelConnection modelConnection,
                                     @ParameterGroup(name = "Media") MediaBinaryParameters mediaBinaryParameters,
-                                    @Alias("text") @DisplayName("Text") @Summary("Short text describing the image. " +
-                                        "Not all models allow to generate embedding for a combination of text and image.")
-                                        @Example("An image of a sunset") @Content String text,
                                     @ParameterGroup(name = "Embedding Model") EmbeddingModelParameters embeddingModelParameters) {
 
     try {
@@ -299,7 +296,7 @@ public class EmbeddingOperations {
       JSONObject jsonObject = new JSONObject();
 
       List<TextSegment> textSegments = new LinkedList<>();
-      textSegments.add(TextSegment.from(text));
+      textSegments.add(TextSegment.from(mediaBinaryParameters.getLabel()));
       JSONArray jsonTextSegments = IntStream.range(0, textSegments.size())
           .mapToObj(i -> {
             JSONObject jsonSegment = new JSONObject();
@@ -345,8 +342,8 @@ public class EmbeddingOperations {
 
           mediaBytes = mediaProcessor.process(mediaBytes);
 
-          Embedding embedding = text != null && !text.isEmpty() ?
-              multimodalEmbeddingModel.embedTextAndImage(text, mediaBytes).content() :
+          Embedding embedding = mediaBinaryParameters.getLabel() != null && !mediaBinaryParameters.getLabel().isEmpty() ?
+              multimodalEmbeddingModel.embedTextAndImage(mediaBinaryParameters.getLabel(), mediaBytes).content() :
               multimodalEmbeddingModel.embedImage(mediaBytes).content();
 
           jsonEmbeddings.put(embedding.vector());
@@ -367,22 +364,22 @@ public class EmbeddingOperations {
 
     } catch (Exception e) {
       throw new ModuleException(
-          "Error while generating embedding from image and text",
+          "Error while generating embedding from media binary",
           MuleVectorsErrorType.EMBEDDING_OPERATIONS_FAILURE,
           e);
     }
   }
 
   @MediaType(value = APPLICATION_JSON, strict = false)
-  @Alias("Embedding-generate-from-media-and-text")
-  @DisplayName("[Embedding] Generate from media and text")
+  @Alias("Embedding-generate-from-media")
+  @DisplayName("[Embedding] Generate from media")
   @Throws(EmbeddingErrorTypeProvider.class)
   @OutputJsonType(schema = "api/metadata/EmbeddingGenerateResponse.json")
   public org.mule.runtime.extension.api.runtime.operation.Result<InputStream, MultimodalEmbeddingResponseAttributes>
-  generateEmbeddingFromMediaAndText(@Config EmbeddingConfiguration embeddingConfiguration,
+  generateEmbeddingFromMedia(@Config EmbeddingConfiguration embeddingConfiguration,
                                     @Connection BaseModelConnection modelConnection,
                                     @Alias("media") @DisplayName("Media") @InputJsonType(schema = "api/metadata/MediaLoadSingleResponse.json") @Content InputStream mediaContent,
-                                    @Alias("text") @DisplayName("Text") @Summary("Short text describing the image") @Example("An image of a sunset") @Content String text,
+                                    @Alias("label") @DisplayName("Media Label") @Summary("Short text describing the image") @Example("An image of a sunset") @Content String label,
                                     @ParameterGroup(name = "Embedding Model") EmbeddingModelParameters embeddingModelParameters) {
 
     try {
@@ -393,7 +390,7 @@ public class EmbeddingOperations {
       JSONObject jsonObject = new JSONObject();
 
       List<TextSegment> textSegments = new LinkedList<>();
-      textSegments.add(TextSegment.from(text));
+      textSegments.add(TextSegment.from(label));
       JSONArray jsonTextSegments = IntStream.range(0, textSegments.size())
           .mapToObj(i -> {
             JSONObject jsonSegment = new JSONObject();
@@ -416,8 +413,8 @@ public class EmbeddingOperations {
       // Assuming you have a multimodal embedding model method
       EmbeddingMultimodalModel multimodalEmbeddingModel = (EmbeddingMultimodalModel) baseModel.buildEmbeddingMultimodalModel();
 
-      Embedding embedding = text != null && !text.isEmpty() ?
-          multimodalEmbeddingModel.embedTextAndImage(text, Base64.getDecoder().decode(jsonMediaObject.getString(JSON_KEY_BASE64DATA))).content() :
+      Embedding embedding = label != null && !label.isEmpty() ?
+          multimodalEmbeddingModel.embedTextAndImage(label, Base64.getDecoder().decode(jsonMediaObject.getString(JSON_KEY_BASE64DATA))).content() :
           multimodalEmbeddingModel.embedImage(Base64.getDecoder().decode(jsonMediaObject.getString(JSON_KEY_BASE64DATA))).content();
 
       JSONArray jsonEmbeddings = new JSONArray();
