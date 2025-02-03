@@ -1,17 +1,17 @@
-package org.mule.extension.vectors.internal.model.multimodal.vertexai;
+package org.mule.extension.vectors.internal.model.multimodal.nomic;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public enum VertexAiEmbeddingMultimodalModelName {
-
-  MULTIMODALEMBEDDING("multimodalembedding", 1408);
+public enum NomicEmbeddingMultimodalModelName {
+  NOMIC_EMBED_VISION_V1("nomic-embed-vision-v1", 768),
+  NOMIC_EMBED_VISION_V1_5("nomic-embed-vision-v1.5", 768);
 
   private final String stringValue;
   private final Integer dimension;
   private static final Map<String, Integer> KNOWN_DIMENSION = new HashMap(values().length);
 
-  private VertexAiEmbeddingMultimodalModelName(String stringValue, Integer dimension) {
+  private NomicEmbeddingMultimodalModelName(String stringValue, Integer dimension) {
     this.stringValue = stringValue;
     this.dimension = dimension;
   }
@@ -29,11 +29,11 @@ public enum VertexAiEmbeddingMultimodalModelName {
   }
 
   static {
-    VertexAiEmbeddingMultimodalModelName[] var0 = values();
+    NomicEmbeddingMultimodalModelName[] var0 = values();
     int var1 = var0.length;
 
     for(int i = 0; i < var1; ++i) {
-      VertexAiEmbeddingMultimodalModelName embeddingModelName = var0[i];
+      NomicEmbeddingMultimodalModelName embeddingModelName = var0[i];
       KNOWN_DIMENSION.put(embeddingModelName.toString(), embeddingModelName.dimension());
     }
 
