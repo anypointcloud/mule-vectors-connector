@@ -15,6 +15,7 @@ import org.mule.extension.vectors.internal.error.MuleVectorsErrorType;
 import org.mule.extension.vectors.internal.helper.model.EmbeddingModelHelper;
 import org.mule.extension.vectors.internal.helper.parameter.EmbeddingModelParameters;
 import org.mule.extension.vectors.internal.model.multimodal.EmbeddingMultimodalModel;
+import org.mule.extension.vectors.internal.model.multimodal.nomic.NomicMultimodalModel;
 import org.mule.extension.vectors.internal.model.multimodal.vertexai.VertexAIMultimodalModel;
 import org.mule.extension.vectors.internal.model.text.azureopenai.AzureOpenAIModel;
 import org.mule.extension.vectors.internal.model.text.einstein.EinsteinModel;
@@ -104,6 +105,13 @@ public class BaseModel {
           break;
 
         case Constants.EMBEDDING_MODEL_SERVICE_NOMIC:
+
+          if(embeddingModelParameters.getEmbeddingModelType().equals(EmbeddingModelHelper.EmbeddingModelType.MULTIMODAL)) {
+
+            baseModel = new NomicMultimodalModel(embeddingConfiguration, (NomicModelConnection) modelConnection, embeddingModelParameters);
+            break;
+          }
+
           baseModel = new NomicModel(embeddingConfiguration, (NomicModelConnection) modelConnection, embeddingModelParameters);
           break;
 

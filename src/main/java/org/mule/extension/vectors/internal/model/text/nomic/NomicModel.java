@@ -9,25 +9,22 @@ import org.mule.extension.vectors.internal.model.BaseModel;
 
 public class NomicModel  extends BaseModel {
 
-  private final String apiKey;
+  private NomicModelConnection nomicModelConnection;
 
   public NomicModel(EmbeddingConfiguration embeddingConfiguration, NomicModelConnection nomicModelConnection, EmbeddingModelParameters embeddingModelParameters) {
 
     super(embeddingConfiguration, nomicModelConnection, embeddingModelParameters);
 
-    this.apiKey = nomicModelConnection.getApiKey();
+    this.nomicModelConnection = nomicModelConnection;
   }
 
   public EmbeddingModel buildEmbeddingModel() {
 
     return NomicEmbeddingModel.builder()
         //.baseUrl("https://api-atlas.nomic.ai/v1/")
-        .apiKey(apiKey)
+        .apiKey(nomicModelConnection.getApiKey())
         .modelName(embeddingModelParameters.getEmbeddingModelName())
-        //.taskType("clustering")
-        .maxRetries(2)
-        .logRequests(true)
-        .logResponses(true)
+        .maxRetries(nomicModelConnection.getMaxAttempts())
         .build();
   }
 }

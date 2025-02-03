@@ -45,7 +45,9 @@ public class EmbeddingModelHelper {
   }
 
   public enum MultimodalEmbeddingModelNames {
-    VERTEX_MULTI_MODAL_EMBEDDING("multimodalembedding");
+    VERTEX_MULTI_MODAL_EMBEDDING("multimodalembedding"),
+    NOMIC_EMBED_VISION_V1("nomic-embed-vision-v1"),
+    NOMIC_EMBED_VISION_V1_5("nomic-embed-vision-v1.5");
 
     private final String modelName;
 

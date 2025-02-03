@@ -289,7 +289,9 @@ public class EmbeddingOperations {
   generateEmbeddingFromBinaryAndText(@Config EmbeddingConfiguration embeddingConfiguration,
                                     @Connection BaseModelConnection modelConnection,
                                     @ParameterGroup(name = "Media") MediaBinaryParameters mediaBinaryParameters,
-                                    @Alias("text") @DisplayName("Text") @Summary("Short text describing the image") @Example("An image of a sunset") @Content String text,
+                                    @Alias("text") @DisplayName("Text") @Summary("Short text describing the image. " +
+                                        "Not all model allow to generate embedding for a combination of text and image.")
+                                        @Example("An image of a sunset") @Content String text,
                                     @ParameterGroup(name = "Embedding Model") EmbeddingModelParameters embeddingModelParameters) {
 
     try {

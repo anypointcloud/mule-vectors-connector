@@ -34,7 +34,9 @@ public class EmbeddingModelNameProvider implements ValueProvider {
   );
 
   private static final Set<Value> VALUES_FOR_NOMIC = ValueBuilder.getValuesFor(
-      EmbeddingModelHelper.TextEmbeddingModelNames.NOMIC_EMBED_TEXT.getModelName()
+      EmbeddingModelHelper.TextEmbeddingModelNames.NOMIC_EMBED_TEXT.getModelName(),
+      EmbeddingModelHelper.MultimodalEmbeddingModelNames.NOMIC_EMBED_VISION_V1.getModelName(),
+      EmbeddingModelHelper.MultimodalEmbeddingModelNames.NOMIC_EMBED_VISION_V1_5.getModelName()
   );
 
   private static final Set<Value> VALUES_FOR_HUGGING_FACE = ValueBuilder.getValuesFor(

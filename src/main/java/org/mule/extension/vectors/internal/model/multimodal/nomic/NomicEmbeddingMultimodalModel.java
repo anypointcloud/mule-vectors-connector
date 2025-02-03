@@ -7,8 +7,11 @@ import dev.langchain4j.model.output.Response;
 import dev.langchain4j.model.output.TokenUsage;
 import org.mule.extension.vectors.internal.error.MuleVectorsErrorType;
 import org.mule.extension.vectors.internal.model.multimodal.EmbeddingMultimodalModel;
+import org.mule.extension.vectors.internal.model.multimodal.vertexai.VertexAiEmbeddingMultimodalModel;
 import org.mule.extension.vectors.internal.model.multimodal.vertexai.VertexAiEmbeddingMultimodalModelName;
 import org.mule.runtime.extension.api.exception.ModuleException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -19,6 +22,8 @@ import java.util.stream.Collectors;
 
 // https://docs.nomic.ai/reference/api/embed-image-v-1-embedding-image-post
 public class NomicEmbeddingMultimodalModel  implements EmbeddingMultimodalModel {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(NomicEmbeddingMultimodalModel.class);
 
   private static final String DEFAULT_BASE_URL = "https://api-atlas.nomic.ai/v1/";
   private final NomicClient client;
@@ -63,12 +68,14 @@ public class NomicEmbeddingMultimodalModel  implements EmbeddingMultimodalModel 
   @Override
   public Response<Embedding> embedTextAndImage(String text, byte[] imageBytes) {
 
-    throw new ModuleException(String.format("Nomic %s model doesn't support generating embedding for image and text together", this.modelName) , MuleVectorsErrorType.AI_SERVICES_FAILURE);
+    LOGGER.warn(String.format("Nomic %s model doesn't support generating embedding for a combination of image and text. " +
+                                  "The text will not be sent to the model to generate the embeddings.", this.modelName));
+    return embedImage(imageBytes);
   }
 
   @Override
   public Response<List<Embedding>> embedTexts(List<String> texts) {
-    throw new ModuleException(String.format("Nomic %s model doesn't support generating embedding for text only", this.modelName) , MuleVectorsErrorType.AI_SERVICES_FAILURE);
+    throw new ModuleException(String.format("Nomic %s model doesn't support generating embedding for text only.", this.modelName) , MuleVectorsErrorType.AI_SERVICES_FAILURE);
   }
 
   @Override
