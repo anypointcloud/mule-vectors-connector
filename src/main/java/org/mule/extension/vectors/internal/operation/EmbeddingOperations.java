@@ -14,12 +14,14 @@ import java.util.stream.IntStream;
 import dev.langchain4j.data.document.Document;
 import dev.langchain4j.data.document.DocumentSplitter;
 import dev.langchain4j.data.document.Metadata;
+import dev.langchain4j.model.output.Response;
 import org.apache.commons.io.IOUtils;
 import org.bouncycastle.oer.Switch;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.mule.extension.vectors.api.metadata.EmbeddingResponseAttributes;
 import org.mule.extension.vectors.api.metadata.MultimodalEmbeddingResponseAttributes;
+import org.mule.extension.vectors.api.metadata.TokenUsage;
 import org.mule.extension.vectors.internal.config.EmbeddingConfiguration;
 import org.mule.extension.vectors.internal.connection.model.BaseModelConnection;
 import org.mule.extension.vectors.internal.constant.Constants;
@@ -95,6 +97,7 @@ public class EmbeddingOperations {
 
       List<TextSegment> textSegments = new LinkedList<>();
       List<Embedding> embeddings = new LinkedList<>();
+      TokenUsage tokenUsage = null;
       int dimension = 0;
 
       try {
@@ -106,7 +109,13 @@ public class EmbeddingOperations {
             EmbeddingMultimodalModel embeddingMultimodalModel = baseModel.buildEmbeddingMultimodalModel();
             LOGGER.debug(String.format("Embedding multimodal model for %s service built.", modelConnection.getEmbeddingModelService()));
             textSegments.add(TextSegment.from(text));
-            embeddings.add(embeddingMultimodalModel.embedText(text).content());
+            Response<Embedding> multimodalResponse = embeddingMultimodalModel.embedText(text);
+            embeddings.add(multimodalResponse.content());
+            tokenUsage = multimodalResponse.tokenUsage() != null ?
+                new TokenUsage(multimodalResponse.tokenUsage().inputTokenCount(),
+                               multimodalResponse.tokenUsage().outputTokenCount(),
+                               multimodalResponse.tokenUsage().totalTokenCount())
+                : null;
             dimension = embeddingMultimodalModel.dimension();
             break;
 
@@ -125,7 +134,13 @@ public class EmbeddingOperations {
 
               textSegments.add(TextSegment.from(text));
             }
-            embeddings = embeddingModel.embedAll(textSegments).content();
+            Response<List<Embedding>> textResponse = embeddingModel.embedAll(textSegments);
+            embeddings = textResponse.content();
+            tokenUsage = textResponse.tokenUsage() != null ?
+                new TokenUsage(textResponse.tokenUsage().inputTokenCount(),
+                               textResponse.tokenUsage().outputTokenCount(),
+                               textResponse.tokenUsage().totalTokenCount())
+                : null;
             dimension = embeddingModel.dimension();
             break;
         }
@@ -169,13 +184,18 @@ public class EmbeddingOperations {
 
       jsonObject.put(Constants.JSON_KEY_DIMENSION, dimension);
 
+
       int finalDimension = dimension;
-      return createEmbeddingResponse(
-          jsonObject.toString(),
-          new HashMap<String, Object>() {{
-            put("embeddingModelName", embeddingModelParameters.getEmbeddingModelName());
-            put("embeddingModelDimension", finalDimension);
-          }});
+
+      HashMap<String, Object> attributes = new HashMap<String, Object>() {{
+        put("embeddingModelName", embeddingModelParameters.getEmbeddingModelName());
+        put("embeddingModelDimension", finalDimension);
+      }};
+      if(tokenUsage != null) {
+
+        attributes.put("tokenUsage", tokenUsage);
+      }
+      return createEmbeddingResponse(jsonObject.toString(), attributes);
 
     } catch (ModuleException me) {
       throw me;
@@ -222,10 +242,12 @@ public class EmbeddingOperations {
 
       EmbeddingModel embeddingModel = baseModel.buildEmbeddingModel();
 
+      List<TextSegment> textSegments = new LinkedList<>();
+      List<Embedding> embeddings;
+      TokenUsage tokenUsage;
+
       JSONObject jsonObject = new JSONObject(contentString);
       JSONArray jsonTextSegments = jsonObject.getJSONArray(Constants.JSON_KEY_TEXT_SEGMENTS);
-
-      List<TextSegment> textSegments = new LinkedList<>();
 
       IntStream.range(0, jsonTextSegments.length())
           .mapToObj(jsonTextSegments::getJSONObject) // Convert index to JSONObject
@@ -234,10 +256,15 @@ public class EmbeddingOperations {
             textSegments.add(new TextSegment(jsonTextSegment.getString(Constants.JSON_KEY_TEXT), metadata));
           });
 
-      List<Embedding> embeddings;
       try {
 
-        embeddings = embeddingModel.embedAll(textSegments).content();
+        Response<List<Embedding>> response = embeddingModel.embedAll(textSegments);
+        embeddings = response.content();
+        tokenUsage = response.tokenUsage() != null ?
+            new TokenUsage(response.tokenUsage().inputTokenCount(),
+                           response.tokenUsage().outputTokenCount(),
+                           response.tokenUsage().totalTokenCount())
+            : null;
 
       } catch(ModuleException e) {
 
@@ -261,12 +288,15 @@ public class EmbeddingOperations {
 
       jsonObject.put(Constants.JSON_KEY_DIMENSION, embeddingModel.dimension());
 
-      return createEmbeddingResponse(
-          jsonObject.toString(),
-          new HashMap<String, Object>() {{
-            put("embeddingModelName", embeddingModelParameters.getEmbeddingModelName());
-            put("embeddingModelDimension", embeddingModel.dimension());
-          }});
+      HashMap<String, Object> attributes = new HashMap<String, Object>() {{
+        put("embeddingModelName", embeddingModelParameters.getEmbeddingModelName());
+        put("embeddingModelDimension", embeddingModel.dimension());
+      }};
+      if(tokenUsage != null) {
+
+        attributes.put("tokenUsage", tokenUsage);
+      }
+      return createEmbeddingResponse(jsonObject.toString(), attributes);
 
     } catch (ModuleException me) {
       throw me;
@@ -293,9 +323,21 @@ public class EmbeddingOperations {
 
     try {
 
-      JSONObject jsonObject = new JSONObject();
+
+      BaseModel baseModel = BaseModel.builder()
+          .configuration(embeddingConfiguration)
+          .connection(modelConnection)
+          .embeddingModelParameters(embeddingModelParameters)
+          .build();
+
+      // Assuming you have a multimodal embedding model method
+      EmbeddingMultimodalModel multimodalEmbeddingModel = (EmbeddingMultimodalModel) baseModel.buildEmbeddingMultimodalModel();
 
       List<TextSegment> textSegments = new LinkedList<>();
+      TokenUsage tokenUsage = null;
+
+      JSONObject jsonObject = new JSONObject();
+
       textSegments.add(TextSegment.from(mediaBinaryParameters.getLabel()));
       JSONArray jsonTextSegments = IntStream.range(0, textSegments.size())
           .mapToObj(i -> {
@@ -309,15 +351,6 @@ public class EmbeddingOperations {
           .collect(JSONArray::new, JSONArray::put, JSONArray::putAll);
 
       jsonObject.put(Constants.JSON_KEY_TEXT_SEGMENTS, jsonTextSegments);
-
-      BaseModel baseModel = BaseModel.builder()
-          .configuration(embeddingConfiguration)
-          .connection(modelConnection)
-          .embeddingModelParameters(embeddingModelParameters)
-          .build();
-
-      // Assuming you have a multimodal embedding model method
-      EmbeddingMultimodalModel multimodalEmbeddingModel = (EmbeddingMultimodalModel) baseModel.buildEmbeddingMultimodalModel();
 
       JSONArray jsonEmbeddings = new JSONArray();
 
@@ -342,10 +375,15 @@ public class EmbeddingOperations {
 
           mediaBytes = mediaProcessor.process(mediaBytes);
 
-          Embedding embedding = mediaBinaryParameters.getLabel() != null && !mediaBinaryParameters.getLabel().isEmpty() ?
-              multimodalEmbeddingModel.embedTextAndImage(mediaBinaryParameters.getLabel(), mediaBytes).content() :
-              multimodalEmbeddingModel.embedImage(mediaBytes).content();
-
+          Response<Embedding> response = mediaBinaryParameters.getLabel() != null && !mediaBinaryParameters.getLabel().isEmpty() ?
+              multimodalEmbeddingModel.embedTextAndImage(mediaBinaryParameters.getLabel(), mediaBytes) :
+              multimodalEmbeddingModel.embedImage(mediaBytes);
+          Embedding embedding = response.content();
+          tokenUsage = response.tokenUsage() != null ?
+              new TokenUsage(response.tokenUsage().inputTokenCount(),
+                             response.tokenUsage().outputTokenCount(),
+                             response.tokenUsage().totalTokenCount())
+              : null;
           jsonEmbeddings.put(embedding.vector());
         }
       }
@@ -354,13 +392,15 @@ public class EmbeddingOperations {
 
       jsonObject.put(Constants.JSON_KEY_DIMENSION, multimodalEmbeddingModel.dimension());
 
-      return createMultimodalEmbeddingResponse(
-          jsonObject.toString(),
-          new HashMap<String, Object>() {{
-            put("embeddingModelName", embeddingModelParameters.getEmbeddingModelName());
-            put("embeddingModelDimension", multimodalEmbeddingModel.dimension());
-          }}
-      );
+      HashMap<String, Object> attributes = new HashMap<String, Object>() {{
+        put("embeddingModelName", embeddingModelParameters.getEmbeddingModelName());
+        put("embeddingModelDimension", multimodalEmbeddingModel.dimension());
+      }};
+      if(tokenUsage != null) {
+
+        attributes.put("tokenUsage", tokenUsage);
+      }
+      return createMultimodalEmbeddingResponse(jsonObject.toString(), attributes);
 
     } catch (Exception e) {
       throw new ModuleException(
@@ -413,9 +453,15 @@ public class EmbeddingOperations {
       // Assuming you have a multimodal embedding model method
       EmbeddingMultimodalModel multimodalEmbeddingModel = (EmbeddingMultimodalModel) baseModel.buildEmbeddingMultimodalModel();
 
-      Embedding embedding = label != null && !label.isEmpty() ?
-          multimodalEmbeddingModel.embedTextAndImage(label, Base64.getDecoder().decode(jsonMediaObject.getString(JSON_KEY_BASE64DATA))).content() :
-          multimodalEmbeddingModel.embedImage(Base64.getDecoder().decode(jsonMediaObject.getString(JSON_KEY_BASE64DATA))).content();
+      Response<Embedding> response = label != null && !label.isEmpty() ?
+          multimodalEmbeddingModel.embedTextAndImage(label, Base64.getDecoder().decode(jsonMediaObject.getString(JSON_KEY_BASE64DATA))) :
+          multimodalEmbeddingModel.embedImage(Base64.getDecoder().decode(jsonMediaObject.getString(JSON_KEY_BASE64DATA)));
+      Embedding embedding = response.content();
+      TokenUsage tokenUsage = response.tokenUsage() != null ?
+          new TokenUsage(response.tokenUsage().inputTokenCount(),
+                         response.tokenUsage().outputTokenCount(),
+                         response.tokenUsage().totalTokenCount())
+          : null;
 
       JSONArray jsonEmbeddings = new JSONArray();
       jsonEmbeddings.put(embedding.vector());
@@ -424,13 +470,16 @@ public class EmbeddingOperations {
 
       jsonObject.put(Constants.JSON_KEY_DIMENSION, multimodalEmbeddingModel.dimension());
 
-      return createMultimodalEmbeddingResponse(
-          jsonObject.toString(),
-          new HashMap<String, Object>() {{
-            put("embeddingModelName", embeddingModelParameters.getEmbeddingModelName());
-            put("embeddingModelDimension", multimodalEmbeddingModel.dimension());
-          }}
-      );
+
+      HashMap<String, Object> attributes = new HashMap<String, Object>() {{
+        put("embeddingModelName", embeddingModelParameters.getEmbeddingModelName());
+        put("embeddingModelDimension", multimodalEmbeddingModel.dimension());
+      }};
+      if(tokenUsage != null) {
+
+        attributes.put("tokenUsage", tokenUsage);
+      }
+      return createMultimodalEmbeddingResponse(jsonObject.toString(), attributes);
 
     } catch (Exception e) {
       throw new ModuleException(

@@ -26,6 +26,8 @@ public class EmbeddingResponseAttributes implements Serializable {
    */
   protected final int embeddingModelDimension;
 
+  protected final TokenUsage tokenUsage;
+
   /**
    * Additional attributes not explicitly defined as fields in this class.
    */
@@ -42,6 +44,7 @@ public class EmbeddingResponseAttributes implements Serializable {
   public EmbeddingResponseAttributes(HashMap<String, Object> requestAttributes) {
     this.embeddingModelName = requestAttributes.containsKey("embeddingModelName") ? (String) requestAttributes.remove("embeddingModelName") : null;
     this.embeddingModelDimension = requestAttributes.containsKey("embeddingModelDimension") ? (int) requestAttributes.remove("embeddingModelDimension") : null;
+    this.tokenUsage = requestAttributes.containsKey("tokenUsage") ? (TokenUsage) requestAttributes.remove("tokenUsage") : null;
     this.otherAttributes = requestAttributes;
   }
 
@@ -62,6 +65,8 @@ public class EmbeddingResponseAttributes implements Serializable {
   public int getEmbeddingModelDimension() {
     return embeddingModelDimension;
   }
+
+  public TokenUsage getTokenUsage() { return tokenUsage; }
 
   /**
    * Gets additional attributes of the embedding response.
