@@ -374,18 +374,26 @@ public class EmbeddingOperations {
               .build();
 
           mediaBytes = mediaProcessor.process(mediaBytes);
-
-          Response<Embedding> response = mediaBinaryParameters.getLabel() != null && !mediaBinaryParameters.getLabel().isEmpty() ?
-              multimodalEmbeddingModel.embedTextAndImage(mediaBinaryParameters.getLabel(), mediaBytes) :
-              multimodalEmbeddingModel.embedImage(mediaBytes);
-          Embedding embedding = response.content();
-          tokenUsage = response.tokenUsage() != null ?
-              new TokenUsage(response.tokenUsage().inputTokenCount(),
-                             response.tokenUsage().outputTokenCount(),
-                             response.tokenUsage().totalTokenCount())
-              : null;
-          jsonEmbeddings.put(embedding.vector());
         }
+      }
+
+      if(mediaBinaryParameters.getMediaType().equals(MEDIA_TYPE_IMAGE)) {
+
+        Response<Embedding> response = mediaBinaryParameters.getLabel() != null && !mediaBinaryParameters.getLabel().isEmpty() ?
+            multimodalEmbeddingModel.embedTextAndImage(mediaBinaryParameters.getLabel(), mediaBytes) :
+            multimodalEmbeddingModel.embedImage(mediaBytes);
+        Embedding embedding = response.content();
+        tokenUsage = response.tokenUsage() != null ?
+            new TokenUsage(response.tokenUsage().inputTokenCount(),
+                           response.tokenUsage().outputTokenCount(),
+                           response.tokenUsage().totalTokenCount())
+            : null;
+        jsonEmbeddings.put(embedding.vector());
+      } else {
+
+        throw new ModuleException(
+            String.format("Media type %s not supported.", mediaBinaryParameters.getMediaType()),
+            MuleVectorsErrorType.EMBEDDING_OPERATIONS_FAILURE);
       }
 
       jsonObject.put(Constants.JSON_KEY_EMBEDDINGS, jsonEmbeddings);
@@ -401,6 +409,10 @@ public class EmbeddingOperations {
         attributes.put("tokenUsage", tokenUsage);
       }
       return createMultimodalEmbeddingResponse(jsonObject.toString(), attributes);
+
+    } catch(ModuleException me) {
+
+      throw me;
 
     } catch (Exception e) {
       throw new ModuleException(
@@ -453,15 +465,28 @@ public class EmbeddingOperations {
       // Assuming you have a multimodal embedding model method
       EmbeddingMultimodalModel multimodalEmbeddingModel = (EmbeddingMultimodalModel) baseModel.buildEmbeddingMultimodalModel();
 
-      Response<Embedding> response = label != null && !label.isEmpty() ?
-          multimodalEmbeddingModel.embedTextAndImage(label, Base64.getDecoder().decode(jsonMediaObject.getString(JSON_KEY_BASE64DATA))) :
-          multimodalEmbeddingModel.embedImage(Base64.getDecoder().decode(jsonMediaObject.getString(JSON_KEY_BASE64DATA)));
-      Embedding embedding = response.content();
-      TokenUsage tokenUsage = response.tokenUsage() != null ?
-          new TokenUsage(response.tokenUsage().inputTokenCount(),
-                         response.tokenUsage().outputTokenCount(),
-                         response.tokenUsage().totalTokenCount())
-          : null;
+      Embedding embedding;
+      TokenUsage tokenUsage;
+      String mediaType = jsonMediaObject.getJSONObject(Constants.JSON_KEY_METADATA).getString(Constants.METADATA_KEY_MEDIA_TYPE);
+      if (mediaType.equals(MEDIA_TYPE_IMAGE)) {
+
+        Response<Embedding> response = label != null && !label.isEmpty()
+            ?
+            multimodalEmbeddingModel.embedTextAndImage(label,
+                                                       Base64.getDecoder().decode(jsonMediaObject.getString(JSON_KEY_BASE64DATA)))
+            :
+                multimodalEmbeddingModel.embedImage(Base64.getDecoder().decode(jsonMediaObject.getString(JSON_KEY_BASE64DATA)));
+        embedding = response.content();
+        tokenUsage = response.tokenUsage() != null ?
+            new TokenUsage(response.tokenUsage().inputTokenCount(),
+                           response.tokenUsage().outputTokenCount(),
+                           response.tokenUsage().totalTokenCount())
+            : null;
+      } else {
+        throw new ModuleException(
+            String.format("Media type %s not supported.", mediaType),
+            MuleVectorsErrorType.EMBEDDING_OPERATIONS_FAILURE);
+      }
 
       JSONArray jsonEmbeddings = new JSONArray();
       jsonEmbeddings.put(embedding.vector());
@@ -475,11 +500,15 @@ public class EmbeddingOperations {
         put("embeddingModelName", embeddingModelParameters.getEmbeddingModelName());
         put("embeddingModelDimension", multimodalEmbeddingModel.dimension());
       }};
-      if(tokenUsage != null) {
+      if (tokenUsage != null) {
 
         attributes.put("tokenUsage", tokenUsage);
       }
       return createMultimodalEmbeddingResponse(jsonObject.toString(), attributes);
+
+    } catch(ModuleException me) {
+
+      throw me;
 
     } catch (Exception e) {
       throw new ModuleException(
