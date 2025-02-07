@@ -2,11 +2,11 @@ package org.mule.extension.vectors.internal.model.multimodal.nomic;
 
 import java.util.List;
 
-public class EmbeddingMultimodalResponse {
+public class NomicEmbeddingResponseBody {
   private List<float[]> embeddings;
   private Usage usage;
 
-  EmbeddingMultimodalResponse() {
+  NomicEmbeddingResponseBody() {
   }
 
   public List<float[]> getEmbeddings() {

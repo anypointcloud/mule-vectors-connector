@@ -32,6 +32,7 @@ public class Constants {
   public static final String GCP_CLIENT_X509_CERT_URL = "https://www.googleapis.com/robot/v1/metadata/x509/";
 
   public static final String EMBEDDING_MODEL_SERVICE_OPENAI = "OPENAI";
+  public static final String EMBEDDING_MODEL_SERVICE_AZURE_AI_VISION = "AZURE_AI_VISION";
   public static final String EMBEDDING_MODEL_SERVICE_AZURE_OPENAI = "AZURE_OPENAI";
   public static final String EMBEDDING_MODEL_SERVICE_MISTRAL_AI = "MISTRAL_AI";
   public static final String EMBEDDING_MODEL_SERVICE_NOMIC = "NOMIC";

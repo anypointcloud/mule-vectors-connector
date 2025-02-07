@@ -7,14 +7,10 @@ import dev.langchain4j.model.output.Response;
 import dev.langchain4j.model.output.TokenUsage;
 import org.mule.extension.vectors.internal.error.MuleVectorsErrorType;
 import org.mule.extension.vectors.internal.model.multimodal.EmbeddingMultimodalModel;
-import org.mule.extension.vectors.internal.model.multimodal.vertexai.VertexAiEmbeddingMultimodalModel;
-import org.mule.extension.vectors.internal.model.multimodal.vertexai.VertexAiEmbeddingMultimodalModelName;
 import org.mule.runtime.extension.api.exception.ModuleException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.nio.file.Files;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
@@ -56,7 +52,7 @@ public class NomicEmbeddingMultimodalModel  implements EmbeddingMultimodalModel 
   @Override
   public Response<Embedding> embedImage(byte[] imageBytes) {
 
-    EmbeddingMultimodalResponse response = client.embed(EmbeddingMultimodalRequest.builder()
+    NomicEmbeddingResponseBody response = client.embed(NomicImageEmbeddingRequestBody.builder()
                                                             .model(this.modelName)
                                                             .images(Arrays.asList(imageBytes))
                                                             .build());
@@ -81,7 +77,7 @@ public class NomicEmbeddingMultimodalModel  implements EmbeddingMultimodalModel 
   @Override
   public Response<List<Embedding>> embedImages(List<byte[]> imageBytesList) {
 
-    EmbeddingMultimodalResponse response = client.embed(EmbeddingMultimodalRequest.builder()
+    NomicEmbeddingResponseBody response = client.embed(NomicImageEmbeddingRequestBody.builder()
                                                             .model(this.modelName)
                                                             .images(imageBytesList)
                                                             .build());

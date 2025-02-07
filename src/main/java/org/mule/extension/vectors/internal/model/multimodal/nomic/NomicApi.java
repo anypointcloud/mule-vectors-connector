@@ -15,7 +15,7 @@ interface NomicApi {
 
   @Multipart
   @POST("embedding/image")
-  Call<EmbeddingMultimodalResponse> embed(
+  Call<NomicEmbeddingResponseBody> embed(
       @Part("model") RequestBody model,
       @Part List<MultipartBody.Part> images,
       @Header("Authorization") String authorization

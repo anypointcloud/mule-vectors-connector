@@ -44,7 +44,7 @@ public class NomicClient {
     this.authorizationHeader = "Bearer " + ValidationUtils.ensureNotBlank(apiKey, "apiKey");
   }
 
-  public EmbeddingMultimodalResponse embed(EmbeddingMultimodalRequest request) {
+  public NomicEmbeddingResponseBody embed(NomicImageEmbeddingRequestBody request) {
 
     try {
 
@@ -57,11 +57,11 @@ public class NomicClient {
           })
           .collect(Collectors.toList());
 
-      Response<EmbeddingMultimodalResponse> retrofitResponse =
+      Response<NomicEmbeddingResponseBody> retrofitResponse =
           this.nomicApi.embed(modelBody, imageParts, this.authorizationHeader).execute();
 
       if (retrofitResponse.isSuccessful()) {
-        return (EmbeddingMultimodalResponse)retrofitResponse.body();
+        return (NomicEmbeddingResponseBody)retrofitResponse.body();
       } else {
         throw toException(retrofitResponse);
       }

@@ -2,12 +2,12 @@ package org.mule.extension.vectors.internal.model.multimodal.nomic;
 
 import java.util.List;
 
-public class EmbeddingMultimodalRequest {
+public class NomicImageEmbeddingRequestBody {
 
   private String model;
   private List<byte[]> images;
 
-  EmbeddingMultimodalRequest(String model, List<byte[]> images) {
+  NomicImageEmbeddingRequestBody(String model, List<byte[]> images) {
     this.model = model;
     this.images = images;
   }
@@ -43,8 +43,8 @@ public class EmbeddingMultimodalRequest {
     }
 
 
-    public EmbeddingMultimodalRequest build() {
-      return new EmbeddingMultimodalRequest(this.model, this.images);
+    public NomicImageEmbeddingRequestBody build() {
+      return new NomicImageEmbeddingRequestBody(this.model, this.images);
     }
 
     public String toString() {
