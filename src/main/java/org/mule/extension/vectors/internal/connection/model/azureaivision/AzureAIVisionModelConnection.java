@@ -62,7 +62,7 @@ public class AzureAIVisionModelConnection implements BaseModelConnection {
 
     if(this.azureAIVisionClient != null) {
 
-      // Add logic to invalidate connection
+      this.azureAIVisionClient.close();
       LOGGER.debug("Disconnecting from Azure AI Vision.");
     }
   }

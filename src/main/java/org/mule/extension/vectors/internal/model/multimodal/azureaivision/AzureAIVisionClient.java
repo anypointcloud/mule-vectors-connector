@@ -18,6 +18,7 @@ import java.time.Duration;
 public class AzureAIVisionClient {
 
   private static final ObjectMapper OBJECT_MAPPER;
+  private final OkHttpClient okHttpClient;
   private final AzureAIVisionAPI azureAIVisionAPI;
   private final String apiVersion;
   private final String apiKey;
@@ -29,7 +30,9 @@ public class AzureAIVisionClient {
         .connectTimeout(timeout)
         .readTimeout(timeout)
         .writeTimeout(timeout);
-    
+
+    this.okHttpClient = okHttpClientBuilder.build();
+
     Retrofit retrofit = (new Retrofit.Builder())
         .baseUrl(Utils.ensureTrailingForwardSlash(baseUrl))
         .client(okHttpClientBuilder.build())
@@ -107,6 +110,11 @@ public class AzureAIVisionClient {
     String body = response.errorBody().string();
     String errorMessage = String.format("status code: %s; body: %s", code, body);
     return new RuntimeException(errorMessage);
+  }
+
+  public void close() {
+    this.okHttpClient.dispatcher().executorService().shutdown();
+    this.okHttpClient.connectionPool().evictAll();
   }
 
   public static AzureAIVisionClientBuilder builder() {
