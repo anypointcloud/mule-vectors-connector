@@ -3,6 +3,7 @@ package org.mule.extension.vectors.internal.model;
 import dev.langchain4j.model.embedding.EmbeddingModel;
 import org.mule.extension.vectors.internal.config.EmbeddingConfiguration;
 import org.mule.extension.vectors.internal.connection.model.BaseModelConnection;
+import org.mule.extension.vectors.internal.connection.model.azureaivision.AzureAIVisionModelConnection;
 import org.mule.extension.vectors.internal.connection.model.azureopenai.AzureOpenAIModelConnection;
 import org.mule.extension.vectors.internal.connection.model.einstein.EinsteinModelConnection;
 import org.mule.extension.vectors.internal.connection.model.huggingface.HuggingFaceModelConnection;
@@ -15,6 +16,8 @@ import org.mule.extension.vectors.internal.error.MuleVectorsErrorType;
 import org.mule.extension.vectors.internal.helper.model.EmbeddingModelHelper;
 import org.mule.extension.vectors.internal.helper.parameter.EmbeddingModelParameters;
 import org.mule.extension.vectors.internal.model.multimodal.EmbeddingMultimodalModel;
+import org.mule.extension.vectors.internal.model.multimodal.azureaivision.AzureAIVisionEmbeddingMultimodalModel;
+import org.mule.extension.vectors.internal.model.multimodal.azureaivision.AzureAIVisionMultimodalModel;
 import org.mule.extension.vectors.internal.model.multimodal.nomic.NomicMultimodalModel;
 import org.mule.extension.vectors.internal.model.multimodal.vertexai.VertexAIMultimodalModel;
 import org.mule.extension.vectors.internal.model.text.azureopenai.AzureOpenAIModel;
@@ -94,6 +97,10 @@ public class BaseModel {
 
         case Constants.EMBEDDING_MODEL_SERVICE_AZURE_OPENAI:
           baseModel = new AzureOpenAIModel(embeddingConfiguration, (AzureOpenAIModelConnection) modelConnection, embeddingModelParameters);
+          break;
+
+        case Constants.EMBEDDING_MODEL_SERVICE_AZURE_AI_VISION:
+          baseModel = new AzureAIVisionMultimodalModel(embeddingConfiguration, (AzureAIVisionModelConnection) modelConnection, embeddingModelParameters);
           break;
 
         case Constants.EMBEDDING_MODEL_SERVICE_OPENAI:

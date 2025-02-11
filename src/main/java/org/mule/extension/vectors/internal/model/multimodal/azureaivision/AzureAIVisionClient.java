@@ -8,6 +8,10 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import dev.langchain4j.internal.Utils;
 import dev.langchain4j.internal.ValidationUtils;
 import okhttp3.OkHttpClient;
+import okhttp3.RequestBody;
+import org.mule.extension.vectors.internal.connection.model.azureaivision.AzureAIVisionModelConnection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.jackson.JacksonConverterFactory;
@@ -16,6 +20,8 @@ import java.io.IOException;
 import java.time.Duration;
 
 public class AzureAIVisionClient {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(AzureAIVisionClient.class);
 
   private static final ObjectMapper OBJECT_MAPPER;
   private final OkHttpClient okHttpClient;
@@ -46,6 +52,8 @@ public class AzureAIVisionClient {
 
   public AzureAIVisionEmbeddingResponseBody embedText(AzureAIVisionTextEmbeddingRequestBody request, String modelVersion) {
 
+    LOGGER.debug("Embedding {} with Azure AI Vision model version: {}", request, modelVersion);
+
     ValidationUtils.ensureNotBlank(modelVersion, "modelVersion");
 
     try {
@@ -53,6 +61,7 @@ public class AzureAIVisionClient {
       Response<AzureAIVisionEmbeddingResponseBody> retrofitResponse =
           this.azureAIVisionAPI.embedText(request, this.apiKey, this.apiVersion, modelVersion).execute();
 
+      LOGGER.debug("Azure AI Vision response: {}", (AzureAIVisionEmbeddingResponseBody)retrofitResponse.body());
       if (retrofitResponse.isSuccessful()) {
         return (AzureAIVisionEmbeddingResponseBody)retrofitResponse.body();
       } else {
@@ -65,14 +74,14 @@ public class AzureAIVisionClient {
     }
   }
 
-  public AzureAIVisionEmbeddingResponseBody embedImage(AzureAIVisionImageEmbeddingRequestBody request, String modelVersion) {
+  public AzureAIVisionEmbeddingResponseBody embedImage(byte[] imageBytes, String modelVersion) {
 
     ValidationUtils.ensureNotBlank(modelVersion, "modelVersion");
 
     try {
 
       Response<AzureAIVisionEmbeddingResponseBody> retrofitResponse =
-          this.azureAIVisionAPI.embedImage(request, this.apiKey, this.apiVersion, modelVersion).execute();
+          this.azureAIVisionAPI.embedImage(RequestBody.create(imageBytes), this.apiKey, this.apiVersion, modelVersion).execute();
 
       if (retrofitResponse.isSuccessful()) {
         return (AzureAIVisionEmbeddingResponseBody)retrofitResponse.body();

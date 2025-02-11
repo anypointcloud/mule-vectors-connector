@@ -4,17 +4,25 @@ import java.util.List;
 
 public class AzureAIVisionEmbeddingResponseBody {
 
-  private List<float[]> vectors;
+  private float[] vector;
   private String modelVersion;
 
   AzureAIVisionEmbeddingResponseBody() {
   }
 
-  public List<float[]> getVectors() {
-    return this.vectors;
+  public float[] getVector() {
+    return this.vector;
   }
 
   public String getModelVersion() {
     return this.modelVersion;
+  }
+
+  @Override
+  public String toString() {
+    return "AzureAIVisionEmbeddingResponseBody{" +
+        "vector=" + vector +
+        ", modelVersion='" + modelVersion + '\'' +
+        '}';
   }
 }

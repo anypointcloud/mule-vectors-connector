@@ -3,14 +3,12 @@ package org.mule.extension.vectors.internal.connection.model.azureaivision;
 import org.mule.extension.vectors.internal.connection.model.BaseModelConnection;
 import org.mule.extension.vectors.internal.constant.Constants;
 import org.mule.extension.vectors.internal.model.multimodal.azureaivision.AzureAIVisionClient;
-import org.mule.extension.vectors.internal.model.multimodal.azureaivision.AzureAIVisionImageEmbeddingRequestBody;
 import org.mule.extension.vectors.internal.model.multimodal.azureaivision.AzureAIVisionTextEmbeddingRequestBody;
 import org.mule.runtime.api.connection.ConnectionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
-import java.util.List;
 
 public class AzureAIVisionModelConnection implements BaseModelConnection {
 
@@ -38,6 +36,8 @@ public class AzureAIVisionModelConnection implements BaseModelConnection {
   }
 
   public String getApiVersion() { return apiVersion; }
+
+  public long getTimeout() { return timeout; }
 
   @Override
   public String getEmbeddingModelService() {
@@ -75,13 +75,15 @@ public class AzureAIVisionModelConnection implements BaseModelConnection {
     return true;
   }
 
-  public List<float[]> embedText(String text, String modelName) {
+  public float[] embedText(String text, String modelName) {
 
-    return this.azureAIVisionClient.embedText(new AzureAIVisionTextEmbeddingRequestBody(text), modelName).getVectors();
+    LOGGER.debug(String.format("Embedding text: %s, Model name: %s", text, modelName));
+    return this.azureAIVisionClient.embedText(new AzureAIVisionTextEmbeddingRequestBody(text), modelName).getVector();
   }
 
-  public List<float[]> embedImage(byte[] imageBytes, String modelName) {
+  public float[] embedImage(byte[] imageBytes, String modelName) {
 
-    return this.azureAIVisionClient.embedImage(new AzureAIVisionImageEmbeddingRequestBody(imageBytes), modelName).getVectors();
+    LOGGER.debug(String.format("Embedding image, Model name: %s", modelName));
+    return this.azureAIVisionClient.embedImage(imageBytes, modelName).getVector();
   }
 }

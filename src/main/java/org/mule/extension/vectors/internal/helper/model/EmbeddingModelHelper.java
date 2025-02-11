@@ -48,7 +48,9 @@ public class EmbeddingModelHelper {
   public enum MultimodalEmbeddingModelNames {
     VERTEX_MULTI_MODAL_EMBEDDING("multimodalembedding"),
     NOMIC_EMBED_VISION_V1("nomic-embed-vision-v1"),
-    NOMIC_EMBED_VISION_V1_5("nomic-embed-vision-v1.5");
+    NOMIC_EMBED_VISION_V1_5("nomic-embed-vision-v1.5"),
+    AZURE_AI_VISION_2022_04_11("2022-04-11"),
+    AZURE_AI_VISION_2023_04_15("2023-04-15");
 
     private final String modelName;
 

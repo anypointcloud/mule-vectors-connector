@@ -23,6 +23,11 @@ public class EmbeddingModelNameProvider implements ValueProvider {
       EmbeddingModelHelper.TextEmbeddingModelNames.TEXT_EMBEDDING_ADA_002.getModelName()
   );
 
+  private static final Set<Value> VALUES_FOR_AZURE_VISION_AI = ValueBuilder.getValuesFor(
+      EmbeddingModelHelper.MultimodalEmbeddingModelNames.AZURE_AI_VISION_2022_04_11.getModelName(),
+      EmbeddingModelHelper.MultimodalEmbeddingModelNames.AZURE_AI_VISION_2023_04_15.getModelName()
+  );
+
   private static final Set<Value> VALUES_FOR_OPENAI = ValueBuilder.getValuesFor(
       EmbeddingModelHelper.TextEmbeddingModelNames.TEXT_EMBEDDING_3_SMALL.getModelName(),
       EmbeddingModelHelper.TextEmbeddingModelNames.TEXT_EMBEDDING_3_LARGE.getModelName(),
@@ -68,6 +73,8 @@ public class EmbeddingModelNameProvider implements ValueProvider {
         return VALUES_FOR_OPENAI;
       case Constants.EMBEDDING_MODEL_SERVICE_AZURE_OPENAI:
         return VALUES_FOR_AZURE_OPENAI;
+      case Constants.EMBEDDING_MODEL_SERVICE_AZURE_AI_VISION:
+        return VALUES_FOR_AZURE_VISION_AI;
       case Constants.EMBEDDING_MODEL_SERVICE_MISTRAL_AI:
         return VALUES_FOR_MISTRAL_AI;
       case Constants.EMBEDDING_MODEL_SERVICE_NOMIC:
