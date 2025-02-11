@@ -45,6 +45,18 @@ public class EmbeddingModelNameProvider implements ValueProvider {
       EmbeddingModelHelper.MultimodalEmbeddingModelNames.NOMIC_EMBED_VISION_V1_5.getModelName()
   );
 
+  private static final Set<Value> VALUES_FOR_OLLAMA = ValueBuilder.getValuesFor(
+      EmbeddingModelHelper.TextEmbeddingModelNames.OLLAMA_NOMIC_EMBED_TEXT.getModelName(),
+      EmbeddingModelHelper.TextEmbeddingModelNames.OLLAMA_EMBED_LARGE.getModelName(),
+      EmbeddingModelHelper.TextEmbeddingModelNames.OLLAMA_SNOWFLAKE_ARCTIC_EMBED.getModelName(),
+      EmbeddingModelHelper.TextEmbeddingModelNames.OLLAMA_SNOWFLAKE_ARCTIC_EMBED2.getModelName(),
+      EmbeddingModelHelper.TextEmbeddingModelNames.OLLAMA_BGE_M3.getModelName(),
+      EmbeddingModelHelper.TextEmbeddingModelNames.OLLAMA_BGE_LARGE.getModelName(),
+      EmbeddingModelHelper.TextEmbeddingModelNames.OLLAMA_ALL_MINILM.getModelName(),
+      EmbeddingModelHelper.TextEmbeddingModelNames.OLLAMA_PARAPHRASE_MULTILINGUAL.getModelName(),
+      EmbeddingModelHelper.TextEmbeddingModelNames.OLLAMA_GRANITE_EMBEDDING.getModelName()
+  );
+
   private static final Set<Value> VALUES_FOR_HUGGING_FACE = ValueBuilder.getValuesFor(
       EmbeddingModelHelper.TextEmbeddingModelNames.FALCON_7B_INSTRUCT.getModelName(),
       EmbeddingModelHelper.TextEmbeddingModelNames.MINI_LM_L6_V2.getModelName()
@@ -79,6 +91,8 @@ public class EmbeddingModelNameProvider implements ValueProvider {
         return VALUES_FOR_MISTRAL_AI;
       case Constants.EMBEDDING_MODEL_SERVICE_NOMIC:
         return VALUES_FOR_NOMIC;
+      case Constants.EMBEDDING_MODEL_SERVICE_OLLAMA:
+        return VALUES_FOR_OLLAMA;
       case Constants.EMBEDDING_MODEL_SERVICE_HUGGING_FACE:
         return VALUES_FOR_HUGGING_FACE;
       case Constants.EMBEDDING_MODEL_SERVICE_EINSTEIN:

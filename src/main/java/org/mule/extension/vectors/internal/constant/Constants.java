@@ -36,6 +36,7 @@ public class Constants {
   public static final String EMBEDDING_MODEL_SERVICE_AZURE_OPENAI = "AZURE_OPENAI";
   public static final String EMBEDDING_MODEL_SERVICE_MISTRAL_AI = "MISTRAL_AI";
   public static final String EMBEDDING_MODEL_SERVICE_NOMIC = "NOMIC";
+  public static final String EMBEDDING_MODEL_SERVICE_OLLAMA = "OLLAMA";
   public static final String EMBEDDING_MODEL_SERVICE_HUGGING_FACE = "HUGGING_FACE";
   public static final String EMBEDDING_MODEL_SERVICE_EINSTEIN = "EINSTEIN";
   public static final String EMBEDDING_MODEL_SERVICE_VERTEX_AI = "VERTEX_AI";
