@@ -15,7 +15,14 @@ public class MilvusStoreConnectionParameters extends BaseStoreConnectionParamete
   @Example("http://localhost:19530")
   private String url;
 
+  @Parameter
+  @Expression(ExpressionSupport.SUPPORTED)
+  @Placement(order = 2)
+  private String token;
+
   public String getUrl() {
     return url;
   }
+
+  public String getToken() { return token;}
 }
