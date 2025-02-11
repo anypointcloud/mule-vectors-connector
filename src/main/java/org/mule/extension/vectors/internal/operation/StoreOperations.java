@@ -19,6 +19,7 @@ import org.mule.extension.vectors.internal.constant.Constants;
 import org.mule.extension.vectors.internal.error.MuleVectorsErrorType;
 import org.mule.extension.vectors.internal.error.provider.StoreErrorTypeProvider;
 import org.mule.extension.vectors.internal.helper.model.EmbeddingOperationValidator;
+import org.mule.extension.vectors.internal.helper.parameter.CustomMetadata;
 import org.mule.extension.vectors.internal.helper.parameter.MetadataFilterParameters;
 import org.mule.extension.vectors.internal.helper.parameter.QueryParameters;
 import org.mule.extension.vectors.internal.store.BaseStore;
@@ -246,7 +247,8 @@ public class StoreOperations {
       @Alias("textSegmentsAndEmbeddings")
           @DisplayName("Text Segments and Embeddings")
           @InputJsonType(schema = "api/metadata/EmbeddingGenerateResponse.json")
-          @Content InputStream content) {
+          @Content InputStream content,
+      @ParameterGroup(name="Custom Metadata") CustomMetadata customMetadata) {
 
     try {
 
@@ -263,6 +265,7 @@ public class StoreOperations {
           .forEach(jsonTextSegment -> {
             HashMap<String, Object> metadataMap = (HashMap<String, Object>)jsonTextSegment.getJSONObject(Constants.JSON_KEY_METADATA).toMap();
             metadataMap.putAll(ingestionMetadataMap);
+            metadataMap.putAll(customMetadata.getMetadataEntries());
             Metadata metadata = Metadata.from(metadataMap);
             textSegments.add(new TextSegment(jsonTextSegment.getString(Constants.JSON_KEY_TEXT), metadata));
           });
