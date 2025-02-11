@@ -137,9 +137,9 @@ public class EmbeddingOperations {
             Response<List<Embedding>> textResponse = embeddingModel.embedAll(textSegments);
             embeddings = textResponse.content();
             tokenUsage = textResponse.tokenUsage() != null ?
-                new TokenUsage(textResponse.tokenUsage().inputTokenCount(),
-                               textResponse.tokenUsage().outputTokenCount(),
-                               textResponse.tokenUsage().totalTokenCount())
+                new TokenUsage(textResponse.tokenUsage().inputTokenCount() != null ? textResponse.tokenUsage().inputTokenCount() : 0,
+                               textResponse.tokenUsage().outputTokenCount() != null ? textResponse.tokenUsage().outputTokenCount() : 0,
+                               textResponse.tokenUsage().totalTokenCount() != null ? textResponse.tokenUsage().totalTokenCount(): 0)
                 : null;
             dimension = embeddingModel.dimension();
             break;
@@ -261,9 +261,9 @@ public class EmbeddingOperations {
         Response<List<Embedding>> response = embeddingModel.embedAll(textSegments);
         embeddings = response.content();
         tokenUsage = response.tokenUsage() != null ?
-            new TokenUsage(response.tokenUsage().inputTokenCount(),
-                           response.tokenUsage().outputTokenCount(),
-                           response.tokenUsage().totalTokenCount())
+            new TokenUsage(response.tokenUsage().inputTokenCount() != null ? response.tokenUsage().inputTokenCount() : 0,
+                           response.tokenUsage().outputTokenCount() != null ? response.tokenUsage().outputTokenCount() : 0,
+                           response.tokenUsage().totalTokenCount() != null ? response.tokenUsage().totalTokenCount(): 0)
             : null;
 
       } catch(ModuleException e) {
@@ -384,9 +384,9 @@ public class EmbeddingOperations {
             multimodalEmbeddingModel.embedImage(mediaBytes);
         Embedding embedding = response.content();
         tokenUsage = response.tokenUsage() != null ?
-            new TokenUsage(response.tokenUsage().inputTokenCount(),
-                           response.tokenUsage().outputTokenCount(),
-                           response.tokenUsage().totalTokenCount())
+            new TokenUsage(response.tokenUsage().inputTokenCount() != null ? response.tokenUsage().inputTokenCount() : 0,
+                           response.tokenUsage().outputTokenCount() != null ? response.tokenUsage().outputTokenCount() : 0,
+                           response.tokenUsage().totalTokenCount() != null ? response.tokenUsage().totalTokenCount(): 0)
             : null;
         jsonEmbeddings.put(embedding.vector());
       } else {
@@ -478,9 +478,9 @@ public class EmbeddingOperations {
                 multimodalEmbeddingModel.embedImage(Base64.getDecoder().decode(jsonMediaObject.getString(JSON_KEY_BASE64DATA)));
         embedding = response.content();
         tokenUsage = response.tokenUsage() != null ?
-            new TokenUsage(response.tokenUsage().inputTokenCount(),
-                           response.tokenUsage().outputTokenCount(),
-                           response.tokenUsage().totalTokenCount())
+            new TokenUsage(response.tokenUsage().inputTokenCount() != null ? response.tokenUsage().inputTokenCount() : 0,
+                           response.tokenUsage().outputTokenCount() != null ? response.tokenUsage().outputTokenCount() : 0,
+                           response.tokenUsage().totalTokenCount() != null ? response.tokenUsage().totalTokenCount(): 0)
             : null;
       } else {
         throw new ModuleException(
