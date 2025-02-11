@@ -3,6 +3,7 @@ package org.mule.extension.vectors.internal.model;
 import dev.langchain4j.model.embedding.EmbeddingModel;
 import org.mule.extension.vectors.internal.config.EmbeddingConfiguration;
 import org.mule.extension.vectors.internal.connection.model.BaseModelConnection;
+import org.mule.extension.vectors.internal.connection.model.azureaivision.AzureAIVisionModelConnection;
 import org.mule.extension.vectors.internal.connection.model.azureopenai.AzureOpenAIModelConnection;
 import org.mule.extension.vectors.internal.connection.model.einstein.EinsteinModelConnection;
 import org.mule.extension.vectors.internal.connection.model.huggingface.HuggingFaceModelConnection;
@@ -12,14 +13,20 @@ import org.mule.extension.vectors.internal.connection.model.openai.OpenAIModelCo
 import org.mule.extension.vectors.internal.connection.model.vertexai.VertexAIModelConnection;
 import org.mule.extension.vectors.internal.constant.Constants;
 import org.mule.extension.vectors.internal.error.MuleVectorsErrorType;
+import org.mule.extension.vectors.internal.helper.model.EmbeddingModelHelper;
 import org.mule.extension.vectors.internal.helper.parameter.EmbeddingModelParameters;
-import org.mule.extension.vectors.internal.model.azureopenai.AzureOpenAIModel;
-import org.mule.extension.vectors.internal.model.einstein.EinsteinModel;
-import org.mule.extension.vectors.internal.model.huggingface.HuggingFaceModel;
-import org.mule.extension.vectors.internal.model.mistralai.MistralAIModel;
-import org.mule.extension.vectors.internal.model.nomic.NomicModel;
-import org.mule.extension.vectors.internal.model.openai.OpenAIModel;
-import org.mule.extension.vectors.internal.model.vertexai.VertexAIModel;
+import org.mule.extension.vectors.internal.model.multimodal.EmbeddingMultimodalModel;
+import org.mule.extension.vectors.internal.model.multimodal.azureaivision.AzureAIVisionEmbeddingMultimodalModel;
+import org.mule.extension.vectors.internal.model.multimodal.azureaivision.AzureAIVisionMultimodalModel;
+import org.mule.extension.vectors.internal.model.multimodal.nomic.NomicMultimodalModel;
+import org.mule.extension.vectors.internal.model.multimodal.vertexai.VertexAIMultimodalModel;
+import org.mule.extension.vectors.internal.model.text.azureopenai.AzureOpenAIModel;
+import org.mule.extension.vectors.internal.model.text.einstein.EinsteinModel;
+import org.mule.extension.vectors.internal.model.text.huggingface.HuggingFaceModel;
+import org.mule.extension.vectors.internal.model.text.mistralai.MistralAIModel;
+import org.mule.extension.vectors.internal.model.text.nomic.NomicModel;
+import org.mule.extension.vectors.internal.model.text.openai.OpenAIModel;
+import org.mule.extension.vectors.internal.model.text.vertexai.VertexAIModel;
 import org.mule.runtime.extension.api.exception.ModuleException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +47,11 @@ public class BaseModel {
   }
 
   public EmbeddingModel buildEmbeddingModel() {
+
+    throw new UnsupportedOperationException("This method should be overridden by subclasses");
+  }
+
+  public EmbeddingMultimodalModel buildEmbeddingMultimodalModel() {
 
     throw new UnsupportedOperationException("This method should be overridden by subclasses");
   }
@@ -79,10 +91,16 @@ public class BaseModel {
       BaseModel baseModel;
 
       LOGGER.debug("Embedding Model Service: " + modelConnection.getEmbeddingModelService());
+      LOGGER.debug("Embedding Model type: " + embeddingModelParameters.getEmbeddingModelType().getDescription());
+
       switch (modelConnection.getEmbeddingModelService()) {
 
         case Constants.EMBEDDING_MODEL_SERVICE_AZURE_OPENAI:
           baseModel = new AzureOpenAIModel(embeddingConfiguration, (AzureOpenAIModelConnection) modelConnection, embeddingModelParameters);
+          break;
+
+        case Constants.EMBEDDING_MODEL_SERVICE_AZURE_AI_VISION:
+          baseModel = new AzureAIVisionMultimodalModel(embeddingConfiguration, (AzureAIVisionModelConnection) modelConnection, embeddingModelParameters);
           break;
 
         case Constants.EMBEDDING_MODEL_SERVICE_OPENAI:
@@ -94,6 +112,13 @@ public class BaseModel {
           break;
 
         case Constants.EMBEDDING_MODEL_SERVICE_NOMIC:
+
+          if(embeddingModelParameters.getEmbeddingModelType().equals(EmbeddingModelHelper.EmbeddingModelType.MULTIMODAL)) {
+
+            baseModel = new NomicMultimodalModel(embeddingConfiguration, (NomicModelConnection) modelConnection, embeddingModelParameters);
+            break;
+          }
+
           baseModel = new NomicModel(embeddingConfiguration, (NomicModelConnection) modelConnection, embeddingModelParameters);
           break;
 
@@ -106,6 +131,13 @@ public class BaseModel {
           break;
 
         case Constants.EMBEDDING_MODEL_SERVICE_VERTEX_AI:
+
+          if(embeddingModelParameters.getEmbeddingModelType().equals(EmbeddingModelHelper.EmbeddingModelType.MULTIMODAL)) {
+
+            baseModel = new VertexAIMultimodalModel(embeddingConfiguration, (VertexAIModelConnection) modelConnection, embeddingModelParameters);
+            break;
+          }
+
           baseModel = new VertexAIModel(embeddingConfiguration, (VertexAIModelConnection) modelConnection, embeddingModelParameters);
           break;
 

@@ -1,5 +1,7 @@
 package org.mule.extension.vectors.internal.config;
 
+import org.mule.extension.vectors.internal.connection.model.azureaivision.AzureAIVisionModelConnection;
+import org.mule.extension.vectors.internal.connection.model.azureaivision.AzureAIVisionModelConnectionProvider;
 import org.mule.extension.vectors.internal.connection.model.azureopenai.AzureOpenAIModelConnectionProvider;
 import org.mule.extension.vectors.internal.connection.model.einstein.EinsteinModelConnectionProvider;
 import org.mule.extension.vectors.internal.connection.model.huggingface.HuggingFaceModelConnectionProvider;
@@ -14,6 +16,7 @@ import org.mule.runtime.extension.api.annotation.connectivity.ConnectionProvider
 @org.mule.runtime.extension.api.annotation.Configuration(name = "embeddingConfig")
 @ConnectionProviders({
     AzureOpenAIModelConnectionProvider.class,
+    AzureAIVisionModelConnectionProvider.class,
     EinsteinModelConnectionProvider.class,
     HuggingFaceModelConnectionProvider.class,
     MistralAIModelConnectionProvider.class,

@@ -18,7 +18,7 @@ import org.mule.extension.vectors.internal.connection.store.BaseStoreConnection;
 import org.mule.extension.vectors.internal.constant.Constants;
 import org.mule.extension.vectors.internal.error.MuleVectorsErrorType;
 import org.mule.extension.vectors.internal.error.provider.StoreErrorTypeProvider;
-import org.mule.extension.vectors.internal.helper.EmbeddingOperationValidator;
+import org.mule.extension.vectors.internal.helper.model.EmbeddingOperationValidator;
 import org.mule.extension.vectors.internal.helper.parameter.MetadataFilterParameters;
 import org.mule.extension.vectors.internal.helper.parameter.QueryParameters;
 import org.mule.extension.vectors.internal.store.BaseStore;
@@ -99,22 +99,24 @@ public class StoreOperations {
         String contentString = IOUtils.toString(content, StandardCharsets.UTF_8);
         JSONObject jsonContent = new JSONObject(contentString);
 
-        HashMap<String, Object> ingestionMetadataMap = MetadataUtils.getIngestionMetadata();
+        if (jsonContent.has(Constants.JSON_KEY_TEXT_SEGMENTS)) {
 
-        JSONArray jsonTextSegments = jsonContent.getJSONArray(Constants.JSON_KEY_TEXT_SEGMENTS);
-        IntStream.range(0, jsonTextSegments.length())
-            .mapToObj(jsonTextSegments::getJSONObject) // Convert index to JSONObject
-            .forEach(jsonTextSegment -> {
-              HashMap<String, Object> metadataMap = (HashMap<String, Object>)jsonTextSegment.getJSONObject(Constants.JSON_KEY_METADATA).toMap();
-              metadataMap.putAll(ingestionMetadataMap);
-              Metadata metadata = Metadata.from(metadataMap);
-              textSegments.add(new TextSegment(jsonTextSegment.getString(Constants.JSON_KEY_TEXT), metadata));
-            });
+          JSONArray jsonTextSegments = jsonContent.getJSONArray(Constants.JSON_KEY_TEXT_SEGMENTS);
+          IntStream.range(0, jsonTextSegments.length())
+              .mapToObj(jsonTextSegments::getJSONObject) // Convert index to JSONObject
+              .forEach(jsonTextSegment -> {
+                HashMap<String, Object> metadataMap =
+                    (HashMap<String, Object>) jsonTextSegment.getJSONObject(Constants.JSON_KEY_METADATA).toMap();
+                Metadata metadata = Metadata.from(metadataMap);
+                textSegments.add(new TextSegment(jsonTextSegment.getString(Constants.JSON_KEY_TEXT), metadata));
+              });
 
-        if(jsonTextSegments.length() != 1) {
+          if (jsonTextSegments.length() != 1) {
 
-          throw new ModuleException(String.format("You must provide one text segment only. Received: %s", String.valueOf(jsonTextSegments.length())),
-                                    MuleVectorsErrorType.INVALID_PARAMETERS_ERROR);
+            throw new ModuleException(
+                String.format("You must provide one text segment only. Received: %s", String.valueOf(jsonTextSegments.length())),
+                MuleVectorsErrorType.INVALID_PARAMETERS_ERROR);
+          }
         }
 
         JSONArray jsonEmbeddings = jsonContent.getJSONArray(Constants.JSON_KEY_EMBEDDINGS);
@@ -182,7 +184,7 @@ public class StoreOperations {
 
       jsonObject.put(Constants.JSON_KEY_RESPONSE, information);
       jsonObject.put(Constants.JSON_KEY_STORE_NAME, storeName);
-      jsonObject.put(Constants.JSON_KEY_QUESTION, textSegments.get(0).text());
+      if(textSegments.size() == 1) jsonObject.put(Constants.JSON_KEY_QUESTION, textSegments.get(0).text());
       jsonObject.put(Constants.JSON_KEY_MAX_RESULTS, maxResults);
       jsonObject.put(Constants.JSON_KEY_MIN_SCORE, minScore);
 

@@ -1,18 +1,26 @@
 package org.mule.extension.vectors.internal.connection.model.vertexai;
 
+import com.google.api.gax.retrying.RetrySettings;
 import com.google.auth.Credentials;
 import com.google.auth.oauth2.ServiceAccountCredentials;
-import com.google.cloud.aiplatform.v1.PredictionServiceClient;
-import com.google.cloud.aiplatform.v1.PredictionServiceSettings;
+import com.google.cloud.aiplatform.v1beta1.LlmUtilityServiceClient;
+import com.google.cloud.aiplatform.v1beta1.LlmUtilityServiceSettings;
+import com.google.cloud.aiplatform.v1beta1.PredictionServiceClient;
+import com.google.cloud.aiplatform.v1beta1.PredictionServiceSettings;
 import org.mule.extension.vectors.internal.connection.model.BaseModelConnection;
 import org.mule.extension.vectors.internal.constant.Constants;
+import org.mule.extension.vectors.internal.error.MuleVectorsErrorType;
 import org.mule.runtime.api.connection.ConnectionException;
+import org.mule.runtime.extension.api.exception.ModuleException;
+import org.threeten.bp.Duration;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Arrays;
 
 public class VertexAIModelConnection implements BaseModelConnection {
+
+  private static final String DEFAULT_GOOGLEAPIS_ENDPOINT_SUFFIX = "-aiplatform.googleapis.com:443";
 
   private static final String[] SCOPES = {
       "https://www.googleapis.com/auth/cloud-platform",
@@ -25,16 +33,54 @@ public class VertexAIModelConnection implements BaseModelConnection {
   private String clientId;
   private String privateKeyId;
   private String privateKey;
-  private PredictionServiceClient predictionClient;
 
-  public VertexAIModelConnection(String projectId, String location, String clientEmail, String clientId,
-                                 String privateKeyId, String privateKey) {
+  private int maxAttempts;
+  private long initialRetryDelay;
+  private double retryDelayMultiplier;
+  private long maxRetryDelay;
+  private long totalTimeout;
+
+  private PredictionServiceClient predictionClient;
+  private LlmUtilityServiceClient llmUtilityServiceClient;
+
+  public LlmUtilityServiceClient getLlmUtilityServiceClient() {
+
+    if(this.llmUtilityServiceClient == null) {
+
+      try {
+
+        LlmUtilityServiceSettings llmUtilityServiceSettings = LlmUtilityServiceSettings.newBuilder()
+            .setEndpoint(location + DEFAULT_GOOGLEAPIS_ENDPOINT_SUFFIX)
+            .setCredentialsProvider(() -> getCredentials())
+            .build();
+
+        this.llmUtilityServiceClient = LlmUtilityServiceClient.create(llmUtilityServiceSettings);
+
+      } catch (IOException e) {
+
+        throw new ModuleException(
+            "Failed to initiate LlmUtilityService client for VERTEX AI service.",
+            MuleVectorsErrorType.AI_SERVICES_FAILURE,
+            e);
+      }
+    }
+    return this.llmUtilityServiceClient;
+  }
+
+  public VertexAIModelConnection(String projectId, String location, String clientEmail, String clientId, String privateKeyId,
+                                 String privateKey, int maxAttempts, long initialRetryDelay, double retryDelayMultiplier,
+                                 long maxRetryDelay, long totalTimeout) {
     this.projectId = projectId;
     this.location = location;
     this.clientEmail = clientEmail;
     this.clientId = clientId;
     this.privateKeyId = privateKeyId;
     this.privateKey = privateKey;
+    this.maxAttempts = maxAttempts;
+    this.initialRetryDelay = initialRetryDelay;
+    this.retryDelayMultiplier = retryDelayMultiplier;
+    this.maxRetryDelay = maxRetryDelay;
+    this.totalTimeout = totalTimeout;
   }
 
   public String getProjectId() {
@@ -61,19 +107,47 @@ public class VertexAIModelConnection implements BaseModelConnection {
     return privateKey;
   }
 
+  public int getMaxAttempts() { return maxAttempts; }
+
+  public long getInitialRetryDelay() { return initialRetryDelay; }
+
+  public double getRetryDelayMultiplier() { return retryDelayMultiplier; }
+
+  public long getMaxRetryDelay() { return maxRetryDelay; }
+
+  public long getTotalTimeout() { return totalTimeout; }
+
   public PredictionServiceClient getPredictionClient() {
     return predictionClient;
   }
 
   @Override
   public void connect() throws ConnectionException {
+
     try {
 
-      PredictionServiceSettings settings = PredictionServiceSettings.newBuilder()
-          .setCredentialsProvider(() -> getCredentials())
+      // Configure custom retry settings
+      RetrySettings retrySettings = RetrySettings.newBuilder()
+          .setMaxAttempts(maxAttempts > 0 ? maxAttempts : 3) // Maximum number of retries
+          .setInitialRetryDelay(Duration.ofMillis(initialRetryDelay > 0 ? initialRetryDelay : 500)) // Initial retry delay
+          .setRetryDelayMultiplier(retryDelayMultiplier > 0 ? retryDelayMultiplier : 1.5) // Multiplier for subsequent retries
+          .setMaxRetryDelay(Duration.ofMillis(maxRetryDelay > 0 ? maxRetryDelay : 5000)) // Maximum retry delay
+          .setTotalTimeout(Duration.ofMillis(totalTimeout > 0 ? totalTimeout : 60000)) // Total timeout for the operation
           .build();
 
-      this.predictionClient = PredictionServiceClient.create(settings);
+      // Customize the predict settings
+      PredictionServiceSettings.Builder settingsBuilder = PredictionServiceSettings.newBuilder()
+          .setEndpoint(location + DEFAULT_GOOGLEAPIS_ENDPOINT_SUFFIX)
+          .setCredentialsProvider(() -> getCredentials());
+
+      // Apply retry settings to the predictSettings
+      settingsBuilder
+          .predictSettings()
+          .setRetrySettings(retrySettings);
+
+      // Build the PredictionServiceClient
+      this.predictionClient = PredictionServiceClient.create(settingsBuilder.build());
+
     } catch (Exception e) {
       throw new ConnectionException("Failed to connect to Vertex AI.", e);
     }
@@ -101,7 +175,7 @@ public class VertexAIModelConnection implements BaseModelConnection {
     return Constants.EMBEDDING_MODEL_SERVICE_VERTEX_AI;
   }
 
-  public Credentials getCredentials() throws IOException {
+  private Credentials getCredentials() throws IOException {
 
     ServiceAccountCredentials credentials = ServiceAccountCredentials.fromStream(
         new ByteArrayInputStream(buildJsonCredentials().getBytes())
