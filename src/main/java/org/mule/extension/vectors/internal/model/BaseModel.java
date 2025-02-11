@@ -9,6 +9,7 @@ import org.mule.extension.vectors.internal.connection.model.einstein.EinsteinMod
 import org.mule.extension.vectors.internal.connection.model.huggingface.HuggingFaceModelConnection;
 import org.mule.extension.vectors.internal.connection.model.mistralai.MistralAIModelConnection;
 import org.mule.extension.vectors.internal.connection.model.nomic.NomicModelConnection;
+import org.mule.extension.vectors.internal.connection.model.ollama.OllamaModelConnection;
 import org.mule.extension.vectors.internal.connection.model.openai.OpenAIModelConnection;
 import org.mule.extension.vectors.internal.connection.model.vertexai.VertexAIModelConnection;
 import org.mule.extension.vectors.internal.constant.Constants;
@@ -25,6 +26,7 @@ import org.mule.extension.vectors.internal.model.text.einstein.EinsteinModel;
 import org.mule.extension.vectors.internal.model.text.huggingface.HuggingFaceModel;
 import org.mule.extension.vectors.internal.model.text.mistralai.MistralAIModel;
 import org.mule.extension.vectors.internal.model.text.nomic.NomicModel;
+import org.mule.extension.vectors.internal.model.text.ollama.OllamaModel;
 import org.mule.extension.vectors.internal.model.text.openai.OpenAIModel;
 import org.mule.extension.vectors.internal.model.text.vertexai.VertexAIModel;
 import org.mule.runtime.extension.api.exception.ModuleException;
@@ -120,6 +122,10 @@ public class BaseModel {
           }
 
           baseModel = new NomicModel(embeddingConfiguration, (NomicModelConnection) modelConnection, embeddingModelParameters);
+          break;
+
+        case Constants.EMBEDDING_MODEL_SERVICE_OLLAMA:
+          baseModel = new OllamaModel(embeddingConfiguration, (OllamaModelConnection) modelConnection, embeddingModelParameters);
           break;
 
         case Constants.EMBEDDING_MODEL_SERVICE_HUGGING_FACE:

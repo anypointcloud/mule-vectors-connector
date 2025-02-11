@@ -38,16 +38,14 @@ public class AzureAIVisionEmbeddingMultimodalModel implements EmbeddingMultimoda
   public Response<Embedding> embedText(String text) {
 
     Embedding embedding = Embedding.from(connection.embedText(text, this.modelName));
-    TokenUsage tokenUsage = new TokenUsage(0, 0);
-    return Response.from(embedding, tokenUsage);
+    return Response.from(embedding);
   }
 
   @Override
   public Response<Embedding> embedImage(byte[] imageBytes) {
 
     Embedding embedding = Embedding.from(connection.embedImage(imageBytes, this.modelName));
-    TokenUsage tokenUsage = new TokenUsage(0, 0);
-    return Response.from(embedding, tokenUsage);
+    return Response.from(embedding);
   }
 
   @Override
