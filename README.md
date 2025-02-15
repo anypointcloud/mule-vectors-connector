@@ -48,6 +48,9 @@ to make some changes to the `pom.xml`.  For this reason, we recommend you fork t
 
 Then, follow the MuleSoft [documentation](https://docs.mulesoft.com/exchange/to-publish-assets-maven) to modify and publish the asset.
 
+### Contribution
+[How to contribute](https://mac-project.ai/docs/contribute)
+
 ### Documentation 
 - Check out the complete documentation in [mac-project.ai](https://mac-project.ai/docs/ms-vectors)
 - Learn from the [Getting Started YouTube Playlist](https://www.youtube.com/playlist?list=PLnuJGpEBF6ZBncyBbgYW46rbvYJwpl9Wj)
