@@ -4,9 +4,9 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>cloud.anypoint</groupId>
     <artifactId>mule-vectors-connector</artifactId>
-    <version>0.2.1-SNAPSHOT</version>
+    <version>0.3.11-SNAPSHOT</version>
     <packaging>mule-extension</packaging>
-    <name>MuleSoft Vectors Connector - Mule 4</name>
+    <name>MuleSoft Vectors Connector</name>
     <description>MuleSoft Vectors Connector provides access to a broad number of external Vector Stores.</description>
     <url>https://mac-project.ai/docs/mulechain-vectors/connector-overview</url>
 
