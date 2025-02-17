@@ -414,7 +414,6 @@
 	      <tag>HEAD</tag>
 	</scm>
 
-<<<<<<< HEAD
     <distributionManagement>
         <snapshotRepository>
             <id>ossrh</id>
