@@ -1,0 +1,85 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "minScore": {
+      "type": "number"
+    },
+    "question": {
+      "type": "string"
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "score": {
+            "type": "number"
+          },
+          "metadata": {
+            "type": "object",
+            "properties": {
+              "source_id": {
+                "type": "string"
+              },
+              "ingestion_datetime": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "ingestion_timestamp": {
+                "type": "integer",
+                "format": "int64"
+              },
+              "index": {
+                "type": "integer"
+              },
+              "media_type": {
+                "type": "string"
+              },
+              "mime_type": {
+                "type": "string"
+              },
+              "file_type": {
+                "type": "string"
+              },
+              "absolute_directory_path": {
+                "type": "string"
+              },
+              "file_name": {
+                "type": "string"
+              },
+              "source": {
+                "type": "string"
+              },
+              "url": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": true
+          },
+          "embeddingId": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": ["score", "metadata", "embeddingId", "text"]
+      },
+      "minItems": 0
+    },
+    "response": {
+      "type": "string"
+    },
+    "maxResults": {
+      "type": "integer"
+    },
+    "storeName": {
+      "type": "string"
+    }
+  },
+  "required": ["minScore", "question", "sources", "response", "maxResults", "storeName"]
+}

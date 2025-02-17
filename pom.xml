@@ -17,55 +17,100 @@
         </license>
     </licenses>
 
-    <developers>
-        <developer>
-            <name>Amir Khan</name>
-            <email>amir.khan@salesforce.com</email>
-            <organization>Salesforce</organization>
-            <organizationUrl>https://www.salesforce.com</organizationUrl>
-        </developer>
+	<developers>
+		<developer>
+			<name>Amir Khan</name>
+			<email>amir.khan@salesforce.com</email>
+			<organization>Salesforce</organization>
+			<organizationUrl>https://www.salesforce.com</organizationUrl>
+		</developer>
 		<developer>
 			<name>Tommaso Bolis</name>
 			<email>tbolis-at-salesforce-dot-com</email>
 			<organization>Salesforce</organization>
 			<organizationUrl>https://www.salesforce.com</organizationUrl>
 		</developer>
-        <developer>
-            <name>Suraj Kamal</name>
-        </developer>
-        <developer>
-            <name>Laura de Paz</name>
+		<developer>
+			<name>Laura de Paz</name>
 			<email>laura.depaz@salesforce.com</email>
 			<organization>Salesforce</organization>
 			<organizationUrl>https://www.salesforce.com</organizationUrl>
-        </developer>
-        <developer>
-            <name>Ryan Hoegg</name>
-            <email>ryan@hoegg.software</email>
-            <organization>Hoegg Software, Co.</organization>
-            <organizationUrl>https://hoegg.software</organizationUrl>
-        </developer>
-    </developers>
+		</developer>
+		<developer>
+			<name>Alick Wong</name>
+			<email>alick.wong@salesforce.com</email>
+			<organization>Salesforce</organization>
+			<organizationUrl>https://www.salesforce.com</organizationUrl>
+		</developer>
+		<developer>
+			<name>Yogesh Mudaliar</name>
+			<email>ymudaliar@salesforce.com</email>
+			<organization>Salesforce</organization>
+			<organizationUrl>https://www.salesforce.com</organizationUrl>
+		</developer>
+		<developer>
+			<name>Ryan Hoegg</name>
+			<email>ryan@hoegg.software</email>
+			<organization>Hoegg Software, Co.</organization>
+			<organizationUrl>https://hoegg.software</organizationUrl>
+		</developer>
+		<developer>
+			<name>Suraj Kamal</name>
+		</developer>
+		<developer>
+			<name>Anush Shetty</name>
+		</developer>
+	</developers>
 
-    <parent>
-        <groupId>org.mule.extensions</groupId>
-        <artifactId>mule-modules-parent</artifactId>
-        <version>1.3.2</version>
-    </parent>
+	<parent>
+		<groupId>org.mule.extensions</groupId>
+		<artifactId>mule-modules-parent</artifactId>
+		<version>1.6.9</version>
+	</parent>
 
     <properties>
-        <muleJavaEeBomVersion>4.6.0</muleJavaEeBomVersion>
-        <munit.extensions.maven.plugin.version>1.2.0</munit.extensions.maven.plugin.version>
+		<skipVerifications>false</skipVerifications>
+        <muleJavaEeBomVersion>4.6.9</muleJavaEeBomVersion>
 		<formatterConfigPath>formatter.xml</formatterConfigPath>
 		<javaFormatter.plugin.version>2.0.1</javaFormatter.plugin.version>
 		<formatterGoal>validate</formatterGoal>	
 		<langchain4jVersion>0.35.0</langchain4jVersion>
-		<slf4jApi.version>2.0.7</slf4jApi.version>
-		<mule.sdk.api.version>0.9.0-rc1</mule.sdk.api.version>
+		<mule.sdk.api.version>0.10.3</mule.sdk.api.version>
+		<munit.input.directory>src/test/munit</munit.input.directory>
+		<munit.output.directory>${basedir}/target/test-mule/munit</munit.output.directory>
+		<jacoco.version>0.8.12</jacoco.version>
+		<maven.surefire.version>2.22.2</maven.surefire.version>
+		<munit.extensions.maven.plugin.version>1.2.0</munit.extensions.maven.plugin.version>
+		<munit.version>3.3.1</munit.version>
     </properties>
 
 	<build>
 		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-gpg-plugin</artifactId>
+				<version>1.5</version>
+				<executions>
+					<execution>
+						<id>sign-artifacts</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>sign</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.sonatype.central</groupId>
+				<artifactId>central-publishing-maven-plugin</artifactId>
+				<version>0.6.0</version>
+				<extensions>true</extensions>
+				<configuration>
+					<publishingServerId>central</publishingServerId>
+					<checksums>all</checksums>
+					<deploymentName>MuleSoft Vectors Connector Mule 4 Deployment</deploymentName>
+				</configuration>
+			</plugin>
 			<plugin>
 				<groupId>com.mulesoft.munit</groupId>
 				<artifactId>munit-extensions-maven-plugin</artifactId>
@@ -97,29 +142,110 @@
 
     <dependencies>
 
-		<dependency>
-			<groupId>dev.langchain4j</groupId>
-			<artifactId>langchain4j-azure-ai-search</artifactId>
-			<version>${langchain4jVersion}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>dev.langchain4j</groupId>
-			<artifactId>langchain4j-document-loader-azure-storage-blob</artifactId>
-			<version>${langchain4jVersion}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>dev.langchain4j</groupId>
-			<artifactId>langchain4j-document-loader-amazon-s3</artifactId>
-			<version>${langchain4jVersion}</version>
-		</dependency>
+		<!-- Mule Required Dependencies -->
 
 		<dependency>
 			<groupId>org.mule.sdk</groupId>
 			<artifactId>mule-sdk-api</artifactId>
 			<version>${mule.sdk.api.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>com.mulesoft.munit</groupId>
+			<artifactId>munit-runner</artifactId>
+			<version>3.2.1</version>
+			<classifier>mule-plugin</classifier>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.mulesoft.munit</groupId>
+			<artifactId>munit-tools</artifactId>
+			<version>3.2.1</version>
+			<classifier>mule-plugin</classifier>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mule.weave</groupId>
+			<artifactId>assertions</artifactId>
+			<version>1.2.1</version>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- Other Libraries Required Dependencies -->
+
+		<dependency>
+			<groupId>org.jsoup</groupId>
+			<artifactId>jsoup</artifactId>
+			<version>1.18.3</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>2.0.9</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-slf4j-impl</artifactId>
+			<version>2.20.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.json</groupId>
+			<artifactId>json</artifactId>
+			<version>20240303</version>
+		</dependency>
+
+		<dependency>
+			<groupId>io.reactivex.rxjava2</groupId>
+			<artifactId>rxjava</artifactId>
+			<version>2.2.21</version>
+		</dependency>
+
+		<dependency>
+			<groupId>io.grpc</groupId>
+			<artifactId>grpc-protobuf</artifactId>
+			<version>1.65.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>io.grpc</groupId>
+			<artifactId>grpc-netty-shaded</artifactId>
+			<version>1.65.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.google.protobuf</groupId>
+			<artifactId>protobuf-java-util</artifactId>
+			<version>3.25.5</version>
+		</dependency>
+
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>2.16.1</version>
+		</dependency>
+
+		<!-- Imgscalr for resizing images (scaling) -->
+		<dependency>
+			<groupId>org.imgscalr</groupId>
+			<artifactId>imgscalr-lib</artifactId>
+			<version>4.2</version>
+		</dependency>
+
+		<!-- TwelveMonkeys ImageIO for enhanced image compression and format support -->
+		<dependency>
+			<groupId>com.twelvemonkeys.imageio</groupId>
+			<artifactId>imageio-core</artifactId>
+			<version>3.9.4</version>
+		</dependency>
+		<dependency>
+			<groupId>com.twelvemonkeys.imageio</groupId>
+			<artifactId>imageio-jpeg</artifactId>
+			<version>3.9.4</version>
+		</dependency>
+
+		<!-- LangChain Required Dependencies -->
 
 		<dependency>
 			<groupId>dev.langchain4j</groupId>
@@ -131,23 +257,6 @@
 					<groupId>org.jsoup</groupId>
 				</exclusion>
 			</exclusions>
-        </dependency>
-
-		<dependency>
-			<groupId>org.jsoup</groupId>
-			<artifactId>jsoup</artifactId>
-			<version>1.14.3</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-			<version>${slf4jApi.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.json</groupId>
-			<artifactId>json</artifactId>
-			<version>20240303</version>
 		</dependency>
 
 		<dependency>
@@ -164,117 +273,138 @@
 
 		<dependency>
 			<groupId>dev.langchain4j</groupId>
-			<artifactId>langchain4j-easy-rag</artifactId>
+			<artifactId>langchain4j-document-transformer-jsoup</artifactId>
 			<version>${langchain4jVersion}</version>
 		</dependency>
 
+		<!-- Storage Dependencies (Optionals) -->
 		<dependency>
-			<groupId>io.reactivex.rxjava2</groupId>
-			<artifactId>rxjava</artifactId>
-			<version>2.2.21</version>
+			<groupId>dev.langchain4j</groupId>
+			<artifactId>langchain4j-document-loader-azure-storage-blob</artifactId>
+			<version>${langchain4jVersion}</version>
+			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>dev.langchain4j</groupId>
+			<artifactId>langchain4j-document-loader-amazon-s3</artifactId>
+			<version>${langchain4jVersion}</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>dev.langchain4j</groupId>
+			<artifactId>langchain4j-document-loader-google-cloud-storage</artifactId>
+			<version>${langchain4jVersion}</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<!-- Embedding Model Service Dependencies (Optionals) -->
+		<dependency>
+			<groupId>dev.langchain4j</groupId>
 			<artifactId>langchain4j-azure-open-ai</artifactId>
 			<version>${langchain4jVersion}</version>
+			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>dev.langchain4j</groupId>
 			<artifactId>langchain4j-open-ai</artifactId>
 			<version>${langchain4jVersion}</version>
+			<scope>provided</scope>
 		</dependency>
 
-        <dependency>
-            <groupId>dev.langchain4j</groupId>
-            <artifactId>langchain4j-mistral-ai</artifactId>
-            <version>${langchain4jVersion}</version>
-        </dependency>
+		<dependency>
+			<groupId>dev.langchain4j</groupId>
+			<artifactId>langchain4j-mistral-ai</artifactId>
+			<version>${langchain4jVersion}</version>
+			<scope>provided</scope>
+		</dependency>
 
 		<dependency>
 			<groupId>dev.langchain4j</groupId>
 			<artifactId>langchain4j-nomic</artifactId>
 			<version>${langchain4jVersion}</version>
+			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>dev.langchain4j</groupId>
 			<artifactId>langchain4j-hugging-face</artifactId>
 			<version>${langchain4jVersion}</version>
+			<scope>provided</scope>
 		</dependency>
 
-        <dependency>
-            <groupId>dev.langchain4j</groupId>
-            <artifactId>langchain4j-chroma</artifactId>
-            <version>${langchain4jVersion}</version>
-        </dependency>
+		<dependency>
+			<groupId>dev.langchain4j</groupId>
+			<artifactId>langchain4j-vertex-ai</artifactId>
+			<version>${langchain4jVersion}</version>
+			<scope>provided</scope>
+		</dependency>
 
 		<dependency>
-            <groupId>dev.langchain4j</groupId>
-            <artifactId>langchain4j-milvus</artifactId>
-            <version>${langchain4jVersion}</version>
-        </dependency>
+			<groupId>dev.langchain4j</groupId>
+			<artifactId>langchain4j-ollama</artifactId>
+			<version>${langchain4jVersion}</version>
+			<scope>provided</scope>
+		</dependency>
 
-        <dependency>
-            <groupId>dev.langchain4j</groupId>
-            <artifactId>langchain4j-elasticsearch</artifactId>
-            <version>${langchain4jVersion}</version>
-        </dependency>
+		<!-- Vector Store Dependencies (Optionals) -->
+		<dependency>
+			<groupId>dev.langchain4j</groupId>
+			<artifactId>langchain4j-chroma</artifactId>
+			<version>${langchain4jVersion}</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>dev.langchain4j</groupId>
+			<artifactId>langchain4j-milvus</artifactId>
+			<version>${langchain4jVersion}</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>dev.langchain4j</groupId>
+			<artifactId>langchain4j-elasticsearch</artifactId>
+			<version>${langchain4jVersion}</version>
+			<scope>provided</scope>
+		</dependency>
 
 		<dependency>
 			<groupId>dev.langchain4j</groupId>
 			<artifactId>langchain4j-opensearch</artifactId>
 			<version>${langchain4jVersion}</version>
+			<scope>provided</scope>
 		</dependency>
-
-        <dependency>
-            <groupId>dev.langchain4j</groupId>
-            <artifactId>langchain4j-pgvector</artifactId>
-            <version>${langchain4jVersion}</version>
-        </dependency>
 
 		<dependency>
 			<groupId>dev.langchain4j</groupId>
-			<artifactId>langchain4j-document-transformer-jsoup</artifactId>
+			<artifactId>langchain4j-pgvector</artifactId>
 			<version>${langchain4jVersion}</version>
+			<scope>provided</scope>
 		</dependency>
-
-        <dependency>
-            <groupId>dev.langchain4j</groupId>
-            <artifactId>langchain4j-pinecone</artifactId>
-            <version>${langchain4jVersion}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>dev.langchain4j</groupId>
-            <artifactId>langchain4j-qdrant</artifactId>
-            <version>${langchain4jVersion}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>io.grpc</groupId>
-            <artifactId>grpc-protobuf</artifactId>
-            <version>1.65.1</version>
-        </dependency>
-
-        <dependency>
-            <groupId>io.grpc</groupId>
-            <artifactId>grpc-netty-shaded</artifactId>
-            <version>1.65.1</version>
-        </dependency>
 
 		<dependency>
-			<groupId>com.google.protobuf</groupId>
-			<artifactId>protobuf-java-util</artifactId>
-			<version>3.25.5</version>
+			<groupId>dev.langchain4j</groupId>
+			<artifactId>langchain4j-pinecone</artifactId>
+			<version>${langchain4jVersion}</version>
+			<scope>provided</scope>
 		</dependency>
 
-        <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-            <version>2.16.1</version>
-        </dependency>
+		<dependency>
+			<groupId>dev.langchain4j</groupId>
+			<artifactId>langchain4j-qdrant</artifactId>
+			<version>${langchain4jVersion}</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>dev.langchain4j</groupId>
+			<artifactId>langchain4j-azure-ai-search</artifactId>
+			<version>${langchain4jVersion}</version>
+			<scope>provided</scope>
+		</dependency>
 
 	</dependencies>
 	<scm>
@@ -284,6 +414,7 @@
 	      <tag>HEAD</tag>
 	</scm>
 
+<<<<<<< HEAD
     <distributionManagement>
         <snapshotRepository>
             <id>ossrh</id>

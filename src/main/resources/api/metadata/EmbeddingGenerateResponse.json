@@ -1,0 +1,69 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "text-segments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string"
+          },
+          "metadata": {
+            "type": "object",
+            "properties": {
+              "index": {
+                "type": "integer"
+              },
+              "media_type": {
+                "type": "string"
+              },
+              "mime_type": {
+                "type": "string"
+              },
+              "file_type": {
+                "type": "string"
+              },
+              "absolute_directory_path": {
+                "type": "string"
+              },
+              "file_name": {
+                "type": "string"
+              },
+              "source": {
+                "type": "string"
+              },
+              "url": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "required": ["text", "metadata"]
+      },
+      "additionalProperties": true
+    },
+    "embeddings": {
+      "type": "array",
+      "items": {
+        "type": "array",
+        "items": {
+          "type": "number",
+          "format": "float"
+        },
+        "description": "An array of floats representing a single embedding vector."
+      },
+      "description": "An array of embedding vectors, each represented as an array of floats."
+    },
+    "dimension": {
+      "type": "integer",
+      "description": "The dimension in the embedding vectors."
+    }
+  },
+  "required": ["text-segments", "embeddings", "dimension"]
+}
+
